@@ -16,7 +16,19 @@ const (
 	parallelism = 2
 )
 
-func GenerateHash(password string) (string, error) {
+type HashInterface interface {
+	GenerateHash(password string) (string, error)
+	ComparePassword(hash, password string) (bool, error)
+}
+
+type Hash struct {
+}
+
+func NewHash() HashInterface {
+	return &Hash{}
+}
+
+func (h *Hash) GenerateHash(password string) (string, error) {
 
 	salt := make([]byte, saltSize)
 	if _, err := rand.Read(salt); err != nil {
@@ -30,7 +42,7 @@ func GenerateHash(password string) (string, error) {
 	return encodedSaltAndHash, nil
 }
 
-func ComparePassword(hash, password string) (bool, error) {
+func (h *Hash) ComparePassword(hash, password string) (bool, error) {
 	decodedSaltAndHash, err := base64.RawStdEncoding.DecodeString(hash)
 	if err != nil {
 		return false, err

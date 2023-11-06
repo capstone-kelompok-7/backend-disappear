@@ -11,19 +11,21 @@ import (
 type AuthService struct {
 	repo        auth.RepositoryAuthInterface
 	userService users.ServiceUserInterface
-	utils       utils.JWTInterface
+	jwt         utils.JWTInterface
+	hash        utils.HashInterface
 }
 
-func NewAuthService(repo auth.RepositoryAuthInterface, utils utils.JWTInterface, userService users.ServiceUserInterface) auth.ServiceAuthInterface {
+func NewAuthService(repo auth.RepositoryAuthInterface, jwt utils.JWTInterface, userService users.ServiceUserInterface, hash utils.HashInterface) auth.ServiceAuthInterface {
 	return &AuthService{
 		repo:        repo,
-		utils:       utils,
+		jwt:         jwt,
 		userService: userService,
+		hash:        hash,
 	}
 }
 
 func (s *AuthService) Register(newData *domain.UserModels) (*domain.UserModels, error) {
-	hashPassword, err := utils.GenerateHash(newData.Password)
+	hashPassword, err := s.hash.GenerateHash(newData.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +41,6 @@ func (s *AuthService) Register(newData *domain.UserModels) (*domain.UserModels, 
 		return nil, err
 	}
 	return result, nil
-
 }
 
 func (s *AuthService) Login(email, password string) (*domain.UserModels, string, error) {
@@ -48,12 +49,12 @@ func (s *AuthService) Login(email, password string) (*domain.UserModels, string,
 		return nil, "", err
 	}
 
-	isValidPassword, err := utils.ComparePassword(user.Password, password)
+	isValidPassword, err := s.hash.ComparePassword(user.Password, password)
 	if err != nil || !isValidPassword {
-		return nil, "", errors.New("invalid password")
+		return nil, "", errors.New("password salah")
 	}
 
-	accessToken, err := s.utils.GenerateJWT(user.ID, user.Role)
+	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Role)
 	if err != nil {
 		return nil, "", err
 	}
