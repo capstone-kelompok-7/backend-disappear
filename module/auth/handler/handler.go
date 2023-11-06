@@ -29,16 +29,16 @@ func (h *AuthHandler) Register() echo.HandlerFunc {
 
 		registerRequest := new(domain.RegisterRequest)
 		if err := c.Bind(registerRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Error Binding Data")
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal Mengikat Data: Pengikatan data ke struktur gagal")
 		}
 
 		if err := utils.ValidateStruct(registerRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validation failed : "+err.Error())
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
 
 		_, err := h.userService.GetUsersByEmail(registerRequest.Email)
-		if err == nil {
-			return response.SendErrorResponse(c, http.StatusConflict, "Email already registered")
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusConflict, "Email sudah terdaftar")
 		}
 
 		newUser := &user.UserModels{
@@ -49,9 +49,9 @@ func (h *AuthHandler) Register() echo.HandlerFunc {
 
 		_, err = h.service.Register(newUser)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error"+err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
 		}
-		return response.SendStatusOkResponse(c, "Success Register, Please verify your account via email")
+		return response.SendStatusOkResponse(c, "Berhasil")
 	}
 }
 
@@ -59,17 +59,17 @@ func (h *AuthHandler) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var loginRequest domain.LoginRequest
 		if err := c.Bind(&loginRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Error Binding Data")
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal Mengikat Data: Pengikatan data ke struktur gagal")
 		}
 
 		if err := utils.ValidateStruct(loginRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validation failed: "+err.Error())
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
 
 		userLogin, accessToken, err := h.service.Login(loginRequest.Email, loginRequest.Password)
 		if err != nil {
-			logrus.Error("Error : " + err.Error())
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Invalid email or password ")
+			logrus.Error("Kesalahan : " + err.Error())
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Email atau kata sandi tidak valid")
 		}
 
 		result := &domain.LoginResponse{
@@ -77,6 +77,6 @@ func (h *AuthHandler) Login() echo.HandlerFunc {
 			AccessToken: accessToken,
 		}
 
-		return response.SendSuccessResponse(c, "Success", result)
+		return response.SendSuccessResponse(c, "Berhasil", result)
 	}
 }
