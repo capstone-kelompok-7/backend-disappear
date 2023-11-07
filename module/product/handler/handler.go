@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/product/domain"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
 	"github.com/labstack/echo/v4"
-	"net/http"
-	"strconv"
 )
 
 type ProductHandler struct {
@@ -23,7 +24,7 @@ func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 10
 
-		var products []domain.Product
+		var products []domain.ProductModels
 		var totalItems int64
 		var err error
 		search := c.QueryParam("search")

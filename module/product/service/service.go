@@ -1,9 +1,10 @@
 package service
 
 import (
+	"math"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/product/domain"
-	"math"
 )
 
 type ProductService struct {
@@ -16,7 +17,7 @@ func NewProductService(repo product.RepositoryProductInterface) product.ServiceP
 	}
 }
 
-func (s *ProductService) GetAll(page, perPage int) ([]domain.Product, int64, error) {
+func (s *ProductService) GetAll(page, perPage int) ([]domain.ProductModels, int64, error) {
 	products, err := s.repo.FindAll(page, perPage)
 	if err != nil {
 		return products, 0, err
@@ -59,7 +60,7 @@ func (s *ProductService) GetPrevPage(currentPage int) int {
 	return 1
 }
 
-func (s *ProductService) GetProductsByName(page, perPage int, name string) ([]domain.Product, int64, error) {
+func (s *ProductService) GetProductsByName(page, perPage int, name string) ([]domain.ProductModels, int64, error) {
 	products, err := s.repo.FindByName(page, perPage, name)
 	if err != nil {
 		return products, 0, err
