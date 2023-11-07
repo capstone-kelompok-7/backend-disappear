@@ -21,7 +21,6 @@ func TestRegister(t *testing.T) {
 	service := NewAuthService(repo, jwt, userService, hash)
 	newUser := domain.UserModels{
 		Email:    "user@mail.com",
-		Phone:    "08123123123123",
 		Password: "a",
 	}
 	t.Run("Kasus Hash Password Gagal", func(t *testing.T) {
@@ -42,14 +41,12 @@ func TestRegister(t *testing.T) {
 		hash.On("GenerateHash", newUser.Password).Return(expectedPassword, nil).Once()
 		repo.On("Register", mock.AnythingOfType("*domain.UserModels")).Return(&domain.UserModels{
 			Email:    newUser.Email,
-			Phone:    newUser.Phone,
 			Password: expectedPassword,
 			Role:     "customer",
 		}, nil).Once()
 
 		result, err := service.Register(&newUser)
 		assert.Nil(t, err)
-		assert.Equal(t, newUser.Phone, result.Phone)
 		assert.Equal(t, newUser.Email, result.Email)
 		assert.Equal(t, expectedPassword, result.Password)
 		assert.Equal(t, "customer", result.Role)
