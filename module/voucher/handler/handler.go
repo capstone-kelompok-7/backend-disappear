@@ -27,9 +27,7 @@ func (h *VoucherHandler) CreateVoucher() echo.HandlerFunc {
 		c.Bind(&input)
 
 		if input.Name == "" || input.Category == "" || input.Code == "" || input.Description == "" || input.Discouunt < 0 || input.EndDate == "" || input.StartDate == "" {
-			return c.JSON(http.StatusBadRequest, map[string]interface{}{
-				"message": "invalid input",
-			})
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Invalid Input")
 		}
 
 		result, err := h.service.CreateVoucher(input)
@@ -38,10 +36,10 @@ func (h *VoucherHandler) CreateVoucher() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", err.Error()))
 		}
 
-		return c.JSON(http.StatusCreated, map[string]interface{}{
-			"message": "Voucher berhasil ditambahkan.",
-			"data":    domain.VoucherResponseFormatter(*result),
+		return response.SendSuccessResponse(c, "Voucher berhasil ditambahkan", map[string]interface{}{
+			"data": domain.VoucherResponseFormatter(*result),
 		})
+
 	}
 }
 
@@ -49,7 +47,7 @@ func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page := c.QueryParam("page")
 		search := c.QueryParam("search")
-		pagee, err := strconv.Atoi(page)
+		pageconv, err := strconv.Atoi(page)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Invalid page number")
 		}
@@ -67,29 +65,27 @@ func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 			limit = "5"
 		}
 
-		prevPage := pagee - 1
-		nextPage := pagee + 1
+		prevPage := pageconv - 1
+		nextPage := pageconv + 1
+		allvoucher, err := h.service.GetAllVouchersToCalculatePage()
+		var calculatePage = len(allvoucher) / limitt
 
 		if prevPage < 1 {
 			prevPage = 1
 		}
 
-		result, err := h.service.GetAllVouchers(pagee, limitt, search)
+		result, err := h.service.GetAllVouchers(pageconv, limitt, search)
 		if err != nil {
 			c.Logger().Error("handler: failed create voucher:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", err.Error()))
 		}
 
-		return c.JSON(http.StatusCreated, map[string]interface{}{
-			"message": "Berhasil.",
-			"data":    domain.VoucherModelsFormatterAll(result),
-			"pagination": map[string]interface{}{
-				"current_page":  pagee,
-				"toal_page":     len(result),
-				"previous_page": prevPage,
-				"next_page":     nextPage,
-			},
-		})
+		return response.Pagination(c,
+			domain.VoucherModelsFormatterAll(result),
+			pageconv, calculatePage, len(result),
+			nextPage,
+			prevPage,
+			"Berhasil")
 	}
 }
 
@@ -102,9 +98,7 @@ func (h *VoucherHandler) EditVoucherById() echo.HandlerFunc {
 		c.Bind(&input)
 
 		if input.Name == "" || input.Category == "" || input.Code == "" || input.Description == "" || input.Discouunt < 0 || input.EndDate == "" || input.StartDate == "" {
-			return c.JSON(http.StatusBadRequest, map[string]interface{}{
-				"message": "invalid input",
-			})
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Invalid Input")
 		}
 
 		input.ID = uint64(voucheridfix)
@@ -114,9 +108,8 @@ func (h *VoucherHandler) EditVoucherById() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", err.Error()))
 		}
 
-		return c.JSON(http.StatusCreated, map[string]interface{}{
-			"message": "Voucher berhasil diperbarui.",
-			"data":    domain.VoucherResponseFormatter(*result),
+		return response.SendSuccessResponse(c, "Voucher berhasil diperbarui", map[string]interface{}{
+			"data": domain.VoucherResponseFormatter(*result),
 		})
 
 	}
@@ -133,9 +126,7 @@ func (h *VoucherHandler) DeleteVoucherById() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", result.Error()))
 		}
 
-		return c.JSON(http.StatusCreated, map[string]interface{}{
-			"message": "Voucher berhasil dihapus.",
-		})
+		return response.SendStatusOkResponse(c, "Voucher berhasil dihapus.")
 
 	}
 }
@@ -151,9 +142,8 @@ func (h *VoucherHandler) GetVoucherById() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", err.Error()))
 		}
 
-		return c.JSON(http.StatusCreated, map[string]interface{}{
-			"message": "Berhasil.",
-			"data":    domain.VoucherResponseFormatter(*result),
+		return response.SendSuccessResponse(c, "Berhasil.", map[string]interface{}{
+			"data": domain.VoucherResponseFormatter(*result),
 		})
 
 	}

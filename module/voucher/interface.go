@@ -11,6 +11,7 @@ type RepositoryVoucherInterface interface {
 	DeleteVoucherById(id int) error
 	GetVoucherById(id int) (*voucher.VoucherModels, error)
 	EditVoucherById(data voucher.VoucherModels) (*voucher.VoucherModels, error)
+	GetAllVouchersToCalculatePage() ([]voucher.VoucherModels, error)
 }
 
 type ServiceVoucherInterface interface {
@@ -19,6 +20,7 @@ type ServiceVoucherInterface interface {
 	DeleteVoucherById(id int) error
 	GetVoucherById(id int) (*voucher.VoucherModels, error)
 	EditVoucherById(data voucher.VoucherModels) (*voucher.VoucherModels, error)
+	GetAllVouchersToCalculatePage() ([]voucher.VoucherModels, error)
 }
 
 type HandlerVoucherInterface interface {

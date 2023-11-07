@@ -39,6 +39,16 @@ func (r *VoucherRepository) GetAllVouchers(currentPage int, limit int, search st
 	return listVoucher, nil
 }
 
+func (r *VoucherRepository) GetAllVouchersToCalculatePage() ([]domain.VoucherModels, error) {
+	var listVoucher = []domain.VoucherModels{}
+
+	if err := r.db.Find(&listVoucher).Error; err != nil {
+		return nil, err
+	}
+
+	return listVoucher, nil
+}
+
 func (r *VoucherRepository) EditVoucherById(data domain.VoucherModels) (*domain.VoucherModels, error) {
 	var voucher = domain.VoucherModels{}
 	if err := r.db.Model(&voucher).Where("id = ?", data.ID).Updates(map[string]interface{}{
