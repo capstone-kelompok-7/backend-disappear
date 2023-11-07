@@ -52,7 +52,7 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, Disappear!")
 	})
-	routes.RouteUser(e, userHandler)
+	routes.RouteUser(e, userHandler, jwtService, userService)
 	routes.RouteAuth(e, authHandler)
 	routes.RouteProduct(e, productHandler)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
