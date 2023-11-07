@@ -31,7 +31,6 @@ func (s *AuthService) Register(newData *domain.UserModels) (*domain.UserModels, 
 	}
 	value := &domain.UserModels{
 		Email:    newData.Email,
-		Phone:    newData.Phone,
 		Password: hashPassword,
 		Role:     "customer",
 	}
@@ -46,7 +45,7 @@ func (s *AuthService) Register(newData *domain.UserModels) (*domain.UserModels, 
 func (s *AuthService) Login(email, password string) (*domain.UserModels, string, error) {
 	user, err := s.userService.GetUsersByEmail(email)
 	if err != nil {
-		return nil, "", err
+		return nil, "", errors.New("user not found")
 	}
 
 	isValidPassword, err := s.hash.ComparePassword(user.Password, password)
