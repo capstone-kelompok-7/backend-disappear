@@ -54,7 +54,7 @@ func (s *AuthService) Login(email, password string) (*domain.UserModels, string,
 		return nil, "", errors.New("password salah")
 	}
 
-	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Role)
+	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Role, user.Email)
 	if err != nil {
 		return nil, "", err
 	}

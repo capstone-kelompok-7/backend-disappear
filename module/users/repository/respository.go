@@ -47,3 +47,26 @@ func (r *UserRepository) GetUsersByEmail(email string) (*domain.UserModels, erro
 	}
 	return &user, nil
 }
+
+func (r *UserRepository) ChangePassword(password string) (*domain.UserModels, error) {
+	var user domain.UserModels
+	if err := r.db.Table("users").Where("password = ?", password).Find(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) UpdatePassword(userID uint64, newPassword string) error {
+	return r.db.Model(&domain.UserModels{}).
+		Where("id = ?", userID).
+		Update("password", newPassword).
+		Error
+}
+
+func (r *UserRepository) ComparePassword(oldPass string) (*domain.UserModels, error) {
+	var user domain.UserModels
+	if err := r.db.Where("password = ?", oldPass).Find(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
+	"github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
+	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -45,5 +47,24 @@ func (h *UserHandler) GetUsersByEmail() echo.HandlerFunc {
 		}
 
 		return response.SendSuccessResponse(c, "Success", user)
+	}
+}
+
+func (h *UserHandler) ChangePassword() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req domain.ChangePasswordRequest
+		if err := c.Bind(&req); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal Mengikat Data: Pengikatan data ke struktur gagal")
+		}
+
+		if err := utils.ValidateStruct(req); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
+		user, err := h.service.ChangePassword(req.Email, req.OldPassword, req.NewPassword)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengganti kata sandi: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Kata sandi berhasil diubah", user)
 	}
 }

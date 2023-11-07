@@ -25,13 +25,14 @@ func main() {
 	db := database.InitDatabase(*initConfig)
 	database.Migrate(db)
 	jwtService := utils.NewJWT(initConfig.Secret)
+	hash := utils.NewHash()
 
 	userRepo := rUser.NewUserRepository(db)
-	userService := sUser.NewUserService(userRepo)
+	userService := sUser.NewUserService(userRepo, hash)
 	userHandler := hUser.NewUserHandler(userService)
 
 	authRepo := rAuth.NewAuthRepository(db)
-	authService := sAuth.NewAuthService(authRepo, jwtService, userService)
+	authService := sAuth.NewAuthService(authRepo, jwtService, userService, hash)
 	authHandler := hAuth.NewAuthHandler(authService, userService)
 
 	e.Pre(middleware.RemoveTrailingSlash())
