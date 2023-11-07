@@ -24,6 +24,7 @@ func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface) {
 	voucher.POST("", h.CreateVoucher())
 	voucher.GET("", h.GetAllVouchers())
 	voucher.PUT("/:voucher_id", h.EditVoucherById())
+	voucher.GET("/:voucher_id", h.GetVoucherById())
 	voucher.DELETE("/:voucher_id", h.DeleteVoucherById())
 }
 

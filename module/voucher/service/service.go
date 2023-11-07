@@ -44,3 +44,12 @@ func (s *VoucherService) DeleteVoucherById(id int) error {
 	}
 	return nil
 }
+
+func (s *VoucherService) GetVoucherById(id int) (*domain.VoucherModels, error) {
+	result, err := s.repo.GetVoucherById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

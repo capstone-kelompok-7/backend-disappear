@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -34,7 +35,7 @@ func (h *VoucherHandler) CreateVoucher() echo.HandlerFunc {
 		result, err := h.service.CreateVoucher(input)
 		if err != nil {
 			c.Logger().Error("handler: failed create voucher:", err.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", err.Error()))
 		}
 
 		return c.JSON(http.StatusCreated, map[string]interface{}{
@@ -76,7 +77,7 @@ func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 		result, err := h.service.GetAllVouchers(pagee, limitt, search)
 		if err != nil {
 			c.Logger().Error("handler: failed create voucher:", err.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", err.Error()))
 		}
 
 		return c.JSON(http.StatusCreated, map[string]interface{}{
@@ -110,7 +111,7 @@ func (h *VoucherHandler) EditVoucherById() echo.HandlerFunc {
 		result, err := h.service.EditVoucherById(input)
 		if err != nil {
 			c.Logger().Error("handler: failed edit voucher:", err.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", err.Error()))
 		}
 
 		return c.JSON(http.StatusCreated, map[string]interface{}{
@@ -128,12 +129,31 @@ func (h *VoucherHandler) DeleteVoucherById() echo.HandlerFunc {
 
 		result := h.service.DeleteVoucherById(voucheridfix)
 		if result != nil {
-			c.Logger().Error("handler: failed get voucher:", result.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+			c.Logger().Error("handler: failed delete voucher:", result.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", result.Error()))
 		}
 
 		return c.JSON(http.StatusCreated, map[string]interface{}{
 			"message": "Voucher berhasil dihapus.",
+		})
+
+	}
+}
+
+func (h *VoucherHandler) GetVoucherById() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		voucherid := c.Param("voucher_id")
+		voucheridfix, _ := strconv.Atoi(voucherid)
+
+		result, err := h.service.GetVoucherById(voucheridfix)
+		if err != nil {
+			c.Logger().Error("handler: failed get voucher:", err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Internal Server Error, %s", err.Error()))
+		}
+
+		return c.JSON(http.StatusCreated, map[string]interface{}{
+			"message": "Berhasil.",
+			"data":    domain.VoucherResponseFormatter(*result),
 		})
 
 	}
