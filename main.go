@@ -9,6 +9,9 @@ import (
 	hAuth "github.com/capstone-kelompok-7/backend-disappear/module/auth/handler"
 	rAuth "github.com/capstone-kelompok-7/backend-disappear/module/auth/repository"
 	sAuth "github.com/capstone-kelompok-7/backend-disappear/module/auth/service"
+	"github.com/capstone-kelompok-7/backend-disappear/module/product/handler"
+	"github.com/capstone-kelompok-7/backend-disappear/module/product/repository"
+	"github.com/capstone-kelompok-7/backend-disappear/module/product/service"
 	hUser "github.com/capstone-kelompok-7/backend-disappear/module/users/handler"
 	rUser "github.com/capstone-kelompok-7/backend-disappear/module/users/repository"
 	sUser "github.com/capstone-kelompok-7/backend-disappear/module/users/service"
@@ -29,18 +32,23 @@ func main() {
 	db := database.InitDatabase(*initConfig)
 	database.Migrate(db)
 	jwtService := utils.NewJWT(initConfig.Secret)
+	hash := utils.NewHash()
 
 	userRepo := rUser.NewUserRepository(db)
 	userService := sUser.NewUserService(userRepo)
 	userHandler := hUser.NewUserHandler(userService)
 
 	authRepo := rAuth.NewAuthRepository(db)
-	authService := sAuth.NewAuthService(authRepo, jwtService, userService)
+	authService := sAuth.NewAuthService(authRepo, jwtService, userService, hash)
 	authHandler := hAuth.NewAuthHandler(authService, userService)
 
 	voucherRepo := rVoucher.NewVoucherRepository(db)
 	voucherService := sVoucher.NewVoucherService(voucherRepo)
 	voucherHandler := hVoucher.NewVoucherHandler(voucherService)
+
+	productRepo := repository.NewProductRepository(db)
+	productService := service.NewProductService(productRepo)
+	productHandler := handler.NewProductHandler(productService)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORS())
@@ -52,5 +60,6 @@ func main() {
 	routes.RouteUser(e, userHandler)
 	routes.RouteAuth(e, authHandler)
 	routes.RouteVoucher(e, voucherHandler)
+	routes.RouteProduct(e, productHandler)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
+	"github.com/capstone-kelompok-7/backend-disappear/module/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/voucher"
 	"github.com/labstack/echo/v4"
@@ -22,4 +23,9 @@ func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface) {
 	voucher := e.Group("api/v1/vouchers")
 	voucher.POST("", h.CreateVoucher())
 	voucher.GET("", h.GetAllVouchers())
+}
+
+func RouteProduct(e *echo.Echo, h product.HandlerProductInterface) {
+	products := e.Group("api/v1")
+	products.GET("/products", h.GetAllProducts())
 }
