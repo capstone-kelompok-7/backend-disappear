@@ -20,4 +20,5 @@ type ServiceUserInterface interface {
 type HandlerUserInterface interface {
 	GetAllUsers() echo.HandlerFunc
 	GetUsersByEmail() echo.HandlerFunc
+	GetUsersById() echo.HandlerFunc
 }
