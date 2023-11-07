@@ -23,6 +23,8 @@ func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface) {
 	voucher := e.Group("api/v1/vouchers")
 	voucher.POST("", h.CreateVoucher())
 	voucher.GET("", h.GetAllVouchers())
+	voucher.PUT("/:voucher_id", h.EditVoucherById())
+	voucher.DELETE("/:voucher_id", h.DeleteVoucherById())
 }
 
 func RouteProduct(e *echo.Echo, h product.HandlerProductInterface) {

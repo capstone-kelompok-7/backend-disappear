@@ -23,28 +23,50 @@ func (r *VoucherRepository) CreateVoucher(newData domain.VoucherModels) (*domain
 
 	return &newData, nil
 }
-func (r *VoucherRepository) GetAllVouchers(currentPage int, limit int) ([]domain.VoucherModels, error) {
+func (r *VoucherRepository) GetAllVouchers(currentPage int, limit int, search string) ([]domain.VoucherModels, error) {
 	var listVoucher = []domain.VoucherModels{}
 
-	if err := r.db.Offset((currentPage - 1) * limit).Limit(limit).Find(&listVoucher).Error; err != nil {
-		return nil, err
+	if search != "" {
+		if err := r.db.Where("name LIKE ?", "%"+search+"%").Offset((currentPage - 1) * limit).Limit(limit).Find(&listVoucher).Error; err != nil {
+			return nil, err
+		}
+	} else if search == "" {
+		if err := r.db.Offset((currentPage - 1) * limit).Limit(limit).Find(&listVoucher).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	return listVoucher, nil
 }
 
-// func (r *VoucherRepository) GetAllVouchers(page int, limit int) ([]domain.VoucherModels, error) {
-
-// }
-
 // func (r *VoucherRepository) GetVoucherByName(name string) (*domain.VoucherModels, error) {
 
 // }
 
-// func (r *VoucherRepository) EditVoucherByName(name string) (*domain.VoucherModels, error) {
+func (r *VoucherRepository) EditVoucherById(data domain.VoucherModels) (*domain.VoucherModels, error) {
 
-// }
+	if err := r.db.Model(&data).Where("id = ?", data.ID).Updates(map[string]interface{}{
+		"name":        data.Name,
+		"code":        data.Code,
+		"category":    data.Category,
+		"description": data.Description,
+		"discount":    data.Discouunt,
+		"start_date":  data.StartDate,
+		"end_date":    data.EndDate,
+		"min_amount":  data.MinAmount,
+	}).Error; err != nil {
+		return nil, err
+	}
 
-// func (r *VoucherRepository) DeleteVoucherByName(name string) (*domain.VoucherModels, error) {
+	return &data, nil
+}
 
-// }
+func (r *VoucherRepository) DeleteVoucherById(id int) error {
+	var voucher = domain.VoucherModels{}
+
+	if err := r.db.Where("id = ?", id).Delete(&voucher).Error; err != nil {
+		return nil
+	}
+	return nil
+
+}

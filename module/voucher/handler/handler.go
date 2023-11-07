@@ -39,13 +39,15 @@ func (h *VoucherHandler) CreateVoucher() echo.HandlerFunc {
 
 		return c.JSON(http.StatusCreated, map[string]interface{}{
 			"message": "Voucher berhasil ditambahkan.",
-			"data":    result,
+			"data":    domain.VoucherResponseFormatter(*result),
 		})
 	}
 }
+
 func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page := c.QueryParam("page")
+		search := c.QueryParam("search")
 		pagee, err := strconv.Atoi(page)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Invalid page number")
@@ -71,7 +73,7 @@ func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 			prevPage = 1
 		}
 
-		result, err := h.service.GetAllVouchers(pagee, limitt)
+		result, err := h.service.GetAllVouchers(pagee, limitt, search)
 		if err != nil {
 			c.Logger().Error("handler: failed create voucher:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
@@ -79,7 +81,7 @@ func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 
 		return c.JSON(http.StatusCreated, map[string]interface{}{
 			"message": "Berhasil.",
-			"data":    result,
+			"data":    domain.VoucherModelsFormatterAll(result),
 			"pagination": map[string]interface{}{
 				"current_page":  pagee,
 				"toal_page":     len(result),
@@ -87,5 +89,52 @@ func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 				"next_page":     nextPage,
 			},
 		})
+	}
+}
+
+func (h *VoucherHandler) EditVoucherById() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var input = domain.VoucherModels{}
+		var voucherid = c.Param("voucher_id")
+		voucheridfix, _ := strconv.Atoi(voucherid)
+
+		c.Bind(&input)
+
+		if input.Name == "" || input.Category == "" || input.Code == "" || input.Description == "" || input.Discouunt < 0 || input.EndDate == "" || input.StartDate == "" {
+			return c.JSON(http.StatusBadRequest, map[string]interface{}{
+				"message": "invalid input",
+			})
+		}
+
+		input.ID = uint64(voucheridfix)
+		result, err := h.service.EditVoucherById(input)
+		if err != nil {
+			c.Logger().Error("handler: failed edit voucher:", err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+		}
+
+		return c.JSON(http.StatusCreated, map[string]interface{}{
+			"message": "Voucher berhasil diperbarui.",
+			"data":    domain.VoucherResponseFormatter(*result),
+		})
+
+	}
+}
+func (h *VoucherHandler) DeleteVoucherById() echo.HandlerFunc {
+	return func(c echo.Context) error {
+
+		var voucherid = c.Param("voucher_id")
+		voucheridfix, _ := strconv.Atoi(voucherid)
+
+		result := h.service.DeleteVoucherById(voucheridfix)
+		if result != nil {
+			c.Logger().Error("handler: failed get voucher:", result.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+		}
+
+		return c.JSON(http.StatusCreated, map[string]interface{}{
+			"message": "Voucher berhasil dihapus.",
+		})
+
 	}
 }
