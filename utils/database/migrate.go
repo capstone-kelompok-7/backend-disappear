@@ -11,7 +11,19 @@ import (
 )
 
 func Migrate(db *gorm.DB) {
-	err := db.AutoMigrate(voucher.VoucherModels{}, users.UserModels{}, users.AddressModels{}, products.CategoryModels{}, products.ProductModels{}, products.ProductPhotosModels{}, review.ReviewModels{}, article.Articles{}, challenge.ChallengeModels{})
+	err := db.AutoMigrate(
+		voucher.VoucherModels{},
+		users.UserModels{},
+		users.AddressModels{},
+		products.CategoryModels{},
+		products.ProductModels{},
+		products.ProductPhotosModels{},
+		review.ReviewModels{},
+		article.Articles{},
+		users.OTPModels{},
+		challenge.ChallengeModels{},
+	)
+
 	if err != nil {
 		return
 	}
