@@ -17,7 +17,7 @@ type CategoryFormatter struct {
 	Name string `json:"name"`
 }
 
-func FormatProduct(product Product) ProductFormatter {
+func FormatProduct(product ProductModels) ProductFormatter {
 	productFormatter := ProductFormatter{}
 	productFormatter.ID = product.ID
 	productFormatter.Name = product.Name
@@ -50,7 +50,7 @@ func FormatProduct(product Product) ProductFormatter {
 	return productFormatter
 }
 
-func FormatterProduct(products []Product) []ProductFormatter {
+func FormatterProduct(products []ProductModels) []ProductFormatter {
 	var productFormatter []ProductFormatter
 
 	for _, product := range products {

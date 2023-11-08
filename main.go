@@ -64,7 +64,7 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, Disappear!")
 	})
-	routes.RouteUser(e, userHandler)
+	routes.RouteUser(e, userHandler, jwtService, userService)
 	routes.RouteAuth(e, authHandler)
 	routes.RouteVoucher(e, voucherHandler)
 	routes.RouteProduct(e, productHandler)
