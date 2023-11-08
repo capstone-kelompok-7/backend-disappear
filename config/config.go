@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -21,10 +22,6 @@ func InitConfig() *Config {
 	var res = new(Config)
 	res = loadConfig()
 
-	if res == nil {
-		log.Fatal("Config : cannot load configuration")
-		return nil
-	}
 	return res
 
 }
@@ -32,11 +29,12 @@ func InitConfig() *Config {
 func loadConfig() *Config {
 
 	var res = new(Config)
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatal("Config : cannot load config file", err.Error())
-		return nil
+	_, err := os.Stat(".env")
+	if err == nil {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Failed to fetch .env file")
+		}
 	}
 
 	if value, found := os.LookupEnv("SERVER"); found {
