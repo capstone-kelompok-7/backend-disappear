@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/capstone-kelompok-7/backend-disappear/module/article"
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
@@ -30,4 +31,9 @@ func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface) {
 func RouteProduct(e *echo.Echo, h product.HandlerProductInterface) {
 	products := e.Group("api/v1")
 	products.GET("/products", h.GetAllProducts())
+}
+
+func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface) {
+	articles := e.Group("api/v1/articles")
+	articles.GET("", h.GetAllArticles())
 }

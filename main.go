@@ -18,6 +18,9 @@ import (
 	hVoucher "github.com/capstone-kelompok-7/backend-disappear/module/voucher/handler"
 	rVoucher "github.com/capstone-kelompok-7/backend-disappear/module/voucher/repository"
 	sVoucher "github.com/capstone-kelompok-7/backend-disappear/module/voucher/service"
+	hArticle "github.com/capstone-kelompok-7/backend-disappear/module/article/handler"
+	rArticle "github.com/capstone-kelompok-7/backend-disappear/module/article/repository"
+	sArticle "github.com/capstone-kelompok-7/backend-disappear/module/article/service"
 	"github.com/capstone-kelompok-7/backend-disappear/routes"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/database"
@@ -50,6 +53,10 @@ func main() {
 	productService := service.NewProductService(productRepo)
 	productHandler := handler.NewProductHandler(productService)
 
+	articleRepo := rArticle.NewArticleRepository(db)
+	articleService := sArticle.NewArticleRepository(articleRepo)
+	articleHandler := hArticle.NewArticleHandler(articleService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORS())
 	e.Use(middlewares.ConfigureLogging())
@@ -61,5 +68,6 @@ func main() {
 	routes.RouteAuth(e, authHandler)
 	routes.RouteVoucher(e, voucherHandler)
 	routes.RouteProduct(e, productHandler)
+	routes.RouteArticle(e, articleHandler)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }
