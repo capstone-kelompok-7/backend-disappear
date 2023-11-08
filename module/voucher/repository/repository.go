@@ -27,7 +27,7 @@ func (r *VoucherRepository) GetAllVouchers(currentPage int, limit int, search st
 	var listVoucher = []domain.VoucherModels{}
 
 	if search != "" {
-		if err := r.db.Where("name LIKE ?", "%"+search+"%").Offset((currentPage - 1) * limit).Limit(limit).Find(&listVoucher).Error; err != nil {
+		if err := r.db.Where("category LIKE ?", "%"+search+"%").Offset((currentPage - 1) * limit).Limit(limit).Find(&listVoucher).Error; err != nil {
 			return nil, err
 		}
 	} else if search == "" {
@@ -39,13 +39,19 @@ func (r *VoucherRepository) GetAllVouchers(currentPage int, limit int, search st
 	return listVoucher, nil
 }
 
-// func (r *VoucherRepository) GetVoucherByName(name string) (*domain.VoucherModels, error) {
+func (r *VoucherRepository) GetAllVouchersToCalculatePage() ([]domain.VoucherModels, error) {
+	var listVoucher = []domain.VoucherModels{}
 
-// }
+	if err := r.db.Find(&listVoucher).Error; err != nil {
+		return nil, err
+	}
+
+	return listVoucher, nil
+}
 
 func (r *VoucherRepository) EditVoucherById(data domain.VoucherModels) (*domain.VoucherModels, error) {
-
-	if err := r.db.Model(&data).Where("id = ?", data.ID).Updates(map[string]interface{}{
+	var voucher = domain.VoucherModels{}
+	if err := r.db.Model(&voucher).Where("id = ?", data.ID).Updates(map[string]interface{}{
 		"name":        data.Name,
 		"code":        data.Code,
 		"category":    data.Category,
@@ -58,15 +64,24 @@ func (r *VoucherRepository) EditVoucherById(data domain.VoucherModels) (*domain.
 		return nil, err
 	}
 
-	return &data, nil
+	return &voucher, nil
 }
 
 func (r *VoucherRepository) DeleteVoucherById(id int) error {
 	var voucher = domain.VoucherModels{}
 
-	if err := r.db.Where("id = ?", id).Delete(&voucher).Error; err != nil {
+	if err := r.db.Unscoped().Where("id = ?", id).Delete(&voucher).Error; err != nil {
 		return nil
 	}
 	return nil
 
+}
+
+func (r *VoucherRepository) GetVoucherById(id int) (*domain.VoucherModels, error) {
+	var voucher = domain.VoucherModels{}
+	if err := r.db.Where("id = ?", id).First(&voucher).Error; err != nil {
+		return nil, err
+	}
+
+	return &voucher, nil
 }

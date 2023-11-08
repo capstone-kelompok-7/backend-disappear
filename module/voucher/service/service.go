@@ -29,6 +29,13 @@ func (s *VoucherService) GetAllVouchers(currentPage int, limit int, search strin
 	}
 	return result, nil
 }
+func (s *VoucherService) GetAllVouchersToCalculatePage() ([]domain.VoucherModels, error) {
+	result, err := s.repo.GetAllVouchersToCalculatePage()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
 
 func (s *VoucherService) EditVoucherById(data domain.VoucherModels) (*domain.VoucherModels, error) {
 	result, err := s.repo.EditVoucherById(data)
@@ -43,4 +50,13 @@ func (s *VoucherService) DeleteVoucherById(id int) error {
 		return nil
 	}
 	return nil
+}
+
+func (s *VoucherService) GetVoucherById(id int) (*domain.VoucherModels, error) {
+	result, err := s.repo.GetVoucherById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

@@ -27,28 +27,18 @@ type VoucherModelsResponseAll struct {
 	Status    string `json:"status"`
 }
 
-func VoucherResponseFormatter(voucher VoucherModels) VoucherModelsResponse {
+func VoucherResponseFormatterCreate(voucher *VoucherModels) VoucherModelsResponse {
 	voucherFormatter := VoucherModelsResponse{}
 	voucherFormatter.ID = voucher.ID
 	voucherFormatter.Name = voucher.Name
 	voucherFormatter.Code = voucher.Code
 	voucherFormatter.Category = voucher.Category
 	voucherFormatter.Discouunt = voucher.Discouunt
-	voucherFormatter.StartDate = voucher.StartDate
-	voucherFormatter.EndDate = voucher.EndDate
 
 	sampleFormat := "2006-01-02"
 
 	var dateNow = time.Now()
 	dateNowFormat := dateNow.Format(sampleFormat)
-
-	// parsedstartdate, _ := time.Parse(time.RFC3339Nano, voucher.StartDate)
-	// formatstartdate := parsedstartdate.Format(sampleFormat)
-	// voucherFormatter.StartDate = formatstartdate
-
-	// parsedenddate, _ := time.Parse(time.RFC3339Nano, voucher.EndDate)
-	// formatenddate := parsedenddate.Format(sampleFormat)
-	// voucherFormatter.EndDate = formatenddate
 
 	noww, _ := time.Parse("2006-01-02", dateNowFormat)
 	endd, _ := time.Parse("2006-01-02", voucher.EndDate)
@@ -58,6 +48,44 @@ func VoucherResponseFormatter(voucher VoucherModels) VoucherModelsResponse {
 	} else if noww.Before(endd) {
 		voucherFormatter.Status = "aktif"
 	}
+
+	voucherFormatter.StartDate = voucher.StartDate
+	voucherFormatter.EndDate = voucher.EndDate
+
+	return voucherFormatter
+}
+func VoucherResponseFormatter(voucher *VoucherModels) VoucherModelsResponse {
+	voucherFormatter := VoucherModelsResponse{}
+	voucherFormatter.ID = voucher.ID
+	voucherFormatter.Name = voucher.Name
+	voucherFormatter.Code = voucher.Code
+	voucherFormatter.Category = voucher.Category
+	voucherFormatter.Discouunt = voucher.Discouunt
+
+	sampleFormat := "2006-01-02"
+
+	var dateNow = time.Now()
+	dateNowFormat := dateNow.Format(sampleFormat)
+
+	parsedStartDate, _ := time.Parse(time.RFC3339Nano, voucher.StartDate)
+	formatstartdate := parsedStartDate.Format("2006-01-02")
+	voucherFormatter.StartDate = formatstartdate
+
+	parsedenddate, _ := time.Parse(time.RFC3339Nano, voucher.EndDate)
+	formatenddate := parsedenddate.Format(sampleFormat)
+	voucherFormatter.EndDate = formatenddate
+
+	noww, _ := time.Parse("2006-01-02", dateNowFormat)
+	endd, _ := time.Parse("2006-01-02", formatenddate)
+
+	if noww.After(endd) {
+		voucherFormatter.Status = "kadaluarsa"
+	} else if noww.Before(endd) {
+		voucherFormatter.Status = "aktif"
+	}
+
+	voucherFormatter.StartDate = formatstartdate
+	voucherFormatter.EndDate = formatenddate
 
 	return voucherFormatter
 }
