@@ -27,7 +27,7 @@ func (r *VoucherRepository) GetAllVouchers(currentPage int, limit int, search st
 	var listVoucher = []domain.VoucherModels{}
 
 	if search != "" {
-		if err := r.db.Where("name LIKE ?", "%"+search+"%").Offset((currentPage - 1) * limit).Limit(limit).Find(&listVoucher).Error; err != nil {
+		if err := r.db.Where("category LIKE ?", "%"+search+"%").Offset((currentPage - 1) * limit).Limit(limit).Find(&listVoucher).Error; err != nil {
 			return nil, err
 		}
 	} else if search == "" {
@@ -70,7 +70,7 @@ func (r *VoucherRepository) EditVoucherById(data domain.VoucherModels) (*domain.
 func (r *VoucherRepository) DeleteVoucherById(id int) error {
 	var voucher = domain.VoucherModels{}
 
-	if err := r.db.Where("id = ?", id).Delete(&voucher).Error; err != nil {
+	if err := r.db.Unscoped().Where("id = ?", id).Delete(&voucher).Error; err != nil {
 		return nil
 	}
 	return nil
