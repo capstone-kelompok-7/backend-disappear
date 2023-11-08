@@ -1,14 +1,14 @@
 package routes
 
 import (
-
 	"github.com/capstone-kelompok-7/backend-disappear/middlewares"
 
+	"github.com/capstone-kelompok-7/backend-disappear/module/article"
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
+	"github.com/capstone-kelompok-7/backend-disappear/module/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/voucher"
-  "github.com/capstone-kelompok-7/backend-disappear/module/article"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/labstack/echo/v4"
 )
@@ -42,4 +42,9 @@ func RouteProduct(e *echo.Echo, h product.HandlerProductInterface) {
 func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface) {
 	articles := e.Group("api/v1/articles")
 	articles.GET("", h.GetAllArticles())
+}
+
+func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface) {
+	challenges := e.Group("api/v1/challenges")
+	challenges.GET("", h.GetAllChallenges())
 }
