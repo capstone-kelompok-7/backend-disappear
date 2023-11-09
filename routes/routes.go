@@ -16,6 +16,7 @@ import (
 func RouteAuth(e *echo.Echo, h auth.HandlerAuthInterface) {
 	e.POST("api/v1/auth/register", h.Register())
 	e.POST("api/v1/auth/login", h.Login())
+	e.POST("/api/v1/auth/verify", h.VerifyEmail())
 }
 
 func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

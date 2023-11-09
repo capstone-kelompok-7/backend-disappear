@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth/domain"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
@@ -38,7 +37,6 @@ func (h *AuthHandler) Register() echo.HandlerFunc {
 		}
 
 		_, err := h.userService.GetUsersByEmail(registerRequest.Email)
-		fmt.Println(registerRequest.Email)
 		if err == nil {
 			return response.SendErrorResponse(c, http.StatusConflict, "Email sudah terdaftar")
 		}
@@ -52,7 +50,7 @@ func (h *AuthHandler) Register() echo.HandlerFunc {
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
 		}
-		return response.SendStatusOkResponse(c, "Registrasi berhasil! Silakan masuk untuk memulai.")
+		return response.SendStatusOkResponse(c, "Registrasi berhasil! Silakan cek email anda untuk OTP.")
 	}
 }
 
@@ -69,9 +67,12 @@ func (h *AuthHandler) Login() echo.HandlerFunc {
 
 		userLogin, accessToken, err := h.service.Login(loginRequest.Email, loginRequest.Password)
 		if err != nil {
-			if err.Error() == "user not found" {
+			if err.Error() == "user tidak ditemukan" {
 				return response.SendErrorResponse(c, http.StatusNotFound, "Pengguna tidak ditemukan")
+			} else if err.Error() == "akun anda belum diverifikasi" {
+				return response.SendErrorResponse(c, http.StatusNotFound, "akun anda belum diverifikasi")
 			}
+
 			logrus.Error("Kesalahan : " + err.Error())
 			return response.SendErrorResponse(c, http.StatusUnauthorized, "Email atau kata sandi salah")
 		}
@@ -82,5 +83,24 @@ func (h *AuthHandler) Login() echo.HandlerFunc {
 		}
 
 		return response.SendSuccessResponse(c, "Selamat datang!, Anda telah berhasil masuk.", result)
+	}
+}
+
+func (h *AuthHandler) VerifyEmail() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var emailRequest domain.EmailRequest
+
+		if err := c.Bind(&emailRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		if err := utils.ValidateStruct(emailRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
+		if err := h.service.VerifyEmail(emailRequest.Email, emailRequest.OTP); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
+		return response.SendStatusOkResponse(c, "Email berhasil diverifikasi!, Silahkan login.")
 	}
 }
