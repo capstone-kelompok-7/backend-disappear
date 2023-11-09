@@ -53,20 +53,24 @@ func (h *UserHandler) GetUsersByEmail() echo.HandlerFunc {
 
 func (h *UserHandler) ChangePassword() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var req domain.ChangePasswordRequest
-		if err := c.Bind(&req); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal Mengikat Data: Pengikatan data ke struktur gagal")
+		var updateRequest domain.UpdatePasswordRequest
+		if err := c.Bind(&updateRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
-
-		if err := utils.ValidateStruct(req); err != nil {
+		if err := utils.ValidateStruct(updateRequest); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
+		currentUser := c.Get("CurrentUser").(*domain.UserModels)
 
-		user, err := h.service.ChangePassword(req.Email, req.OldPassword, req.NewPassword)
+		err := h.service.ValidatePassword(currentUser.ID, updateRequest.OldPassword, updateRequest.NewPassword, updateRequest.ConfirmPassword)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengganti kata sandi: "+err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui kata sandi: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Kata sandi berhasil diubah", user)
+		err = h.service.ChangePassword(currentUser.ID, updateRequest)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+		}
+		return response.SendStatusOkResponse(c, "Kata sandi berhasil diperbarui")
 	}
 }
 

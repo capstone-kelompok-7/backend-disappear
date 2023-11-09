@@ -38,8 +38,8 @@ func (h *AuthHandler) Register() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
 
-		_, err := h.userService.GetUsersByEmail(registerRequest.Email)
-		if err == nil {
+		existingUser, err := h.userService.GetUsersByEmail(registerRequest.Email)
+		if existingUser != nil {
 			return response.SendErrorResponse(c, http.StatusConflict, "Email sudah terdaftar")
 		}
 

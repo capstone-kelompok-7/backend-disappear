@@ -25,7 +25,7 @@ func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTI
 	users := e.Group("api/v1/users")
 	users.GET("/list", h.GetAllUsers())
 	users.GET("/by-email", h.GetUsersByEmail())
-	users.PATCH("/change-password", h.ChangePassword())
+	users.POST("/change-password", h.ChangePassword(), middlewares.AuthMiddleware(jwtService, userService))
 	users.GET("/by-email", h.GetUsersByEmail(), middlewares.AuthMiddleware(jwtService, userService))
 	users.GET("/:id", h.GetUsersById(), middlewares.AuthMiddleware(jwtService, userService))
 }
