@@ -9,15 +9,16 @@ type RepositoryUserInterface interface {
 	GetAllUsers() ([]*domain.UserModels, error)
 	GetUsersByEmail(email string) (*domain.UserModels, error)
 	GetUsersById(userId uint64) (*domain.UserModels, error)
-	ChangePassword(password string) (*domain.UserModels, error)
-	ComparePassword(oldPass string) (*domain.UserModels, error)
+	GetUsersPassword(userID uint64) (string, error)
+	ChangePassword(userID uint64, newPasswordHash string) error
 }
 
 type ServiceUserInterface interface {
 	GetAllUsers() ([]*domain.UserModels, error)
 	GetUsersByEmail(email string) (*domain.UserModels, error)
 	GetUsersById(userId uint64) (*domain.UserModels, error)
-	ChangePassword(email, oldPass, newPass string) (*domain.UserModels, error)
+	ValidatePassword(userID uint64, oldPassword, newPassword, confirmPassword string) error
+	ChangePassword(userID uint64, updateRequest domain.UpdatePasswordRequest) error
 }
 
 type HandlerUserInterface interface {

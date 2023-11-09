@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
@@ -39,33 +38,46 @@ func (s *UserService) GetUsersById(userId uint64) (*domain.UserModels, error) {
 func (s *UserService) GetUsersByEmail(email string) (*domain.UserModels, error) {
 	result, err := s.repo.GetUsersByEmail(email)
 	if err != nil {
-		return nil, fmt.Errorf("gagal mengambil data pengguna: %w", err)
-	}
-	if result == nil {
-		return nil, errors.New("Pengguna tidak ditemukan")
+		return nil, err
 	}
 	return result, nil
 }
 
-func (s *UserService) ChangePassword(email, oldPass, newPass string) (*domain.UserModels, error) {
-	user, err := s.repo.GetUsersByEmail(email)
+func (s *UserService) ValidatePassword(userID uint64, oldPassword, newPassword, confirmPassword string) error {
+	storedPassword, err := s.repo.GetUsersPassword(userID)
 	if err != nil {
-		return nil, err
-	}
-	_, err = s.repo.ComparePassword(oldPass)
-	if err != nil {
-		return nil, err
+		return errors.New("Password lama tidak valid")
 	}
 
-	newPasswordHash, err := s.hash.GenerateHash(newPass)
-	if err != nil {
-		return nil, err
+	isValidOldPassword, err := s.hash.ComparePassword(storedPassword, oldPassword)
+	if err != nil || !isValidOldPassword {
+		return errors.New("Password lama tidak valid")
 	}
 
-	user.Password = newPasswordHash
-	result, err := s.repo.ChangePassword(user.Password)
-	if err != nil {
-		return nil, err
+	if oldPassword == newPassword {
+		return errors.New("Password baru tidak boleh sama dengan password lama")
 	}
-	return result, nil
+
+	if newPassword != confirmPassword {
+		return errors.New("Password baru dan konfirmasi password tidak cocok")
+	}
+
+	return nil
+}
+
+func (s *UserService) ChangePassword(userID uint64, updateRequest domain.UpdatePasswordRequest) error {
+	user, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return errors.New("pengguna tidak ditemukan")
+	}
+	newPasswordHash, err := s.hash.GenerateHash(updateRequest.NewPassword)
+	if err != nil {
+		return errors.New("gagal hash password")
+	}
+	err = s.repo.ChangePassword(user.ID, newPasswordHash)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

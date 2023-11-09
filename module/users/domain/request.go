@@ -1,8 +1,7 @@
 package domain
 
-type ChangePasswordRequest struct {
-	Email       string `json:"email"`
-	OldPassword string `json:"old_password"`
-	NewPassword string `json:"new_password"`
-	ConPassword string `json:"con_password"`
+type UpdatePasswordRequest struct {
+	OldPassword     string `json:"old_password" validate:"required"`
+	NewPassword     string `json:"new_password" validate:"required,min=6"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,min=6"`
 }
