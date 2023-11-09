@@ -1,29 +1,22 @@
 package database
 
 import (
-	article "github.com/capstone-kelompok-7/backend-disappear/module/article/domain"
-	category "github.com/capstone-kelompok-7/backend-disappear/module/category/domain"
-	challenge "github.com/capstone-kelompok-7/backend-disappear/module/challenge/domain"
-	products "github.com/capstone-kelompok-7/backend-disappear/module/product/domain"
-	review "github.com/capstone-kelompok-7/backend-disappear/module/review/domain"
-	users "github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
-	voucher "github.com/capstone-kelompok-7/backend-disappear/module/voucher/domain"
+	entities "github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"gorm.io/gorm"
 )
 
 func Migrate(db *gorm.DB) {
 	err := db.AutoMigrate(
-		voucher.VoucherModels{},
-		users.UserModels{},
-		users.AddressModels{},
-		products.CategoryModels{},
-		products.ProductModels{},
-		products.ProductPhotosModels{},
-		review.ReviewModels{},
-		article.Articles{},
-		users.OTPModels{},
-		challenge.ChallengeModels{},
-		category.CategoryModels{},
+		entities.VoucherModels{},
+		entities.UserModels{},
+		entities.AddressModels{},
+		entities.CategoryModels{},
+		entities.ProductModels{},
+		entities.ProductPhotosModels{},
+		entities.ReviewModels{},
+		entities.Articles{},
+		entities.OTPModels{},
+		entities.ChallengeModels{},
 	)
 
 	if err != nil {

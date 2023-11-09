@@ -1,15 +1,15 @@
 package routes
 
 import (
-	"github.com/capstone-kelompok-7/backend-disappear/middlewares"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/article"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher"
+	"github.com/capstone-kelompok-7/backend-disappear/module/middlewares"
 
-	"github.com/capstone-kelompok-7/backend-disappear/module/article"
-	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
-	"github.com/capstone-kelompok-7/backend-disappear/module/category"
-	"github.com/capstone-kelompok-7/backend-disappear/module/challenge"
-	"github.com/capstone-kelompok-7/backend-disappear/module/product"
-	"github.com/capstone-kelompok-7/backend-disappear/module/users"
-	"github.com/capstone-kelompok-7/backend-disappear/module/voucher"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/labstack/echo/v4"
 )
