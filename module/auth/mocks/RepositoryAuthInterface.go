@@ -12,6 +12,46 @@ type RepositoryAuthInterface struct {
 	mock.Mock
 }
 
+// DeleteOTP provides a mock function with given fields: otp
+func (_m *RepositoryAuthInterface) DeleteOTP(otp *domain.OTPModels) error {
+	ret := _m.Called(otp)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*domain.OTPModels) error); ok {
+		r0 = rf(otp)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// FindValidOTP provides a mock function with given fields: userID, otp
+func (_m *RepositoryAuthInterface) FindValidOTP(userID int, otp string) (*domain.OTPModels, error) {
+	ret := _m.Called(userID, otp)
+
+	var r0 *domain.OTPModels
+	var r1 error
+	if rf, ok := ret.Get(0).(func(int, string) (*domain.OTPModels, error)); ok {
+		return rf(userID, otp)
+	}
+	if rf, ok := ret.Get(0).(func(int, string) *domain.OTPModels); ok {
+		r0 = rf(userID, otp)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.OTPModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int, string) error); ok {
+		r1 = rf(userID, otp)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Login provides a mock function with given fields: email
 func (_m *RepositoryAuthInterface) Login(email string) (*domain.UserModels, error) {
 	ret := _m.Called(email)
@@ -57,6 +97,58 @@ func (_m *RepositoryAuthInterface) Register(newData *domain.UserModels) (*domain
 
 	if rf, ok := ret.Get(1).(func(*domain.UserModels) error); ok {
 		r1 = rf(newData)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SaveOTP provides a mock function with given fields: otp
+func (_m *RepositoryAuthInterface) SaveOTP(otp *domain.OTPModels) (*domain.OTPModels, error) {
+	ret := _m.Called(otp)
+
+	var r0 *domain.OTPModels
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*domain.OTPModels) (*domain.OTPModels, error)); ok {
+		return rf(otp)
+	}
+	if rf, ok := ret.Get(0).(func(*domain.OTPModels) *domain.OTPModels); ok {
+		r0 = rf(otp)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.OTPModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*domain.OTPModels) error); ok {
+		r1 = rf(otp)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateUser provides a mock function with given fields: user
+func (_m *RepositoryAuthInterface) UpdateUser(user *domain.UserModels) (*domain.UserModels, error) {
+	ret := _m.Called(user)
+
+	var r0 *domain.UserModels
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*domain.UserModels) (*domain.UserModels, error)); ok {
+		return rf(user)
+	}
+	if rf, ok := ret.Get(0).(func(*domain.UserModels) *domain.UserModels); ok {
+		r0 = rf(user)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.UserModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*domain.UserModels) error); ok {
+		r1 = rf(user)
 	} else {
 		r1 = ret.Error(1)
 	}

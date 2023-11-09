@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
@@ -37,7 +39,10 @@ func (s *UserService) GetUsersById(userId uint64) (*domain.UserModels, error) {
 func (s *UserService) GetUsersByEmail(email string) (*domain.UserModels, error) {
 	result, err := s.repo.GetUsersByEmail(email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("gagal mengambil data pengguna: %w", err)
+	}
+	if result == nil {
+		return nil, errors.New("Pengguna tidak ditemukan")
 	}
 	return result, nil
 }

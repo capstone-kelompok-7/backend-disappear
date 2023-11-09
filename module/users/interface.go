@@ -24,4 +24,5 @@ type HandlerUserInterface interface {
 	GetAllUsers() echo.HandlerFunc
 	GetUsersByEmail() echo.HandlerFunc
 	ChangePassword() echo.HandlerFunc
+	GetUsersById() echo.HandlerFunc
 }

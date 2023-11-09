@@ -12,23 +12,23 @@ type JWTInterface struct {
 	mock.Mock
 }
 
-// GenerateJWT provides a mock function with given fields: userID, role
-func (_m *JWTInterface) GenerateJWT(userID uint64, role string) (string, error) {
-	ret := _m.Called(userID, role)
+// GenerateJWT provides a mock function with given fields: userID, email, role
+func (_m *JWTInterface) GenerateJWT(userID uint64, email string, role string) (string, error) {
+	ret := _m.Called(userID, email, role)
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint64, string) (string, error)); ok {
-		return rf(userID, role)
+	if rf, ok := ret.Get(0).(func(uint64, string, string) (string, error)); ok {
+		return rf(userID, email, role)
 	}
-	if rf, ok := ret.Get(0).(func(uint64, string) string); ok {
-		r0 = rf(userID, role)
+	if rf, ok := ret.Get(0).(func(uint64, string, string) string); ok {
+		r0 = rf(userID, email, role)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(uint64, string) error); ok {
-		r1 = rf(userID, role)
+	if rf, ok := ret.Get(1).(func(uint64, string, string) error); ok {
+		r1 = rf(userID, email, role)
 	} else {
 		r1 = ret.Error(1)
 	}

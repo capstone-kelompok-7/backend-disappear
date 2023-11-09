@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"testing"
+
 	authMock "github.com/capstone-kelompok-7/backend-disappear/module/auth/mocks"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
 	userMock "github.com/capstone-kelompok-7/backend-disappear/module/users/mocks"
@@ -9,7 +11,6 @@ import (
 	utilsMock "github.com/capstone-kelompok-7/backend-disappear/utils/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func TestRegister(t *testing.T) {
@@ -17,11 +18,10 @@ func TestRegister(t *testing.T) {
 	repo := authMock.NewRepositoryAuthInterface(t)
 	userRepo := userMock.NewRepositoryUserInterface(t)
 	hash := utilsMock.NewHashInterface(t)
-	userService := service2.NewUserService(userRepo)
+	userService := service2.NewUserService(userRepo, hash)
 	service := NewAuthService(repo, jwt, userService, hash)
 	newUser := domain.UserModels{
 		Email:    "user@mail.com",
-		Phone:    "08123123123123",
 		Password: "a",
 	}
 	t.Run("Kasus Hash Password Gagal", func(t *testing.T) {
@@ -42,14 +42,12 @@ func TestRegister(t *testing.T) {
 		hash.On("GenerateHash", newUser.Password).Return(expectedPassword, nil).Once()
 		repo.On("Register", mock.AnythingOfType("*domain.UserModels")).Return(&domain.UserModels{
 			Email:    newUser.Email,
-			Phone:    newUser.Phone,
 			Password: expectedPassword,
 			Role:     "customer",
 		}, nil).Once()
 
 		result, err := service.Register(&newUser)
 		assert.Nil(t, err)
-		assert.Equal(t, newUser.Phone, result.Phone)
 		assert.Equal(t, newUser.Email, result.Email)
 		assert.Equal(t, expectedPassword, result.Password)
 		assert.Equal(t, "customer", result.Role)
@@ -79,7 +77,7 @@ func TestLogin(t *testing.T) {
 	repo := authMock.NewRepositoryAuthInterface(t)
 	userRepo := userMock.NewRepositoryUserInterface(t)
 	hash := utilsMock.NewHashInterface(t)
-	userService := service2.NewUserService(userRepo)
+	userService := service2.NewUserService(userRepo, hash)
 	service := NewAuthService(repo, jwt, userService, hash)
 	email := "user@example.com"
 	password := "hashed_password"

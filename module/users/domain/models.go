@@ -11,7 +11,7 @@ type UserModels struct {
 	Name         string          `gorm:"column:name;type:VARCHAR(255)" json:"name"`
 	PhotoProfile string          `gorm:"column:photo_profile;type:VARCHAR(255)" json:"photo_profile"`
 	TotalGram    float64         `gorm:"column:total_gram;type:DECIMAL(10, 2)" json:"total_gram"`
-	IsVerified   bool            `gorm:"column:is_verified" json:"is_verified"`
+	IsVerified   bool            `gorm:"column:is_verified;default:false" json:"is_verified"`
 	LevelID      int             `gorm:"column:level_id;foreignKey:ID" json:"level_id"`
 	Address      []AddressModels `gorm:"foreignKey:UserID" json:"addresses"`
 	CreatedAt    time.Time       `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
@@ -34,10 +34,22 @@ type AddressModels struct {
 	DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
 }
 
+type OTPModels struct {
+	ID         uint       `gorm:"primaryKey;autoIncrement" json:"id" `
+	UserID     int        `gorm:"index;unique" json:"user_id" `
+	User       UserModels `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"user" `
+	OTP        string     `gorm:"column:otp;type:varchar(255)" json:"otp"`
+	ExpiredOTP int64      `gorm:"column:expired_otp;type:bigint" json:"expired_otp" `
+}
+
 func (UserModels) TableName() string {
 	return "users"
 }
 
 func (AddressModels) TableName() string {
 	return "address"
+}
+
+func (OTPModels) TableName() string {
+	return "otp"
 }
