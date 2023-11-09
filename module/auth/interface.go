@@ -12,16 +12,19 @@ type RepositoryAuthInterface interface {
 	UpdateUser(user *domain.UserModels) (*domain.UserModels, error)
 	FindValidOTP(userID int, otp string) (*domain.OTPModels, error)
 	DeleteOTP(otp *domain.OTPModels) error
+	DeleteUserOTP(userId uint64) error
 }
 
 type ServiceAuthInterface interface {
 	Register(newData *domain.UserModels) (*domain.UserModels, error)
 	Login(email, password string) (*domain.UserModels, string, error)
 	VerifyEmail(email, otp string) error
+	ResendOTP(email string) (*domain.OTPModels, error)
 }
 
 type HandlerAuthInterface interface {
 	Register() echo.HandlerFunc
 	Login() echo.HandlerFunc
 	VerifyEmail() echo.HandlerFunc
+	ResendOTP() echo.HandlerFunc
 }
