@@ -5,6 +5,7 @@ import (
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/article"
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
+	"github.com/capstone-kelompok-7/backend-disappear/module/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
@@ -48,4 +49,14 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface) {
 func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface) {
 	challenges := e.Group("api/v1/challenges")
 	challenges.GET("", h.GetAllChallenges())
+}
+
+func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface) {
+	categories := e.Group("/api/v1/categories")
+	categories.POST("", h.CreateCategory())
+	categories.GET("", h.GetAllCategory())
+	categories.GET("/:name", h.GetCategoryByName())
+	categories.PUT("/:id", h.UpdateCategoryById())
+	categories.DELETE("/:id", h.DeleteCategoryById())
+
 }

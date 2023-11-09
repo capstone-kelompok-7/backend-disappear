@@ -12,6 +12,9 @@ import (
 	hAuth "github.com/capstone-kelompok-7/backend-disappear/module/auth/handler"
 	rAuth "github.com/capstone-kelompok-7/backend-disappear/module/auth/repository"
 	sAuth "github.com/capstone-kelompok-7/backend-disappear/module/auth/service"
+	hCategory "github.com/capstone-kelompok-7/backend-disappear/module/category/handler"
+	rCategory "github.com/capstone-kelompok-7/backend-disappear/module/category/repository"
+	sCategory "github.com/capstone-kelompok-7/backend-disappear/module/category/service"
 	hChallenge "github.com/capstone-kelompok-7/backend-disappear/module/challenge/handler"
 	rChallenge "github.com/capstone-kelompok-7/backend-disappear/module/challenge/repository"
 	sChallenge "github.com/capstone-kelompok-7/backend-disappear/module/challenge/service"
@@ -56,6 +59,10 @@ func main() {
 	productService := service.NewProductService(productRepo)
 	productHandler := handler.NewProductHandler(productService)
 
+	categoryRepo := rCategory.NewCategoryRepository(db)
+	categoryService := sCategory.NewCategoryService(categoryRepo)
+	categoryHandler := hCategory.NewCategoryHandler(categoryService)
+
 	articleRepo := rArticle.NewArticleRepository(db)
 	articleService := sArticle.NewArticleRepository(articleRepo)
 	articleHandler := hArticle.NewArticleHandler(articleService)
@@ -77,5 +84,6 @@ func main() {
 	routes.RouteProduct(e, productHandler)
 	routes.RouteArticle(e, articleHandler)
 	routes.RouteChallenge(e, challengeHandler)
+	routes.RouteCategory(e, categoryHandler)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }
