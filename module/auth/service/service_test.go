@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"testing"
+
 	authMock "github.com/capstone-kelompok-7/backend-disappear/module/auth/mocks"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
 	userMock "github.com/capstone-kelompok-7/backend-disappear/module/users/mocks"
@@ -9,7 +11,6 @@ import (
 	utilsMock "github.com/capstone-kelompok-7/backend-disappear/utils/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func TestRegister(t *testing.T) {
@@ -17,7 +18,7 @@ func TestRegister(t *testing.T) {
 	repo := authMock.NewRepositoryAuthInterface(t)
 	userRepo := userMock.NewRepositoryUserInterface(t)
 	hash := utilsMock.NewHashInterface(t)
-	userService := service2.NewUserService(userRepo)
+	userService := service2.NewUserService(userRepo, hash)
 	service := NewAuthService(repo, jwt, userService, hash)
 	newUser := domain.UserModels{
 		Email:    "user@mail.com",
@@ -76,7 +77,7 @@ func TestLogin(t *testing.T) {
 	repo := authMock.NewRepositoryAuthInterface(t)
 	userRepo := userMock.NewRepositoryUserInterface(t)
 	hash := utilsMock.NewHashInterface(t)
-	userService := service2.NewUserService(userRepo)
+	userService := service2.NewUserService(userRepo, hash)
 	service := NewAuthService(repo, jwt, userService, hash)
 	email := "user@example.com"
 	password := "hashed_password"

@@ -44,7 +44,7 @@ func main() {
 	hash := utils.NewHash()
 
 	userRepo := rUser.NewUserRepository(db)
-	userService := sUser.NewUserService(userRepo)
+	userService := sUser.NewUserService(userRepo, hash)
 	userHandler := hUser.NewUserHandler(userService)
 
 	authRepo := rAuth.NewAuthRepository(db)

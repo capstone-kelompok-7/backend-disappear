@@ -12,6 +12,16 @@ type RepositoryUserInterface struct {
 	mock.Mock
 }
 
+// ChangePassword implements users.RepositoryUserInterface.
+func (*RepositoryUserInterface) ChangePassword(password string) (*domain.UserModels, error) {
+	panic("unimplemented")
+}
+
+// ComparePassword implements users.RepositoryUserInterface.
+func (*RepositoryUserInterface) ComparePassword(oldPass string) (*domain.UserModels, error) {
+	panic("unimplemented")
+}
+
 // GetAllUsers provides a mock function with given fields:
 func (_m *RepositoryUserInterface) GetAllUsers() ([]*domain.UserModels, error) {
 	ret := _m.Called()

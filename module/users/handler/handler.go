@@ -2,7 +2,8 @@ package handler
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
-	user "github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
+	"github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
+	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -50,9 +51,28 @@ func (h *UserHandler) GetUsersByEmail() echo.HandlerFunc {
 	}
 }
 
+func (h *UserHandler) ChangePassword() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req domain.ChangePasswordRequest
+		if err := c.Bind(&req); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal Mengikat Data: Pengikatan data ke struktur gagal")
+		}
+
+		if err := utils.ValidateStruct(req); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
+		user, err := h.service.ChangePassword(req.Email, req.OldPassword, req.NewPassword)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengganti kata sandi: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Kata sandi berhasil diubah", user)
+	}
+}
+
 func (h *UserHandler) GetUsersById() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser := c.Get("CurrentUser").(*user.UserModels)
+		currentUser := c.Get("CurrentUser").(*domain.UserModels)
 		if currentUser.Role != "admin" {
 			return response.SendErrorResponse(c, http.StatusUnauthorized, "Unauthorized: You don't have permission")
 		}
