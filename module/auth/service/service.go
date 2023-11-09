@@ -2,13 +2,14 @@ package service
 
 import (
 	"errors"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/email"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/otp"
-	"time"
 )
 
 type AuthService struct {
@@ -113,4 +114,30 @@ func (s *AuthService) VerifyEmail(email, otp string) error {
 	}
 
 	return nil
+}
+
+func (s *AuthService) ResendOTP(email string) (*domain.OTPModels, error) {
+	user, err := s.userService.GetUsersByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	if user.ID == 0 {
+		return nil, errors.New("user tidak ditemukan pada email ini")
+	}
+	errDeleteOTP := s.repo.DeleteUserOTP(user.ID)
+	if errDeleteOTP != nil {
+		return nil, errDeleteOTP
+	}
+	generateOTP := otp.GenerateRandomOTP(6)
+	newOTP := &domain.OTPModels{
+		UserID:     int(user.ID),
+		OTP:        generateOTP,
+		ExpiredOTP: time.Now().Add(2 * time.Minute).Unix(),
+	}
+
+	_, err = s.repo.SaveOTP(newOTP)
+	if err != nil {
+		return nil, err
+	}
+	return newOTP, nil
 }

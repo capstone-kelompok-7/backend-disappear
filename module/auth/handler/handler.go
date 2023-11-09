@@ -1,15 +1,17 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth/domain"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users"
 	user "github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/email"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 type AuthHandler struct {
@@ -102,5 +104,33 @@ func (h *AuthHandler) VerifyEmail() echo.HandlerFunc {
 		}
 
 		return response.SendStatusOkResponse(c, "Email berhasil diverifikasi!, Silahkan login.")
+	}
+}
+
+func (h *AuthHandler) ResendOTP() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var emailRequest domain.ResendOTPRequest
+
+		if err := c.Bind(&emailRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+
+		if err := utils.ValidateStruct(emailRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
+		newOTP, err := h.service.ResendOTP(emailRequest.Email)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengirim OTP: "+err.Error())
+		}
+
+		err = email.EmaiilService(emailRequest.Email, newOTP.OTP)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengirim OTP ke email: "+err.Error())
+
+		}
+
+		return response.SendStatusOkResponse(c, "OTP berhasil dikirim kembali!, Silahkan cek email anda.")
+
 	}
 }

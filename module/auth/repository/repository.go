@@ -1,10 +1,11 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/users/domain"
 	"gorm.io/gorm"
-	"time"
 )
 
 type AuthRepository struct {
@@ -63,5 +64,13 @@ func (r *AuthRepository) DeleteOTP(otp *domain.OTPModels) error {
 	if err := r.db.Delete(&otp).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *AuthRepository) DeleteUserOTP(userId uint64) error {
+	if err := r.db.Where("user_id = ?", userId).Delete(&domain.OTPModels{}).Error; err != nil {
+		return err
+	}
+
 	return nil
 }

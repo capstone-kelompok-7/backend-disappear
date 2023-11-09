@@ -14,3 +14,7 @@ type EmailRequest struct {
 	Email string `form:"email" json:"email" validate:"required"`
 	OTP   string `form:"otp" json:"otp" validate:"required"`
 }
+
+type ResendOTPRequest struct {
+	Email string `form:"email" json:"email" validate:"required"`
+}
