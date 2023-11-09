@@ -2,6 +2,7 @@ package database
 
 import (
 	article "github.com/capstone-kelompok-7/backend-disappear/module/article/domain"
+	category "github.com/capstone-kelompok-7/backend-disappear/module/category/domain"
 	challenge "github.com/capstone-kelompok-7/backend-disappear/module/challenge/domain"
 	products "github.com/capstone-kelompok-7/backend-disappear/module/product/domain"
 	review "github.com/capstone-kelompok-7/backend-disappear/module/review/domain"
@@ -22,6 +23,7 @@ func Migrate(db *gorm.DB) {
 		article.Articles{},
 		users.OTPModels{},
 		challenge.ChallengeModels{},
+		category.CategoryModels{},
 	)
 
 	if err != nil {
