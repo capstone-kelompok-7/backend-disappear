@@ -6,8 +6,8 @@ import (
 	authMock "github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/mocks"
 	"testing"
 
-	userMock "github.com/capstone-kelompok-7/backend-disappear/module/users/mocks"
-	service2 "github.com/capstone-kelompok-7/backend-disappear/module/users/service"
+	userMock "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/mocks"
+	service2 "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/service"
 	utilsMock "github.com/capstone-kelompok-7/backend-disappear/utils/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
