@@ -18,3 +18,13 @@ type EmailRequest struct {
 type ResendOTPRequest struct {
 	Email string `form:"email" json:"email" validate:"required"`
 }
+
+type ForgotPasswordRequest struct {
+	Email string `form:"email" json:"email" validate:"required"`
+}
+
+type ResetPasswordRequest struct {
+	Email           string `form:"email" json:"email"`
+	NewPassword     string `json:"new_password" validate:"required,min=6"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,min=6"`
+}

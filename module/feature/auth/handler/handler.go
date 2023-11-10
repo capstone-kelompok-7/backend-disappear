@@ -134,3 +134,66 @@ func (h *AuthHandler) ResendOTP() echo.HandlerFunc {
 
 	}
 }
+
+func (h *AuthHandler) ForgotPassword() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var forgotPasswordRequest dto2.ForgotPasswordRequest
+		if err := c.Bind(&forgotPasswordRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal Mengikat Data: Pengikatan data ke struktur gagal")
+		}
+
+		if err := utils.ValidateStruct(forgotPasswordRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
+		newOTP, err := h.service.ResendOTP(forgotPasswordRequest.Email)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengirim OTP: "+err.Error())
+		}
+
+		err = email.EmaiilService(forgotPasswordRequest.Email, newOTP.OTP)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengirim OTP ke email: "+err.Error())
+
+		}
+
+		return response.SendStatusOkResponse(c, "Permintaan OTP berhasil dikirim")
+	}
+}
+
+func (h *AuthHandler) VerifyOTP() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var emailRequest dto2.EmailRequest
+
+		if err := c.Bind(&emailRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		if err := utils.ValidateStruct(emailRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
+		if err := h.service.VerifyEmail(emailRequest.Email, emailRequest.OTP); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
+		return response.SendStatusOkResponse(c, "Verifikasi OTP berhasil")
+	}
+}
+
+func (h *AuthHandler) ResetPassword() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var resetPasswordRequest dto2.ResetPasswordRequest
+		if err := c.Bind(&resetPasswordRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal Mengikat Data: Pengikatan data ke struktur gagal")
+		}
+
+		if err := utils.ValidateStruct(resetPasswordRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+		err := h.service.ResetPassword(resetPasswordRequest.Email, resetPasswordRequest.NewPassword, resetPasswordRequest.ConfirmPassword)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mereset kata sandi: "+err.Error())
+		}
+		return response.SendStatusOkResponse(c, "Reset kata sandi berhasil")
+	}
+}

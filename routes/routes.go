@@ -19,6 +19,9 @@ func RouteAuth(e *echo.Echo, h auth.HandlerAuthInterface) {
 	e.POST("api/v1/auth/login", h.Login())
 	e.POST("/api/v1/auth/verify", h.VerifyEmail())
 	e.POST("/api/v1/auth/resend-otp", h.ResendOTP())
+	e.POST("/api/v1/auth/forgot-password", h.ForgotPassword())
+	e.POST("/api/v1/auth/forgot-password/verify", h.VerifyOTP())
+	e.POST("/api/v1/auth/forgot-password/reset", h.ResetPassword())
 }
 
 func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

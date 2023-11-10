@@ -72,7 +72,10 @@ func main() {
 	challengeHandler := hChallenge.NewChallengeHandler(challengeService)
 
 	e.Pre(middleware.RemoveTrailingSlash())
-	e.Use(middleware.CORS())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
 	e.Use(middlewares.ConfigureLogging())
 
 	e.GET("/", func(c echo.Context) error {

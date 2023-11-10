@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
 	"time"
@@ -140,4 +141,29 @@ func (s *AuthService) ResendOTP(email string) (*entities.OTPModels, error) {
 		return nil, err
 	}
 	return newOTP, nil
+}
+
+func (s *AuthService) ResetPassword(email, newPassword, confirmPass string) error {
+	user, err := s.userService.GetUsersByEmail(email)
+	if err != nil {
+		return err
+	}
+	if user.ID == 0 {
+		return errors.New("user tidak ditemukan")
+	}
+
+	if newPassword != confirmPass {
+		return errors.New("konfirmasi password tidak cocok")
+	}
+
+	newPasswordHash, err := s.hash.GenerateHash(newPassword)
+	if err != nil {
+		return fmt.Errorf("gagal melakukan hash password baru: %w", err)
+	}
+
+	err = s.repo.ResetPassword(email, newPasswordHash)
+	if err != nil {
+		return fmt.Errorf("gagal reset pass: %w", err)
+	}
+	return nil
 }

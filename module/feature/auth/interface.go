@@ -13,6 +13,7 @@ type RepositoryAuthInterface interface {
 	FindValidOTP(userID int, otp string) (*entities.OTPModels, error)
 	DeleteOTP(otp *entities.OTPModels) error
 	DeleteUserOTP(userId uint64) error
+	ResetPassword(email, newPasswordHash string) error
 }
 
 type ServiceAuthInterface interface {
@@ -20,6 +21,7 @@ type ServiceAuthInterface interface {
 	Login(email, password string) (*entities.UserModels, string, error)
 	VerifyEmail(email, otp string) error
 	ResendOTP(email string) (*entities.OTPModels, error)
+	ResetPassword(email, newPassword, confirmPass string) error
 }
 
 type HandlerAuthInterface interface {
@@ -27,4 +29,7 @@ type HandlerAuthInterface interface {
 	Login() echo.HandlerFunc
 	VerifyEmail() echo.HandlerFunc
 	ResendOTP() echo.HandlerFunc
+	VerifyOTP() echo.HandlerFunc
+	ForgotPassword() echo.HandlerFunc
+	ResetPassword() echo.HandlerFunc
 }
