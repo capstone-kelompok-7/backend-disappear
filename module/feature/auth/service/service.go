@@ -55,7 +55,7 @@ func (s *AuthService) Register(newData *entities.UserModels) (*entities.UserMode
 	if errOtp != nil {
 		return nil, errOtp
 	}
-	err = email.EmaiilService(result.Email, generateOTP)
+	err = email.EmailService(result.Email, generateOTP)
 	if err != nil {
 		return nil, err
 	}

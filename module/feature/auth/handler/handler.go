@@ -124,7 +124,7 @@ func (h *AuthHandler) ResendOTP() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengirim OTP: "+err.Error())
 		}
 
-		err = email.EmaiilService(emailRequest.Email, newOTP.OTP)
+		err = email.EmailService(emailRequest.Email, newOTP.OTP)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengirim OTP ke email: "+err.Error())
 
@@ -151,7 +151,7 @@ func (h *AuthHandler) ForgotPassword() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengirim OTP: "+err.Error())
 		}
 
-		err = email.EmaiilService(forgotPasswordRequest.Email, newOTP.OTP)
+		err = email.EmailService(forgotPasswordRequest.Email, newOTP.OTP)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengirim OTP ke email: "+err.Error())
 
