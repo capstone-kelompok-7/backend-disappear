@@ -8,17 +8,22 @@ import (
 )
 
 type CategoryService struct {
-	categoryRepo category.RepositoryCategoryInterface
+	repo category.RepositoryCategoryInterface
 }
 
 func NewCategoryService(categoryRepo category.RepositoryCategoryInterface) category.ServiceCategoryInterface {
 	return &CategoryService{
-		categoryRepo: categoryRepo,
+		repo: categoryRepo,
 	}
 }
 
 func (s *CategoryService) CreateCategory(categoryData *entities.CategoryModels) (*entities.CategoryModels, error) {
-	createdCategory, err := s.categoryRepo.CreateCategory(categoryData)
+	value := &entities.CategoryModels{
+		Name:  categoryData.Name,
+		Photo: categoryData.Photo,
+	}
+
+	createdCategory, err := s.repo.CreateCategory(value)
 	if err != nil {
 		return nil, err
 	}
@@ -27,12 +32,12 @@ func (s *CategoryService) CreateCategory(categoryData *entities.CategoryModels) 
 }
 
 func (s *CategoryService) GetAllCategory(page, perPage int) ([]*entities.CategoryModels, int64, error) {
-	categories, err := s.categoryRepo.FindAll(page, perPage)
+	categories, err := s.repo.FindAll(page, perPage)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	totalItems, err := s.categoryRepo.GetTotalCategoryCount()
+	totalItems, err := s.repo.GetTotalCategoryCount()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -41,12 +46,12 @@ func (s *CategoryService) GetAllCategory(page, perPage int) ([]*entities.Categor
 }
 
 func (s *CategoryService) GetCategoryByName(page int, perPage int, name string) ([]*entities.CategoryModels, int64, error) {
-	categories, err := s.categoryRepo.FindByName(page, perPage, name)
+	categories, err := s.repo.FindByName(page, perPage, name)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	totalItems, err := s.categoryRepo.GetTotalCategoryCountByName(name)
+	totalItems, err := s.repo.GetTotalCategoryCountByName(name)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -55,6 +60,11 @@ func (s *CategoryService) GetCategoryByName(page int, perPage int, name string) 
 }
 
 func (s *CategoryService) CalculatePaginationValues(page int, totalItems int, perPage int) (int, int) {
+	pageInt := page
+	if pageInt <= 0 {
+		pageInt = 1
+	}
+
 	totalPages := int(math.Ceil(float64(totalItems) / float64(perPage)))
 	if page > totalPages {
 		page = totalPages
@@ -79,38 +89,46 @@ func (s *CategoryService) GetPrevPage(currentPage int) int {
 	return 1
 }
 
-func (s *CategoryService) UpdateCategoryById(id int, updatedCategory *entities.CategoryModels) (*entities.CategoryModels, error) {
-	existingCategory, err := s.categoryRepo.GetCategoryById(id)
+func (s *CategoryService) UpdateCategoryById(id uint64, updatedCategory *entities.CategoryModels) (*entities.CategoryModels, error) {
+	existingCategory, err := s.repo.GetCategoryById(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("kategori tidak ditemukan")
 	}
 
 	if existingCategory == nil {
-		return nil, errors.New("Kategori tidak ditemukan")
+		return nil, errors.New("kategori tidak ditemukan")
 	}
 
-	updatedCategory, err = s.categoryRepo.UpdateCategoryById(id, updatedCategory)
+	updatedCategory, err = s.repo.UpdateCategoryById(id, updatedCategory)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("gagal mengubah kategori ")
 	}
 
 	return updatedCategory, nil
 }
 
-func (s *CategoryService) DeleteCategoryById(id int) error {
-	existingCategory, err := s.categoryRepo.GetCategoryById(id)
+func (s *CategoryService) DeleteCategoryById(id uint64) error {
+	existingCategory, err := s.repo.GetCategoryById(id)
 	if err != nil {
-		return err
+		return errors.New("Kategori tidak ditemukan")
 	}
 
 	if existingCategory == nil {
 		return errors.New("Kategori tidak ditemukan")
 	}
 
-	err = s.categoryRepo.DeleteCategoryById(id)
+	err = s.repo.DeleteCategoryById(id)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *CategoryService) GetCategoryById(id uint64) (*entities.CategoryModels, error) {
+	result, err := s.repo.GetCategoryById(id)
+	if err != nil {
+		return nil, errors.New("kategori tidak ditemukan")
+	}
+	return result, nil
 }

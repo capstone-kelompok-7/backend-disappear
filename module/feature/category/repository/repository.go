@@ -33,18 +33,15 @@ func (r *CategoryRepository) GetCategoryByName(name string) ([]*entities.Categor
 	return categories, nil
 }
 
-func (r *CategoryRepository) GetCategoryById(id int) (*entities.CategoryModels, error) {
+func (r *CategoryRepository) GetCategoryById(id uint64) (*entities.CategoryModels, error) {
 	var category entities.CategoryModels
-	if err := r.db.First(&category, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
+	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&category).Error; err != nil {
 		return nil, err
 	}
 	return &category, nil
 }
 
-func (r *CategoryRepository) UpdateCategoryById(id int, updatedCategory *entities.CategoryModels) (*entities.CategoryModels, error) {
+func (r *CategoryRepository) UpdateCategoryById(id uint64, updatedCategory *entities.CategoryModels) (*entities.CategoryModels, error) {
 	var category entities.CategoryModels
 	if err := r.db.First(&category, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -60,7 +57,7 @@ func (r *CategoryRepository) UpdateCategoryById(id int, updatedCategory *entitie
 	return updatedCategory, nil
 }
 
-func (r *CategoryRepository) DeleteCategoryById(id int) error {
+func (r *CategoryRepository) DeleteCategoryById(id uint64) error {
 	var category entities.CategoryModels
 	if err := r.db.First(&category, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

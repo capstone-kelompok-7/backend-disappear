@@ -57,12 +57,12 @@ func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface) {
 	challenges.GET("", h.GetAllChallenges())
 }
 
-func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface) {
+func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	categories := e.Group("/api/v1/categories")
-	categories.POST("", h.CreateCategory())
+	categories.POST("", h.CreateCategory(), middlewares.AuthMiddleware(jwtService, userService))
 	categories.GET("", h.GetAllCategory())
 	categories.GET("/:name", h.GetCategoryByName())
-	categories.PUT("/:id", h.UpdateCategoryById())
-	categories.DELETE("/:id", h.DeleteCategoryById())
+	categories.PUT("/:id", h.UpdateCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
+	categories.DELETE("/:id", h.DeleteCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
 
 }
