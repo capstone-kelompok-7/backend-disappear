@@ -139,7 +139,7 @@ func (h *AuthHandler) ForgotPassword() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var forgotPasswordRequest dto2.ForgotPasswordRequest
 		if err := c.Bind(&forgotPasswordRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal Mengikat Data: Pengikatan data ke struktur gagal")
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
 		if err := utils.ValidateStruct(forgotPasswordRequest); err != nil {
@@ -171,12 +171,12 @@ func (h *AuthHandler) VerifyOTP() echo.HandlerFunc {
 		if err := utils.ValidateStruct(emailRequest); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
-
-		if err := h.service.VerifyEmail(emailRequest.Email, emailRequest.OTP); err != nil {
+		result, err := h.service.VerifyOTP(emailRequest.Email, emailRequest.OTP)
+		if err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
 
-		return response.SendStatusOkResponse(c, "Verifikasi OTP berhasil")
+		return response.SendSuccessResponse(c, "Verifikasi OTP berhasil", result)
 	}
 }
 
@@ -190,7 +190,8 @@ func (h *AuthHandler) ResetPassword() echo.HandlerFunc {
 		if err := utils.ValidateStruct(resetPasswordRequest); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
-		err := h.service.ResetPassword(resetPasswordRequest.Email, resetPasswordRequest.NewPassword, resetPasswordRequest.ConfirmPassword)
+		currentUser := c.Get("CurrentUser").(*user.UserModels)
+		err := h.service.ResetPassword(currentUser.Email, resetPasswordRequest.NewPassword, resetPasswordRequest.ConfirmPassword)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mereset kata sandi: "+err.Error())
 		}

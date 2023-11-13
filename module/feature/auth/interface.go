@@ -22,6 +22,7 @@ type ServiceAuthInterface interface {
 	VerifyEmail(email, otp string) error
 	ResendOTP(email string) (*entities.OTPModels, error)
 	ResetPassword(email, newPassword, confirmPass string) error
+	VerifyOTP(email, otp string) (string, error)
 }
 
 type HandlerAuthInterface interface {

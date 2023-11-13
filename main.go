@@ -82,7 +82,7 @@ func main() {
 		return c.String(http.StatusOK, "Hello, Disappear!")
 	})
 	routes.RouteUser(e, userHandler, jwtService, userService)
-	routes.RouteAuth(e, authHandler)
+	routes.RouteAuth(e, authHandler, jwtService, userService)
 	routes.RouteVoucher(e, voucherHandler)
 	routes.RouteProduct(e, productHandler)
 	routes.RouteArticle(e, articleHandler)
