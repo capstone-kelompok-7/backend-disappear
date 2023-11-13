@@ -178,7 +178,7 @@ func (s *AuthService) VerifyOTP(email, otp string) (string, error) {
 		return "", err
 	}
 
-	if isValidOTP == nil {
+	if isValidOTP.ID == 0 {
 		return "", errors.New("Invalid atau OTP telah kadaluarsa")
 	}
 

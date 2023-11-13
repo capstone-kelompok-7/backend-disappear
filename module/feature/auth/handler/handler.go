@@ -171,11 +171,14 @@ func (h *AuthHandler) VerifyOTP() echo.HandlerFunc {
 		if err := utils.ValidateStruct(emailRequest); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
-		result, err := h.service.VerifyOTP(emailRequest.Email, emailRequest.OTP)
+		accessToken, err := h.service.VerifyOTP(emailRequest.Email, emailRequest.OTP)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal verifikasi OTP: "+err.Error())
 		}
 
+		result := &dto2.VerifyOTPResponse{
+			AccessToken: accessToken,
+		}
 		return response.SendSuccessResponse(c, "Verifikasi OTP berhasil", result)
 	}
 }
