@@ -119,10 +119,7 @@ func (s *AuthService) VerifyEmail(email, otp string) error {
 func (s *AuthService) ResendOTP(email string) (*entities.OTPModels, error) {
 	user, err := s.userService.GetUsersByEmail(email)
 	if err != nil {
-		return nil, err
-	}
-	if user.ID == 0 {
-		return nil, errors.New("user tidak ditemukan pada email ini")
+		return nil, errors.New("pengguna tidak ditemukan")
 	}
 	errDeleteOTP := s.repo.DeleteUserOTP(user.ID)
 	if errDeleteOTP != nil {
@@ -140,4 +137,67 @@ func (s *AuthService) ResendOTP(email string) (*entities.OTPModels, error) {
 		return nil, err
 	}
 	return newOTP, nil
+}
+
+func (s *AuthService) ResetPassword(email, newPassword, confirmPass string) error {
+	user, err := s.userService.GetUsersByEmail(email)
+	if err != nil {
+		return errors.New("user tidak ditemukan")
+	}
+	if user.ID == 0 {
+		return errors.New("user tidak ditemukan")
+	}
+
+	if newPassword != confirmPass {
+		return errors.New("konfirmasi password tidak cocok")
+	}
+
+	newPasswordHash, err := s.hash.GenerateHash(newPassword)
+	if err != nil {
+		return errors.New("gagal melakukan hash password baru")
+	}
+
+	err = s.repo.ResetPassword(email, newPasswordHash)
+	if err != nil {
+		return errors.New("gagal reset pass: ")
+	}
+	return nil
+}
+
+func (s *AuthService) VerifyOTP(email, otp string) (string, error) {
+	user, err := s.userService.GetUsersByEmail(email)
+	if err != nil {
+		return "", err
+	}
+	if user == nil {
+		return "", errors.New("user tidak ditemukan")
+	}
+
+	isValidOTP, err := s.repo.FindValidOTP(int(user.ID), otp)
+	if err != nil {
+		return "", err
+	}
+
+	if isValidOTP.ID == 0 {
+		return "", errors.New("Invalid atau OTP telah kadaluarsa")
+	}
+
+	user.IsVerified = true
+
+	_, errUpdate := s.repo.UpdateUser(user)
+	if errUpdate != nil {
+		return "", errors.New("Gagal verifikasi email")
+	}
+
+	errDeleteOTP := s.repo.DeleteOTP(isValidOTP)
+	if errDeleteOTP != nil {
+		return "", errors.New("Gagal delete OTP")
+	}
+
+	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Role, user.Email)
+	if err != nil {
+		return "", errors.New("Gagal generate access token")
+	}
+
+	return accessToken, nil
 }

@@ -74,3 +74,11 @@ func (r *AuthRepository) DeleteUserOTP(userId uint64) error {
 
 	return nil
 }
+
+func (r *AuthRepository) ResetPassword(email, newPasswordHash string) error {
+	var user entities.UserModels
+	if err := r.db.Model(&user).Where("email = ?", email).Update("password", newPasswordHash).Error; err != nil {
+		return err
+	}
+	return nil
+}
