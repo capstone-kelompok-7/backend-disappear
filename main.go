@@ -8,6 +8,9 @@ import (
 	hAuth "github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/handler"
 	rAuth "github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/repository"
 	sAuth "github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/service"
+	hCarousel "github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel/handler"
+	rCarousel "github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel/repository"
+	sCarousel "github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel/service"
 	hCategory "github.com/capstone-kelompok-7/backend-disappear/module/feature/category/handler"
 	rCategory "github.com/capstone-kelompok-7/backend-disappear/module/feature/category/repository"
 	sCategory "github.com/capstone-kelompok-7/backend-disappear/module/feature/category/service"
@@ -71,6 +74,10 @@ func main() {
 	challengeService := sChallenge.NewChallengeService(challengeRepo)
 	challengeHandler := hChallenge.NewChallengeHandler(challengeService)
 
+	carouselRepo := rCarousel.NewCarouselRepository(db)
+	carouselService := sCarousel.NewCarouselService(carouselRepo)
+	carouselHandler := hCarousel.NewCarouselHandler(carouselService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -88,5 +95,6 @@ func main() {
 	routes.RouteArticle(e, articleHandler)
 	routes.RouteChallenge(e, challengeHandler)
 	routes.RouteCategory(e, categoryHandler, jwtService, userService)
+	routes.RouteCarousel(e, carouselHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }
