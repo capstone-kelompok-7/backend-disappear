@@ -39,10 +39,7 @@ func (h *CategoryHandler) CreateCategory() echo.HandlerFunc {
 				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
 			}
 			defer func(fileToUpload multipart.File) {
-				err := fileToUpload.Close()
-				if err != nil {
-
-				}
+				_ = fileToUpload.Close()
 			}(fileToUpload)
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
@@ -146,10 +143,8 @@ func (h *CategoryHandler) UpdateCategoryById() echo.HandlerFunc {
 				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
 			}
 			defer func(fileToUpload multipart.File) {
-				err := fileToUpload.Close()
-				if err != nil {
+				_ = fileToUpload.Close()
 
-				}
 			}(fileToUpload)
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
@@ -170,6 +165,9 @@ func (h *CategoryHandler) UpdateCategoryById() echo.HandlerFunc {
 			Photo: uploadedURL,
 		}
 		updatedCategory, err := h.service.UpdateCategoryById(categoryID, newData)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal update category:"+err.Error())
+		}
 		return response.SendSuccessResponse(c, "Berhasil mengubah kategori", dto.FormatCategory(updatedCategory))
 	}
 }
