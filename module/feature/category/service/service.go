@@ -60,9 +60,8 @@ func (s *CategoryService) GetCategoryByName(page int, perPage int, name string) 
 }
 
 func (s *CategoryService) CalculatePaginationValues(page int, totalItems int, perPage int) (int, int) {
-	pageInt := page
-	if pageInt <= 0 {
-		pageInt = 1
+	if page <= 0 {
+		page = 1
 	}
 
 	totalPages := int(math.Ceil(float64(totalItems) / float64(perPage)))
