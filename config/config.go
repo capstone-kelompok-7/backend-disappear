@@ -23,10 +23,7 @@ type Config struct {
 }
 
 func InitConfig() *Config {
-	var res = new(Config)
-	res = loadConfig()
-
-	return res
+	return loadConfig()
 
 }
 
