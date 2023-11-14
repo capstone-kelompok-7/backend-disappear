@@ -34,13 +34,13 @@ func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTI
 	users.GET("/:id", h.GetUsersById(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
-func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface) {
-	voucher := e.Group("api/v1/vouchers")
-	voucher.POST("", h.CreateVoucher())
-	voucher.GET("", h.GetAllVouchers())
-	voucher.PUT("/:voucher_id", h.EditVoucherById())
-	voucher.GET("/:voucher_id", h.GetVoucherById())
-	voucher.DELETE("/:voucher_id", h.DeleteVoucherById())
+func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	vouchers := e.Group("api/v1/vouchers")
+	vouchers.POST("", h.CreateVoucher(), middlewares.AuthMiddleware(jwtService, userService))
+	vouchers.GET("", h.GetAllVouchers())
+	vouchers.PUT("/:id", h.UpdateVouchers(), middlewares.AuthMiddleware(jwtService, userService))
+	vouchers.GET("/:id", h.GetVoucherById())
+	vouchers.DELETE("/:id", h.DeleteVoucherById(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteProduct(e *echo.Echo, h product.HandlerProductInterface) {

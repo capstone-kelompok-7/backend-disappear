@@ -1,20 +1,22 @@
 package entities
 
-import (
-	"gorm.io/gorm"
-)
+import "time"
 
 type VoucherModels struct {
-	gorm.Model
-	ID          uint64  `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id" `
-	Name        string  `gorm:"column:name;type:VARCHAR(255)" json:"name" `
-	Code        string  `gorm:"column:code;type:VARCHAR(255);unique" json:"code" `
-	Category    string  `gorm:"column:category;type:VARCHAR(255)" json:"category" `
-	Description string  `gorm:"column:description;type:TEXT" json:"description" `
-	Discouunt   int     `gorm:"column:discount;type:INT" json:"discount" `
-	StartDate   string  `gorm:"column:start_date;type:DATETIME" json:"start_date" `
-	EndDate     string  `gorm:"column:end_date; type:DATETIME" json:"end_date" `
-	MinAmount   float64 `gorm:"column:min_amount;type:DECIMAL(10, 2)" json:"min_amount" `
+	ID          uint64     `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id" `
+	Name        string     `gorm:"column:name;type:VARCHAR(255)" json:"name" `
+	Code        string     `gorm:"column:code;type:VARCHAR(255);unique" json:"code" `
+	Category    string     `gorm:"column:category;type:VARCHAR(255)" json:"category" `
+	Description string     `gorm:"column:description;type:TEXT" json:"description" `
+	Discount    uint64     `gorm:"column:discount;type:BIGINT UNSIGNED" json:"discount" `
+	StartDate   time.Time  `gorm:"column:start_date;type:DATETIME" json:"start_date" `
+	EndDate     time.Time  `gorm:"column:end_date; type:DATETIME" json:"end_date" `
+	MinPurchase uint64     `gorm:"column:min_purchase;type:BIGINT UNSIGNED" json:"min_purchase" `
+	Stock       uint64     `gorm:"column:stock;type:BIGINT UNSIGNED" json:"stock" `
+	Status      string     `gorm:"column:status;type:VARCHAR(255)" json:"status" `
+	CreatedAt   time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	UpdatedAt   time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	DeletedAt   *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
 }
 
 func (VoucherModels) TableName() string {
