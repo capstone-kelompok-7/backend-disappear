@@ -71,4 +71,7 @@ func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService
 func RouteCarousel(e *echo.Echo, h carousel.HandlerCarouselInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	carousels := e.Group("/api/v1/carousel")
 	carousels.GET("", h.GetAllCarousels())
+	carousels.POST("", h.CreateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
+	carousels.PUT("/:id", h.UpdateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
+	carousels.DELETE("/:id", h.DeleteCarousel(), middlewares.AuthMiddleware(jwtService, userService))
 }

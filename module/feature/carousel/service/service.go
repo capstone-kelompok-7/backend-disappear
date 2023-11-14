@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel"
 	"math"
@@ -71,4 +72,44 @@ func (s *CarouselService) GetCarouselsByName(page, perPage int, name string) ([]
 	}
 
 	return carousels, totalItems, nil
+}
+
+func (s *CarouselService) CreateCarousel(carouselData entities.CarouselModels) (entities.CarouselModels, error) {
+	createdCategory, err := s.repo.CreateCarousel(carouselData)
+	if err != nil {
+		return createdCategory, err
+	}
+	return createdCategory, nil
+}
+
+func (s *CarouselService) GetCarouselById(id uint64) (entities.CarouselModels, error) {
+	carousels, err := s.repo.GetCarouselById(id)
+	if err != nil {
+		return carousels, err
+	}
+	return carousels, nil
+}
+
+func (s *CarouselService) UpdateCarousel(id uint64, updatedCarousel entities.CarouselModels) (entities.CarouselModels, error) {
+	_, err := s.repo.GetCarouselById(id)
+	if err != nil {
+		return updatedCarousel, errors.New("carousel tidak ditemukan")
+	}
+	result, err := s.repo.UpdateCarousel(id, updatedCarousel)
+	if err != nil {
+		return updatedCarousel, errors.New("gagal update carousel")
+	}
+	return result, nil
+
+}
+
+func (s *CarouselService) DeleteCarousel(id uint64) error {
+	_, err := s.repo.GetCarouselById(id)
+	if err != nil {
+		return errors.New("carousel tidak ditemukan")
+	}
+	if err := s.repo.DeleteCarousel(id); err != nil {
+		return err
+	}
+	return nil
 }
