@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/article"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
@@ -65,4 +66,9 @@ func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService
 	categories.PUT("/:id", h.UpdateCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
 	categories.DELETE("/:id", h.DeleteCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
 
+}
+
+func RouteCarousel(e *echo.Echo, h carousel.HandlerCarouselInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	carousels := e.Group("/api/v1/carousel")
+	carousels.GET("", h.GetAllCarousels())
 }
