@@ -10,6 +10,10 @@ type RepositoryCarouselInterface interface {
 	GetTotalCarouselCountByName(name string) (int64, error)
 	FindAll(page, perPage int) ([]entities.CarouselModels, error)
 	GetTotalCarouselCount() (int64, error)
+	CreateCarousel(carousel entities.CarouselModels) (entities.CarouselModels, error)
+	UpdateCarousel(id uint64, updatedCarousel entities.CarouselModels) (entities.CarouselModels, error)
+	DeleteCarousel(id uint64) error
+	GetCarouselById(id uint64) (entities.CarouselModels, error)
 }
 
 type ServiceCarouselInterface interface {
@@ -18,7 +22,13 @@ type ServiceCarouselInterface interface {
 	GetNextPage(currentPage, totalPages int) int
 	GetPrevPage(currentPage int) int
 	GetCarouselsByName(page, perPage int, name string) ([]entities.CarouselModels, int64, error)
+	CreateCarousel(carouselData entities.CarouselModels) (entities.CarouselModels, error)
+	UpdateCarousel(id uint64, updatedCarousel entities.CarouselModels) (entities.CarouselModels, error)
+	DeleteCarousel(id uint64) error
 }
 type HandlerCarouselInterface interface {
 	GetAllCarousels() echo.HandlerFunc
+	CreateCarousel() echo.HandlerFunc
+	DeleteCarousel() echo.HandlerFunc
+	UpdateCarousel() echo.HandlerFunc
 }
