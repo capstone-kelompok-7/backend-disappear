@@ -9,13 +9,17 @@ import (
 )
 
 type Config struct {
-	ServerPort int
-	DBPort     int
-	DBHost     string
-	DBUser     string
-	DBPass     string
-	DBName     string
-	Secret     string
+	ServerPort  int
+	DBPort      int
+	DBHost      string
+	DBUser      string
+	DBPass      string
+	DBName      string
+	Secret      string
+	CCName      string
+	CCAPIKey    string
+	CCAPISecret string
+	CCFolder    string
 }
 
 func InitConfig() *Config {
@@ -69,6 +73,20 @@ func loadConfig() *Config {
 	}
 	if val, found := os.LookupEnv("SECRET"); found {
 		res.Secret = val
+	}
+	if value, found := os.LookupEnv("CCNAME"); found {
+		res.CCName = value
+	}
+
+	if value, found := os.LookupEnv("CCAPIKEY"); found {
+		res.CCAPIKey = value
+	}
+
+	if value, found := os.LookupEnv("CCAPISECRET"); found {
+		res.CCAPISecret = value
+	}
+	if value, found := os.LookupEnv("CCFOLDER"); found {
+		res.CCFolder = value
 	}
 	return res
 }

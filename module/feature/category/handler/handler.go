@@ -4,6 +4,9 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category/dto"
+	"github.com/capstone-kelompok-7/backend-disappear/utils"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/upload"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 
@@ -12,33 +15,57 @@ import (
 )
 
 type CategoryHandler struct {
-	categoryService category.ServiceCategoryInterface
+	service category.ServiceCategoryInterface
 }
 
-func NewCategoryHandler(categoryService category.ServiceCategoryInterface) category.HandlerCategoryInterface {
+func NewCategoryHandler(service category.ServiceCategoryInterface) category.HandlerCategoryInterface {
 	return &CategoryHandler{
-		categoryService: categoryService,
+		service: service,
 	}
 }
 
 func (h *CategoryHandler) CreateCategory() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var categoryData entities.CategoryModels
-		if err := c.Bind(&categoryData); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": "Gagal memparsing data kategori"})
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
 		}
+		categoryRequest := new(dto.CreateCategoryRequest)
+		file, err := c.FormFile("photo")
+		var uploadedURL string
+		if err == nil {
+			fileToUpload, err := file.Open()
+			if err != nil {
+				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+			}
+			defer func(fileToUpload multipart.File) {
+				err := fileToUpload.Close()
+				if err != nil {
 
-		createdCategory, err := h.categoryService.CreateCategory(&categoryData)
+				}
+			}(fileToUpload)
 
-		if err != nil {
-			if err.Error() == "Kategori dengan nama yang sama sudah ada" {
-				return c.JSON(http.StatusConflict, map[string]interface{}{"message": "Kategori sudah ada"})
-			} else {
-				return c.JSON(http.StatusInternalServerError, map[string]interface{}{"message": "Gagal membuat kategori"})
+			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
+			if err != nil {
+				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
+		if err := c.Bind(categoryRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
 
-		return c.JSON(http.StatusCreated, map[string]interface{}{"message": "Kategori berhasil dibuat", "data": createdCategory})
+		if err := utils.ValidateStruct(categoryRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+		newCategory := &entities.CategoryModels{
+			Name:  categoryRequest.Name,
+			Photo: uploadedURL,
+		}
+		createdCategory, err := h.service.CreateCategory(newCategory)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil menambahkan kategory", dto.FormatCategory(createdCategory))
 	}
 }
 
@@ -46,29 +73,29 @@ func (h *CategoryHandler) GetAllCategory() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
-		perPage := 10
+		perPage := 8
 
 		var categories []*entities.CategoryModels
 		var totalItems int64
 		var err error
 		search := c.QueryParam("search")
 		if search != "" {
-			categories, totalItems, err = h.categoryService.GetCategoryByName(page, perPage, search)
+			categories, totalItems, err = h.service.GetCategoryByName(page, perPage, search)
 			if err != nil {
 				c.Logger().Error("handler: failed to fetch categories by name:", err.Error())
 				return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 			}
 		} else {
-			categories, totalItems, err = h.categoryService.GetAllCategory(pageConv, perPage)
+			categories, totalItems, err = h.service.GetAllCategory(pageConv, perPage)
 		}
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all categories:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 		}
 
-		current_page, total_pages := h.categoryService.CalculatePaginationValues(pageConv, int(totalItems), perPage)
-		nextPage := h.categoryService.GetNextPage(current_page, total_pages)
-		prevPage := h.categoryService.GetPrevPage(current_page)
+		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(current_page, total_pages)
+		prevPage := h.service.GetPrevPage(current_page)
 
 		return response.Pagination(c, dto.FormatterCategory(categories), current_page, total_pages, int(totalItems), nextPage, prevPage, "Daftar kategori")
 	}
@@ -79,7 +106,7 @@ func (h *CategoryHandler) GetCategoryByName() echo.HandlerFunc {
 		page, perPage := 1, 10
 		name := c.Param("name")
 
-		categories, totalItems, err := h.categoryService.GetCategoryByName(page, perPage, name)
+		categories, totalItems, err := h.service.GetCategoryByName(page, perPage, name)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil kategori")
 		}
@@ -94,45 +121,84 @@ func (h *CategoryHandler) GetCategoryByName() echo.HandlerFunc {
 
 func (h *CategoryHandler) UpdateCategoryById() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		idStr := c.Param("id")
-		id, err := strconv.Atoi(idStr)
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
+		}
+		updateRequest := new(dto.UpdateCategoryRequest)
+		categoryID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Invalid ID format")
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		var updatedCategoryData entities.CategoryModels
-		if err := c.Bind(&updatedCategoryData); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal memparsing data kategori")
-		}
-
-		updatedCategory, err := h.categoryService.UpdateCategoryById(id, &updatedCategoryData)
-
+		existingCategory, err := h.service.GetCategoryById(categoryID)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui kategori")
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan kategori: "+err.Error())
+		}
+		if existingCategory == nil {
+			return response.SendErrorResponse(c, http.StatusNotFound, "Kategori tidak ditemukan"+err.Error())
+		}
+		file, err := c.FormFile("photo")
+		var uploadedURL string
+		if err == nil {
+			fileToUpload, err := file.Open()
+			if err != nil {
+				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+			}
+			defer func(fileToUpload multipart.File) {
+				err := fileToUpload.Close()
+				if err != nil {
+
+				}
+			}(fileToUpload)
+
+			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
+			if err != nil {
+				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+			}
+		}
+		if err := c.Bind(updateRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		if updatedCategory == nil {
-			return response.SendErrorResponse(c, http.StatusNotFound, "Kategori tidak ditemukan")
+		if err := utils.ValidateStruct(updateRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
-
-		return c.JSON(http.StatusOK, map[string]interface{}{"message": "Kategori berhasil diperbarui", "data": updatedCategory})
+		newData := &entities.CategoryModels{
+			ID:    categoryID,
+			Name:  updateRequest.Name,
+			Photo: uploadedURL,
+		}
+		updatedCategory, err := h.service.UpdateCategoryById(categoryID, newData)
+		return response.SendSuccessResponse(c, "Berhasil mengubah kategori", dto.FormatCategory(updatedCategory))
 	}
 }
 
 func (h *CategoryHandler) DeleteCategoryById() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		idStr := c.Param("id")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Invalid ID format")
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
 		}
 
-		err = h.categoryService.DeleteCategoryById(id)
-
+		categoryID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus kategori")
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		return c.JSON(http.StatusOK, map[string]interface{}{"message": "Kategori berhasil dihapus"})
+		existingCategory, err := h.service.GetCategoryById(categoryID)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan kategori: "+err.Error())
+		}
+		if existingCategory == nil {
+			return response.SendErrorResponse(c, http.StatusNotFound, "Kategori tidak ditemukan"+err.Error())
+		}
+
+		err = h.service.DeleteCategoryById(categoryID)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Server Internal Error"+err.Error())
+		}
+
+		return response.SendStatusOkResponse(c, "Berhasil hapus kategori")
 	}
 }

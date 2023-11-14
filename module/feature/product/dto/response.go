@@ -15,7 +15,7 @@ type ProductFormatter struct {
 }
 
 type CategoryFormatter struct {
-	ID   int    `json:"id"`
+	ID   uint64 `json:"id"`
 	Name string `json:"name"`
 }
 
