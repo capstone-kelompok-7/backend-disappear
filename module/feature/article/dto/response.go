@@ -1,31 +1,32 @@
 package dto
 
 import (
-	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"time"
+
+	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 )
 
 type ArticleFormatter struct {
-	ID        uint64    `json:"id"`
-	Title     string    `json:"title"`
-	Photo     string    `json:"photo"`
-	Content   string    `json:"content"`
-	Author    string    `json:"author"`
-	CreatedAt time.Time `json:"created_at"`
+	ID      uint64    `json:"id"`
+	Title   string    `json:"title"`
+	Photo   string    `json:"photo"`
+	Content string    `json:"content"`
+	Author  string    `json:"author"`
+	Date    time.Time `json:"date"`
 }
 
-func FormatArticle(article entities.Articles) ArticleFormatter {
+func FormatArticle(article entities.ArticleModels) ArticleFormatter {
 	articleFormatter := ArticleFormatter{}
 	articleFormatter.ID = article.ID
 	articleFormatter.Title = article.Title
 	articleFormatter.Content = article.Content
 	articleFormatter.Photo = article.Photo
-	articleFormatter.CreatedAt = article.CreatedAt
+	articleFormatter.Date = article.UpdatedAt
 
 	return articleFormatter
 }
 
-func FormatterArticle(articles []entities.Articles) []ArticleFormatter {
+func FormatterArticle(articles []entities.ArticleModels) []ArticleFormatter {
 	var articleFormatter []ArticleFormatter
 
 	for _, article := range articles {

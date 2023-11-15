@@ -16,7 +16,21 @@ func NewArticleRepository(repo article.RepositoryArticleInterface) article.Servi
 	}
 }
 
-func (s *ArticleRepository) GetAll(page, perPage int) ([]entities.Articles, int64, error) {
+func (s *ArticleRepository) CreateArticle(articleData *entities.ArticleModels) (*entities.ArticleModels, error) {
+	value := &entities.ArticleModels{
+		Title:  articleData.Title,
+        Photo: articleData.Photo,
+        Content: articleData.Content,
+    }
+	createdArticle, err := s.repo.CreateArticle(value)
+	if err!= nil {
+        return nil, err
+    }
+
+    return createdArticle, nil
+}
+
+func (s *ArticleRepository) GetAll(page, perPage int) ([]entities.ArticleModels, int64, error) {
 	articles, err := s.repo.FindAll(page, perPage)
 	if err != nil {
 		return articles, 0, err
@@ -59,7 +73,7 @@ func (s *ArticleRepository) GetPrevPage(currentPage int) int {
 	return 1
 }
 
-func (s *ArticleRepository) GetArticlesByTitle(page, perPage int, title string) ([]entities.Articles, int64, error) {
+func (s *ArticleRepository) GetArticlesByTitle(page, perPage int, title string) ([]entities.ArticleModels, int64, error) {
 	articles, err := s.repo.FindByTitle(page, perPage, title)
 	if err != nil {
 		return articles, 0, err

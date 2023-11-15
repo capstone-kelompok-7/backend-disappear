@@ -14,7 +14,7 @@ func Migrate(db *gorm.DB) {
 		entities.ProductModels{},
 		entities.ProductPhotosModels{},
 		entities.ReviewModels{},
-		entities.Articles{},
+		entities.ArticleModels{},
 		entities.OTPModels{},
 		entities.ChallengeModels{},
 	)

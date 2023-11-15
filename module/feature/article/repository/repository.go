@@ -16,8 +16,15 @@ func NewArticleRepository(db *gorm.DB) article.RepositoryArticleInterface {
 	}
 }
 
-func (r *ArticleRepository) FindAll(page, perpage int) ([]entities.Articles, error) {
-	var articles []entities.Articles
+func (r *ArticleRepository) CreateArticle(article *entities.ArticleModels) (*entities.ArticleModels, error) {
+	if err := r.db.Create(article).Error; err!= nil {
+        return nil, err
+    }
+    return article, nil
+}
+
+func (r *ArticleRepository) FindAll(page, perpage int) ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
 	offset := (page - 1) * perpage
 	err := r.db.Offset(offset).Limit(perpage).Find(&articles).Error
 	if err != nil {
@@ -28,12 +35,12 @@ func (r *ArticleRepository) FindAll(page, perpage int) ([]entities.Articles, err
 
 func (r *ArticleRepository) GetTotalArticleCount() (int64, error) {
 	var count int64
-	err := r.db.Model(&entities.Articles{}).Count(&count).Error
+	err := r.db.Model(&entities.ArticleModels{}).Count(&count).Error
 	return count, err
 }
 
-func (r *ArticleRepository) FindByTitle(page, perpage int, title string) ([]entities.Articles, error) {
-	var articles []entities.Articles
+func (r *ArticleRepository) FindByTitle(page, perpage int, title string) ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
 	offset := (page - 1) * perpage
 	err := r.db.Offset(offset).Limit(perpage).Where("title LIKE?", "%"+title+"%").Find(&articles).Error
 	if err != nil {
@@ -44,6 +51,6 @@ func (r *ArticleRepository) FindByTitle(page, perpage int, title string) ([]enti
 
 func (r *ArticleRepository) GetTotalArticleCountByTitle(title string) (int64, error) {
 	var count int64
-	err := r.db.Model(&entities.Articles{}).Where("title LIKE?", "%"+title+"%").Count(&count).Error
+	err := r.db.Model(&entities.ArticleModels{}).Where("title LIKE?", "%"+title+"%").Count(&count).Error
 	return count, err
 }

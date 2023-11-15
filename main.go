@@ -85,7 +85,7 @@ func main() {
 	routes.RouteAuth(e, authHandler, jwtService, userService)
 	routes.RouteVoucher(e, voucherHandler)
 	routes.RouteProduct(e, productHandler)
-	routes.RouteArticle(e, articleHandler)
+	routes.RouteArticle(e, articleHandler, jwtService, userService)
 	routes.RouteChallenge(e, challengeHandler)
 	routes.RouteCategory(e, categoryHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
