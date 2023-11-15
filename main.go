@@ -67,7 +67,7 @@ func main() {
 	categoryHandler := hCategory.NewCategoryHandler(categoryService)
 
 	articleRepo := rArticle.NewArticleRepository(db)
-	articleService := sArticle.NewArticleRepository(articleRepo)
+	articleService := sArticle.NewArticleService(articleRepo)
 	articleHandler := hArticle.NewArticleHandler(articleService)
 
 	challengeRepo := rChallenge.NewChallengeRepository(db)
@@ -92,7 +92,7 @@ func main() {
 	routes.RouteAuth(e, authHandler, jwtService, userService)
 	routes.RouteVoucher(e, voucherHandler, jwtService, userService)
 	routes.RouteProduct(e, productHandler)
-	routes.RouteArticle(e, articleHandler)
+	routes.RouteArticle(e, articleHandler, jwtService, userService)
 	routes.RouteChallenge(e, challengeHandler)
 	routes.RouteCategory(e, categoryHandler, jwtService, userService)
 	routes.RouteCarousel(e, carouselHandler, jwtService, userService)
