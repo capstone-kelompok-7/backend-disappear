@@ -19,8 +19,9 @@ func FormatArticle(article entities.ArticleModels) ArticleFormatter {
 	articleFormatter := ArticleFormatter{}
 	articleFormatter.ID = article.ID
 	articleFormatter.Title = article.Title
-	articleFormatter.Content = article.Content
 	articleFormatter.Photo = article.Photo
+	articleFormatter.Content = article.Content
+	articleFormatter.Author = article.Author
 	articleFormatter.Date = article.UpdatedAt
 
 	return articleFormatter

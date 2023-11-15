@@ -14,12 +14,9 @@ type UserModels struct {
 	IsVerified   bool            `gorm:"column:is_verified;default:false" json:"is_verified"`
 	LevelID      int             `gorm:"column:level_id;foreignKey:ID" json:"level_id"`
 	Address      []AddressModels `gorm:"foreignKey:UserID" json:"addresses"`
-	// CreatedAt    time.Time       `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	// UpdatedAt    time.Time       `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	// DeletedAt    *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
-	CreatedAt time.Time        `gorm:"column:created_at;type:TIMESTAMP;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt time.Time        `gorm:"column:updated_at;type:TIMESTAMP;default:CURRENT_TIMESTAMP" json:"updated_at"`
-	DeletedAt *time.Time       `gorm:"column:deleted_at;index" json:"deleted_at"`
+	CreatedAt    time.Time       `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	UpdatedAt    time.Time       `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	DeletedAt    *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
 	Articles  []ArticleModels `gorm:"many2many:user_bookmarks;" json:"users"`
 }
 
@@ -33,12 +30,9 @@ type AddressModels struct {
 	Province     string `gorm:"column:province;type:VARCHAR(255)" json:"province"`
 	PostalCode   int    `gorm:"column:postal_code;type:INT" json:"postal_code"`
 	Note         string `gorm:"column:note;type:TEXT" json:"note"`
-	// CreatedAt    time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	// UpdatedAt    time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	// DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
-	CreatedAt time.Time  `gorm:"column:created_at;type:TIMESTAMP;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt time.Time  `gorm:"column:updated_at;type:TIMESTAMP;default:CURRENT_TIMESTAMP" json:"updated_at"`
-	DeletedAt *time.Time `gorm:"column:deleted_at;index" json:"deleted_at"`
+	CreatedAt    time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	UpdatedAt    time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
 }
 
 type OTPModels struct {

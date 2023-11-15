@@ -17,18 +17,19 @@ func NewArticleRepository(db *gorm.DB) article.RepositoryArticleInterface {
 }
 
 func (r *ArticleRepository) CreateArticle(article *entities.ArticleModels) (*entities.ArticleModels, error) {
-	if err := r.db.Create(article).Error; err!= nil {
-        return nil, err
-    }
-    return article, nil
+	if err := r.db.Create(article).Error; err != nil {
+		return nil, err
+	}
+
+	return article, nil
 }
 
 func (r *ArticleRepository) GetArticleById(id uint64) (*entities.ArticleModels, error) {
 	var article entities.ArticleModels
-    if err := r.db.Where("id =? AND deleted_at IS NULL", id).First(&article).Error; err!= nil {
-        return nil, err
-    }
-    return &article, nil
+	if err := r.db.Where("id =? AND deleted_at IS NULL", id).First(&article).Error; err != nil {
+		return nil, err
+	}
+	return &article, nil
 }
 
 func (r *ArticleRepository) FindAll(page, perpage int) ([]entities.ArticleModels, error) {
@@ -65,16 +66,31 @@ func (r *ArticleRepository) GetTotalArticleCountByTitle(title string) (int64, er
 
 func (r *ArticleRepository) UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error) {
 	var article entities.ArticleModels
-    if err := r.db.First(&article, id).Error; err!= nil {
-        if err == gorm.ErrRecordNotFound {
-            return nil, nil
-        }
-        return nil, err
-    }
+	if err := r.db.First(&article, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
 
-    if err := r.db.Model(&article).Updates(updatedArticle).Error; err!= nil {
-        return nil, err
-    }
+	if err := r.db.Model(&article).Updates(updatedArticle).Error; err != nil {
+		return nil, err
+	}
 
-    return updatedArticle, nil
+	return updatedArticle, nil
+}
+
+func (r *ArticleRepository) DeleteArticleById(id uint64) error {
+	var article entities.ArticleModels
+	if err := r.db.First(&article, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil
+		}
+		return err
+	}
+	if err := r.db.Delete(&article).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -23,6 +23,7 @@ func (s *ArticleService) CreateArticle(articleData *entities.ArticleModels) (*en
 		Title:   articleData.Title,
 		Photo:   articleData.Photo,
 		Content: articleData.Content,
+		Author: "DISAPPEAR",
 	}
 	createdArticle, err := s.repo.CreateArticle(value)
 	if err != nil {
@@ -105,6 +106,24 @@ func (s *ArticleService) UpdateArticleById(id uint64, updatedArticle *entities.A
 	}
 
 	return updatedArticle, nil
+}
+
+func (s *ArticleService) DeleteArticleById(id uint64) error {
+	existingArticle, err := s.repo.GetArticleById(id)
+    if err!= nil {
+        return errors.New("artikel tidak ditemukan")
+    }
+
+    if existingArticle == nil {
+        return errors.New("artikel tidak ditemukan")
+    }
+
+    err = s.repo.DeleteArticleById(id)
+    if err!= nil {
+        return err
+    }
+
+    return nil
 }
 
 func (s *ArticleService) GetArticleById(id uint64) (*entities.ArticleModels, error) {

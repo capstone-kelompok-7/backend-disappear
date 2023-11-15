@@ -155,3 +155,31 @@ func (h *ArticleHandler) UpdateArticleById() echo.HandlerFunc {
 		return response.SendSuccessResponse(c, "Berhasil mengubah artikel", dto.FormatArticle(*updatedArticle))
 	}
 }
+
+func (h *ArticleHandler) DeleteArticleById() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role!= "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
+        }
+
+		articleID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+        if err!= nil {
+            return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+        }
+
+		exitingArticle, err := h.service.GetArticleById(articleID)
+        if err!= nil {
+            return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan artikel: "+err.Error())
+        }
+        if exitingArticle == nil {
+            return response.SendErrorResponse(c, http.StatusNotFound, "Artikel tidak ditemukan"+err.Error())
+        }
+
+        err = h.service.DeleteArticleById(articleID)
+        if err!= nil {
+            return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus artikel: "+err.Error())
+        }
+        return response.SendStatusOkResponse(c, "Berhasil menghapus artikel")
+    }
+}
