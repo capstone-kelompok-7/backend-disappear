@@ -64,7 +64,7 @@ func main() {
 	categoryHandler := hCategory.NewCategoryHandler(categoryService)
 
 	articleRepo := rArticle.NewArticleRepository(db)
-	articleService := sArticle.NewArticleRepository(articleRepo)
+	articleService := sArticle.NewArticleService(articleRepo)
 	articleHandler := hArticle.NewArticleHandler(articleService)
 
 	challengeRepo := rChallenge.NewChallengeRepository(db)

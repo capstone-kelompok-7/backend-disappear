@@ -14,9 +14,12 @@ type ChallengeModels struct {
 	Winner      string     `gorm:"column:winner;type:varchar(255)" json:"winner"`
 	Status      string     `gorm:"column:status;type:varchar(255)" json:"status"`
 	Exp         uint64     `gorm:"column:exp;type:int" json:"exp"`
-	CreatedAt   time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	UpdatedAt   time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt   *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	// CreatedAt   time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	// UpdatedAt   time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	// DeletedAt   *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	CreatedAt time.Time  `gorm:"column:created_at;type:TIMESTAMP;default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time  `gorm:"column:updated_at;type:TIMESTAMP;default:CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt *time.Time `gorm:"column:deleted_at;index" json:"deleted_at"`
 }
 
 func (ChallengeModels) TableName() string {

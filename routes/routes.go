@@ -51,6 +51,7 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService ut
 	articles := e.Group("api/v1/articles")
 	articles.POST("", h.CreateArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articles.GET("", h.GetAllArticles())
+	articles.PUT("/:id", h.UpdateArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface) {
