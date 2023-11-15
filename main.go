@@ -90,7 +90,7 @@ func main() {
 	})
 	routes.RouteUser(e, userHandler, jwtService, userService)
 	routes.RouteAuth(e, authHandler, jwtService, userService)
-	routes.RouteVoucher(e, voucherHandler)
+	routes.RouteVoucher(e, voucherHandler, jwtService, userService)
 	routes.RouteProduct(e, productHandler)
 	routes.RouteArticle(e, articleHandler)
 	routes.RouteChallenge(e, challengeHandler)
