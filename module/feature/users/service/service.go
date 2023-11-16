@@ -6,6 +6,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
+	"math"
 )
 
 type UserService struct {
@@ -20,18 +21,10 @@ func NewUserService(repo users.RepositoryUserInterface, hash utils.HashInterface
 	}
 }
 
-func (s *UserService) GetAllUsers() ([]*entities.UserModels, error) {
-	result, err := s.repo.GetAllUsers()
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func (s *UserService) GetUsersById(userId uint64) (*entities.UserModels, error) {
 	result, err := s.repo.GetUsersById(userId)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("pengguna tidak ditemukan")
 	}
 	return result, nil
 }
@@ -39,7 +32,7 @@ func (s *UserService) GetUsersById(userId uint64) (*entities.UserModels, error) 
 func (s *UserService) GetUsersByEmail(email string) (*entities.UserModels, error) {
 	result, err := s.repo.GetUsersByEmail(email)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("pengguna tidak ditemukan")
 	}
 	return result, nil
 }
@@ -80,5 +73,85 @@ func (s *UserService) ChangePassword(userID uint64, updateRequest dto.UpdatePass
 		return err
 	}
 
+	return nil
+}
+
+func (s *UserService) GetAllUsers(page, perPage int) ([]*entities.UserModels, int64, error) {
+	user, err := s.repo.FindAll(page, perPage)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalUserCount()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return user, totalItems, nil
+}
+
+func (s *UserService) GetUsersByName(page int, perPage int, name string) ([]*entities.UserModels, int64, error) {
+	user, err := s.repo.FindByName(page, perPage, name)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalUserCountByName(name)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return user, totalItems, nil
+}
+
+func (s *UserService) CalculatePaginationValues(page int, totalItems int, perPage int) (int, int) {
+	if page <= 0 {
+		page = 1
+	}
+
+	totalPages := int(math.Ceil(float64(totalItems) / float64(perPage)))
+	if page > totalPages {
+		page = totalPages
+	}
+
+	return page, totalPages
+}
+
+func (s *UserService) GetNextPage(currentPage int, totalPages int) int {
+	if currentPage < totalPages {
+		return currentPage + 1
+	}
+
+	return totalPages
+}
+
+func (s *UserService) GetPrevPage(currentPage int) int {
+	if currentPage > 1 {
+		return currentPage - 1
+	}
+
+	return 1
+}
+
+func (s *UserService) EditProfile(userID uint64, updatedData dto.EditProfileRequest) (*entities.UserModels, error) {
+	_, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+	result, err := s.repo.EditProfile(userID, updatedData)
+	if err != nil {
+		return nil, errors.New("gagal mengubah profil")
+	}
+	return result, nil
+}
+
+func (s *UserService) DeleteAccount(userID uint64) error {
+	_, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return errors.New("pengguna tidak ditemukan")
+	}
+	if err := s.repo.DeleteAccount(userID); err != nil {
+		return err
+	}
 	return nil
 }
