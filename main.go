@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-
+	"github.com/capstone-kelompok-7/backend-disappear/config"
+	hAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/handler"
+	rAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/repository"
+	sAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/service"
 	hArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/handler"
 	rArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/repository"
 	sArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/service"
@@ -22,20 +24,19 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/handler"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/repository"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/service"
+	hUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/handler"
+	rUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/repository"
+	sUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/service"
 	hVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/handler"
 	rVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/repository"
 	sVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/service"
 	"github.com/capstone-kelompok-7/backend-disappear/module/middlewares"
-
-	"github.com/capstone-kelompok-7/backend-disappear/config"
-	hUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/handler"
-	rUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/repository"
-	sUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/service"
 	"github.com/capstone-kelompok-7/backend-disappear/routes"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"net/http"
 )
 
 func main() {
@@ -79,6 +80,10 @@ func main() {
 	carouselService := sCarousel.NewCarouselService(carouselRepo)
 	carouselHandler := hCarousel.NewCarouselHandler(carouselService)
 
+	addresslRepo := rAddress.NewAddressRepository(db)
+	addresslService := sAddress.NewAddressService(addresslRepo)
+	addresslHandler := hAddress.NewAddressHandler(addresslService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -97,5 +102,6 @@ func main() {
 	routes.RouteChallenge(e, challengeHandler, jwtService, userService)
 	routes.RouteCategory(e, categoryHandler, jwtService, userService)
 	routes.RouteCarousel(e, carouselHandler, jwtService, userService)
+	routes.RouteAddress(e, addresslHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }

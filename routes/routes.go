@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/address"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/article"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel"
@@ -82,4 +83,10 @@ func RouteCarousel(e *echo.Echo, h carousel.HandlerCarouselInterface, jwtService
 	carousels.POST("", h.CreateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
 	carousels.PUT("/:id", h.UpdateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
 	carousels.DELETE("/:id", h.DeleteCarousel(), middlewares.AuthMiddleware(jwtService, userService))
+}
+
+func RouteAddress(e *echo.Echo, h address.HandlerAddressInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	addresses := e.Group("/api/v1/address")
+	addresses.GET("", h.GetAllAddress(), middlewares.AuthMiddleware(jwtService, userService))
+	addresses.POST("", h.CreateAddress(), middlewares.AuthMiddleware(jwtService, userService))
 }
