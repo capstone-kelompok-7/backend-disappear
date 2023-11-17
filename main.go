@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+
 	hArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/handler"
 	rArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/repository"
 	sArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/service"
@@ -24,7 +26,6 @@ import (
 	rVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/repository"
 	sVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/service"
 	"github.com/capstone-kelompok-7/backend-disappear/module/middlewares"
-	"net/http"
 
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	hUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/handler"
@@ -93,7 +94,7 @@ func main() {
 	routes.RouteVoucher(e, voucherHandler, jwtService, userService)
 	routes.RouteProduct(e, productHandler, jwtService, userService)
 	routes.RouteArticle(e, articleHandler, jwtService, userService)
-	routes.RouteChallenge(e, challengeHandler)
+	routes.RouteChallenge(e, challengeHandler, jwtService, userService)
 	routes.RouteCategory(e, categoryHandler, jwtService, userService)
 	routes.RouteCarousel(e, carouselHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())

@@ -10,6 +10,10 @@ type RepositoryChallengeInterface interface {
 	GetTotalChallengeCount() (int64, error)
 	FindByTitle(page, perpage int, title string) ([]entities.ChallengeModels, error)
 	GetTotalChallengeCountByTitle(title string) (int64, error)
+	CreateChallenge(challenge entities.ChallengeModels) (entities.ChallengeModels, error)
+	UpdateChallenge(id uint64, updatedChallenge entities.ChallengeModels) (entities.ChallengeModels, error)
+	GetChallengeById(id uint64) (entities.ChallengeModels, error)
+	DeleteChallenge(id uint64) error
 }
 
 type ServiceChallengeInterface interface {
@@ -18,8 +22,16 @@ type ServiceChallengeInterface interface {
 	GetNextPage(currentPage, totalPages int) int
 	GetPrevPage(currentPage int) int
 	GetChallengeByTitle(page, perPage int, title string) ([]entities.ChallengeModels, int64, error)
+	CreateChallenge(newData entities.ChallengeModels) (entities.ChallengeModels, error)
+	UpdateChallenge(id uint64, updatedChallenge entities.ChallengeModels) (entities.ChallengeModels, error)
+	GetChallengeById(id uint64) (entities.ChallengeModels, error)
+	DeleteChallenge(id uint64) error
 }
 
 type HandlerChallengeInterface interface {
 	GetAllChallenges() echo.HandlerFunc
+	CreateChallenge() echo.HandlerFunc
+	UpdateChallenge() echo.HandlerFunc
+	DeleteChallengeById() echo.HandlerFunc
+	GetChallengeById() echo.HandlerFunc
 }
