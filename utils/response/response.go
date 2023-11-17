@@ -45,6 +45,12 @@ func SendStatusOkResponse(c echo.Context, message string) error {
 	})
 }
 
+func SendStatusCreatedResponse(c echo.Context, message string) error {
+	return c.JSON(http.StatusCreated, ErrorResponse{
+		Message: message,
+	})
+}
+
 func PaginationResponse(c echo.Context, data interface{}, totalItems, page, pageSize int, message string) error {
 	pagination := map[string]interface{}{
 		"totalItems": totalItems,

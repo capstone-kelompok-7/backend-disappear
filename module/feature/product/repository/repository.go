@@ -60,3 +60,28 @@ func (r *ProductRepository) GetTotalProductCount() (int64, error) {
 	err := r.db.Model(&entities.ProductModels{}).Count(&count).Error
 	return count, err
 }
+
+func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, categoryIDs []uint64) error {
+	tx := r.db.Begin()
+
+	if err := tx.Create(productData).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if len(categoryIDs) > 0 {
+		for _, categoryID := range categoryIDs {
+			if err := tx.Model(productData).Association("Categories").Append(&entities.CategoryModels{ID: categoryID}); err != nil {
+				tx.Rollback()
+				return err
+			}
+
+			if err := tx.Model(&entities.CategoryModels{}).Where("id = ?", categoryID).Update("total_product", gorm.Expr("total_product + ?", 1)).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+
+	return tx.Commit().Error
+}
