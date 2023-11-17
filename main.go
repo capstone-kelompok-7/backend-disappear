@@ -2,8 +2,14 @@ package main
 
 import (
 	"fmt"
+<<<<<<< Updated upstream
 	"net/http"
 
+=======
+	hAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/handler"
+	rAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/repository"
+	sAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/service"
+>>>>>>> Stashed changes
 	hArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/handler"
 	rArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/repository"
 	sArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/service"
@@ -79,6 +85,10 @@ func main() {
 	carouselService := sCarousel.NewCarouselService(carouselRepo)
 	carouselHandler := hCarousel.NewCarouselHandler(carouselService)
 
+	addresslRepo := rAddress.NewAddressRepository(db)
+	addresslService := sAddress.NewAddressService(addresslRepo)
+	addresslHandler := hAddress.NewAddressHandler(addresslService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -97,5 +107,6 @@ func main() {
 	routes.RouteChallenge(e, challengeHandler, jwtService, userService)
 	routes.RouteCategory(e, categoryHandler, jwtService, userService)
 	routes.RouteCarousel(e, carouselHandler, jwtService, userService)
+	routes.RouteAddress(e, addresslHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }
