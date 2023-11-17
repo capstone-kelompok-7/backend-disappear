@@ -75,7 +75,7 @@ func (s *AuthService) Login(email, password string) (*entities.UserModels, strin
 		return nil, "", errors.New("password salah")
 	}
 
-	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Role, user.Email)
+	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Email, user.Role)
 	if err != nil {
 		return nil, "", err
 	}

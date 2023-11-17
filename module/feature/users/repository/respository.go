@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users/dto"
 	"gorm.io/gorm"
+	"time"
 )
 
 type UserRepository struct {
@@ -16,29 +18,22 @@ func NewUserRepository(db *gorm.DB) users.RepositoryUserInterface {
 		db: db,
 	}
 }
+
 func (r *UserRepository) GetUsersById(userId uint64) (*entities.UserModels, error) {
 	var user entities.UserModels
-	if err := r.db.Where("id", userId).First(&user).Error; err != nil {
+	if err := r.db.Where("id = ? AND deleted_at IS NULL", userId).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			return nil, errors.New("id not found")
+			return nil, errors.New("pengguna tidak ditemukan")
 		}
 		return nil, err
 	}
 	return &user, nil
 }
 
-func (r *UserRepository) GetAllUsers() ([]*entities.UserModels, error) {
-	var users []*entities.UserModels
-	if err := r.db.Find(&users).Error; err != nil {
-		return nil, err
-	}
-	return users, nil
-}
-
 func (r *UserRepository) GetUsersByEmail(email string) (*entities.UserModels, error) {
 	var user entities.UserModels
-	if err := r.db.Table("users").Where("email = ?", email).First(&user).Error; err != nil {
+	if err := r.db.Table("users").Where("email = ? AND deleted_at IS NULL", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -57,5 +52,71 @@ func (r *UserRepository) ChangePassword(userID uint64, newPasswordHash string) e
 	if err := r.db.Model(&user).Where("id = ?", userID).Update("password", newPasswordHash).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *UserRepository) FindAll(page, perPage int) ([]*entities.UserModels, error) {
+	var user []*entities.UserModels
+	offset := (page - 1) * perPage
+	err := r.db.Offset(offset).Limit(perPage).Preload("Address").Where("deleted_at IS NULL").Find(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (r *UserRepository) FindByName(page, perPage int, name string) ([]*entities.UserModels, error) {
+	var user []*entities.UserModels
+	offset := (page - 1) * perPage
+	query := r.db.Offset(offset).Limit(perPage).Where("deleted_at IS NULL")
+
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+
+	err := query.Find(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepository) GetTotalUserCountByName(name string) (int64, error) {
+	var count int64
+	query := r.db.Model(&entities.UserModels{}).Where("deleted_at IS NULL")
+
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+
+	err := query.Count(&count).Error
+	return count, err
+}
+
+func (r *UserRepository) GetTotalUserCount() (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.UserModels{}).Where("deleted_at IS NULL").Count(&count).Error
+	return count, err
+}
+
+func (r *UserRepository) EditProfile(userID uint64, updatedData dto.EditProfileRequest) (*entities.UserModels, error) {
+	var user *entities.UserModels
+	if err := r.db.Model(&user).Where("id = ?", userID).Updates(&updatedData).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (r *UserRepository) DeleteAccount(userID uint64) error {
+	user := &entities.UserModels{}
+	if err := r.db.First(user, userID).Error; err != nil {
+		return err
+	}
+
+	if err := r.db.Model(user).Update("deleted_at", time.Now()).Error; err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -27,11 +27,12 @@ func RouteAuth(e *echo.Echo, h auth.HandlerAuthInterface, jwtService utils.JWTIn
 
 func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	users := e.Group("api/v1/users")
-	users.GET("/list", h.GetAllUsers())
-	users.GET("/by-email", h.GetUsersByEmail())
-	users.POST("/change-password", h.ChangePassword(), middlewares.AuthMiddleware(jwtService, userService))
+	users.GET("", h.GetAllUsers())
 	users.GET("/by-email", h.GetUsersByEmail(), middlewares.AuthMiddleware(jwtService, userService))
+	users.POST("/change-password", h.ChangePassword(), middlewares.AuthMiddleware(jwtService, userService))
 	users.GET("/:id", h.GetUsersById(), middlewares.AuthMiddleware(jwtService, userService))
+	users.POST("/edit-profile", h.EditProfile(), middlewares.AuthMiddleware(jwtService, userService))
+	users.DELETE("/:id", h.DeleteAccount(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
