@@ -58,11 +58,14 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService ut
 	articles.DELETE("/:id", h.DeleteArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
-func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface) {
+func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	challenges := e.Group("api/v1/challenges")
 	challenges.GET("", h.GetAllChallenges())
+	challenges.POST("", h.CreateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
+	challenges.PUT("/:id", h.UpdateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
+	challenges.DELETE("/:id", h.DeleteChallengeById(), middlewares.AuthMiddleware(jwtService, userService))
+	challenges.GET("/:id", h.GetChallengeById())
 }
-
 func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	categories := e.Group("/api/v1/categories")
 	categories.POST("", h.CreateCategory(), middlewares.AuthMiddleware(jwtService, userService))
