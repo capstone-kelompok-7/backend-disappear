@@ -85,3 +85,13 @@ func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, c
 
 	return tx.Commit().Error
 }
+
+func (r *ProductRepository) GetProductByID(productID int) (*entities.ProductModels, error) {
+	var product entities.ProductModels
+
+	if err := r.db.Where("id = ? AND deleted_at IS NULL", productID).First(&product).Error; err != nil {
+		return nil, err
+	}
+
+	return &product, nil
+}

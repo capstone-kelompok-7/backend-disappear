@@ -22,10 +22,10 @@ func NewProductHandler(service product.ServiceProductInterface) product.HandlerP
 
 func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser := c.Get("CurrentUser").(*entities.UserModels)
-		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
-		}
+		//currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		//if currentUser.Role != "admin" {
+		//	return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+		//}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 10

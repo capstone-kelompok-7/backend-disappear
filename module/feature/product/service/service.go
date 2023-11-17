@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/dto"
@@ -94,4 +95,12 @@ func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error 
 	}
 
 	return nil
+}
+
+func (s *ProductService) GetProductByID(productID int) (*entities.ProductModels, error) {
+	product, err := s.repo.GetProductByID(productID)
+	if err != nil {
+		return nil, errors.New("carousel tidak ditemukan")
+	}
+	return product, nil
 }

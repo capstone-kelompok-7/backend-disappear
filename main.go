@@ -24,6 +24,9 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/handler"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/repository"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/service"
+	hReview "github.com/capstone-kelompok-7/backend-disappear/module/feature/review/handler"
+	rReview "github.com/capstone-kelompok-7/backend-disappear/module/feature/review/repository"
+	sReview "github.com/capstone-kelompok-7/backend-disappear/module/feature/review/service"
 	hUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/handler"
 	rUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/repository"
 	sUser "github.com/capstone-kelompok-7/backend-disappear/module/feature/users/service"
@@ -80,9 +83,13 @@ func main() {
 	carouselService := sCarousel.NewCarouselService(carouselRepo)
 	carouselHandler := hCarousel.NewCarouselHandler(carouselService)
 
-	addresslRepo := rAddress.NewAddressRepository(db)
-	addresslService := sAddress.NewAddressService(addresslRepo)
-	addresslHandler := hAddress.NewAddressHandler(addresslService)
+	addressRepo := rAddress.NewAddressRepository(db)
+	addressService := sAddress.NewAddressService(addressRepo)
+	addressHandler := hAddress.NewAddressHandler(addressService)
+
+	reviewRepo := rReview.NewReviewRepository(db)
+	reviewService := sReview.NewReviewService(reviewRepo)
+	reviewHandler := hReview.NewReviewHandler(reviewService)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -102,6 +109,7 @@ func main() {
 	routes.RouteChallenge(e, challengeHandler, jwtService, userService)
 	routes.RouteCategory(e, categoryHandler, jwtService, userService)
 	routes.RouteCarousel(e, carouselHandler, jwtService, userService)
-	routes.RouteAddress(e, addresslHandler, jwtService, userService)
+	routes.RouteAddress(e, addressHandler, jwtService, userService)
+	routes.RouteReview(e, reviewHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }

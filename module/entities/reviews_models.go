@@ -3,15 +3,30 @@ package entities
 import "time"
 
 type ReviewModels struct {
-	ID          int        `gorm:"column:id;type:int;primaryKey" json:"id"`
-	ProductID   int        `gorm:"column:product_id;type:int" json:"product_id"`
-	Description string     `gorm:"column:description;type:text" json:"description"`
-	Date        time.Time  `gorm:"column:date;type:date" json:"date"`
-	CreatedAt   time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	UpdatedAt   time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt   *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	ID          uint64              `gorm:"column:id;type:int;primaryKey" json:"id"`
+	UserID      uint64              `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
+	ProductID   uint64              `gorm:"column:product_id;type:BIGINT UNSIGNED" json:"product_id"`
+	Rating      uint64              `gorm:"column:rating;type:BIGINT UNSIGNED" json:"rating"`
+	Description string              `gorm:"column:description;type:text" json:"description"`
+	CreatedAt   time.Time           `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	UpdatedAt   time.Time           `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	DeletedAt   *time.Time          `gorm:"column:deleted_at;index" json:"deleted_at"`
+	Photos      []ReviewPhotoModels `gorm:"foreignKey:ReviewID" json:"photos"`
+}
+
+type ReviewPhotoModels struct {
+	ID        int        `gorm:"column:id;type:int;primaryKey" json:"id"`
+	ReviewID  int        `gorm:"column:review_id;type:int" json:"review_id"`
+	ImageURL  string     `gorm:"column:url;type:varchar(255)" json:"url"`
+	CreatedAt time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	DeletedAt *time.Time `gorm:"column:deleted_at;index" json:"deleted_at"`
 }
 
 func (ReviewModels) TableName() string {
 	return "reviews"
+}
+
+func (ReviewPhotoModels) TableName() string {
+	return "review_photos"
 }

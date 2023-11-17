@@ -8,6 +8,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/review"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher"
 	"github.com/capstone-kelompok-7/backend-disappear/module/middlewares"
 
@@ -67,6 +68,7 @@ func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtServ
 	challenges.DELETE("/:id", h.DeleteChallengeById(), middlewares.AuthMiddleware(jwtService, userService))
 	challenges.GET("/:id", h.GetChallengeById())
 }
+
 func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	categories := e.Group("/api/v1/categories")
 	categories.POST("", h.CreateCategory(), middlewares.AuthMiddleware(jwtService, userService))
@@ -89,4 +91,9 @@ func RouteAddress(e *echo.Echo, h address.HandlerAddressInterface, jwtService ut
 	addresses := e.Group("/api/v1/address")
 	addresses.GET("", h.GetAllAddress(), middlewares.AuthMiddleware(jwtService, userService))
 	addresses.POST("", h.CreateAddress(), middlewares.AuthMiddleware(jwtService, userService))
+}
+
+func RouteReview(e *echo.Echo, h review.HandlerReviewInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	reviews := e.Group("/api/v1/reviews")
+	reviews.POST("", h.CreateReview(), middlewares.AuthMiddleware(jwtService, userService))
 }
