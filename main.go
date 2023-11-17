@@ -91,7 +91,7 @@ func main() {
 	routes.RouteUser(e, userHandler, jwtService, userService)
 	routes.RouteAuth(e, authHandler, jwtService, userService)
 	routes.RouteVoucher(e, voucherHandler, jwtService, userService)
-	routes.RouteProduct(e, productHandler)
+	routes.RouteProduct(e, productHandler, jwtService, userService)
 	routes.RouteArticle(e, articleHandler, jwtService, userService)
 	routes.RouteChallenge(e, challengeHandler)
 	routes.RouteCategory(e, categoryHandler, jwtService, userService)

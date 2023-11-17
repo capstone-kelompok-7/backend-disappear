@@ -3,7 +3,9 @@ package service
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/dto"
 	"math"
+	"time"
 )
 
 type ProductService struct {
@@ -71,4 +73,25 @@ func (s *ProductService) GetProductsByName(page, perPage int, name string) ([]en
 	}
 
 	return products, totalItems, nil
+}
+
+func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error {
+
+	productData := &entities.ProductModels{
+		Name:        request.Name,
+		Description: request.Description,
+		GramPlastic: request.GramPlastic,
+		Price:       request.Price,
+		Stock:       request.Stock,
+		Discount:    request.Discount,
+		Exp:         request.Exp,
+		CreatedAt:   time.Now(),
+	}
+
+	err := s.repo.CreateProduct(productData, request.Categories)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

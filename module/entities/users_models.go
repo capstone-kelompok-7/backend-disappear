@@ -14,22 +14,22 @@ type UserModels struct {
 	IsVerified   bool            `gorm:"column:is_verified;default:false" json:"is_verified"`
 	LevelID      int             `gorm:"column:level_id;foreignKey:ID" json:"level_id"`
 	Address      []AddressModels `gorm:"foreignKey:UserID" json:"addresses"`
-	CreatedAt    time.Time       `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	UpdatedAt    time.Time       `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt    *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
-	Articles  []ArticleModels `gorm:"many2many:user_bookmarks;" json:"users"`
+	CreatedAt    time.Time       `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt    time.Time       `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt    *time.Time      `gorm:"column:deleted_at;index" json:"deleted_at"`
+	Articles     []ArticleModels `gorm:"many2many:user_bookmarks;" json:"users"`
 }
 
 type AddressModels struct {
-	ID           uint64 `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id"`
-	UserID       uint64 `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
-	AcceptedName string `gorm:"column:accepted_name;type:VARCHAR(255)" json:"accepted_name"`
-	Street       string `gorm:"column:street;type:VARCHAR(255)" json:"street"`
-	SubDistrict  string `gorm:"column:sub_district;type:VARCHAR(255)" json:"sub_district"`
-	City         string `gorm:"column:city;type:VARCHAR(255)" json:"city"`
-	Province     string `gorm:"column:province;type:VARCHAR(255)" json:"province"`
-	PostalCode   int    `gorm:"column:postal_code;type:INT" json:"postal_code"`
-	Note         string `gorm:"column:note;type:TEXT" json:"note"`
+	ID           uint64     `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id"`
+	UserID       uint64     `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
+	AcceptedName string     `gorm:"column:accepted_name;type:VARCHAR(255)" json:"accepted_name"`
+	Street       string     `gorm:"column:street;type:VARCHAR(255)" json:"street"`
+	SubDistrict  string     `gorm:"column:sub_district;type:VARCHAR(255)" json:"sub_district"`
+	City         string     `gorm:"column:city;type:VARCHAR(255)" json:"city"`
+	Province     string     `gorm:"column:province;type:VARCHAR(255)" json:"province"`
+	PostalCode   int        `gorm:"column:postal_code;type:INT" json:"postal_code"`
+	Note         string     `gorm:"column:note;type:TEXT" json:"note"`
 	CreatedAt    time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
 	DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
