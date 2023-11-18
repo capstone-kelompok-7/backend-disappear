@@ -50,6 +50,8 @@ func RouteProduct(e *echo.Echo, h product.HandlerProductInterface, jwtService ut
 	products := e.Group("api/v1")
 	products.GET("/products", h.GetAllProducts(), middlewares.AuthMiddleware(jwtService, userService))
 	products.POST("/products", h.CreateProduct(), middlewares.AuthMiddleware(jwtService, userService))
+	products.GET("/products/:id", h.GetProductById())
+	products.POST("/products/images", h.CreateProductImage(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

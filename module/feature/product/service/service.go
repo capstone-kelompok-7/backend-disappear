@@ -97,10 +97,24 @@ func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error 
 	return nil
 }
 
-func (s *ProductService) GetProductByID(productID int) (*entities.ProductModels, error) {
+func (s *ProductService) GetProductByID(productID int) (entities.ProductModels, error) {
 	product, err := s.repo.GetProductByID(productID)
 	if err != nil {
-		return nil, errors.New("carousel tidak ditemukan")
+		return product, errors.New("produk tidak ditemukan")
 	}
 	return product, nil
+}
+
+func (s *ProductService) CreateImageProduct(request dto.CreateProductImage) (*entities.ProductPhotosModels, error) {
+	value := &entities.ProductPhotosModels{
+		ProductID: request.ProductID,
+		ImageURL:  request.Image,
+	}
+
+	images, err := s.repo.CreateImageProduct(value)
+	if err != nil {
+		return images, err
+	}
+
+	return images, nil
 }
