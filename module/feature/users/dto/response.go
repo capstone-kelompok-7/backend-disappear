@@ -11,9 +11,10 @@ type UserFormatter struct {
 	Name         string             `json:"name"`
 	Phone        string             `json:"phone"`
 	PhotoProfile string             `json:"photo_profile"`
-	TotalGram    float64            `json:"total_gram"`
+	TotalGram    uint64             `json:"total_gram"`
 	IsVerified   bool               `json:"is_verified"`
-	LevelID      int                `json:"level_id"`
+	Level        string             `json:"level"`
+	Exp          uint64             `json:"exp"`
 	Addresses    []AddressFormatter `json:"addresses"`
 }
 
@@ -38,7 +39,8 @@ func FormatUser(user *entities.UserModels) *UserFormatter {
 	userFormatter.PhotoProfile = user.PhotoProfile
 	userFormatter.TotalGram = user.TotalGram
 	userFormatter.IsVerified = user.IsVerified
-	userFormatter.LevelID = user.LevelID
+	userFormatter.Level = user.Level
+	userFormatter.Exp = user.Exp
 
 	var addresses []AddressFormatter
 	for _, address := range user.Address {
