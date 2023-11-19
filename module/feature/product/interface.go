@@ -12,7 +12,8 @@ type RepositoryProductInterface interface {
 	FindAll(page, perPage int) ([]entities.ProductModels, error)
 	GetTotalProductCount() (int64, error)
 	CreateProduct(productData *entities.ProductModels, categoryIDs []uint64) error
-	GetProductByID(productID int) (*entities.ProductModels, error)
+	GetProductByID(productID int) (entities.ProductModels, error)
+	CreateImageProduct(productImage *entities.ProductPhotosModels) (*entities.ProductPhotosModels, error)
 }
 
 type ServiceProductInterface interface {
@@ -22,10 +23,13 @@ type ServiceProductInterface interface {
 	GetPrevPage(currentPage int) int
 	GetProductsByName(page, perPage int, name string) ([]entities.ProductModels, int64, error)
 	CreateProduct(request *dto.CreateProductRequest) error
-	GetProductByID(productID int) (*entities.ProductModels, error)
+	GetProductByID(productID int) (entities.ProductModels, error)
+	CreateImageProduct(request dto.CreateProductImage) (*entities.ProductPhotosModels, error)
 }
 
 type HandlerProductInterface interface {
 	GetAllProducts() echo.HandlerFunc
 	CreateProduct() echo.HandlerFunc
+	GetProductById() echo.HandlerFunc
+	CreateProductImage() echo.HandlerFunc
 }

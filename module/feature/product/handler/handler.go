@@ -5,6 +5,8 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/upload"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 
@@ -75,5 +77,61 @@ func (h *ProductHandler) CreateProduct() echo.HandlerFunc {
 		}
 
 		return response.SendStatusCreatedResponse(c, "Product berhasil dibuat")
+	}
+}
+
+func (h *ProductHandler) GetProductById() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("id")
+		productID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+
+		getProductID, err := h.service.GetProductByID(int(productID))
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengambil produk")
+		}
+		return response.SendSuccessResponse(c, "Detail produk", dto.FormatProductDetail(getProductID))
+	}
+}
+
+func (h *ProductHandler) CreateProductImage() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
+		}
+		payload := new(dto.CreateProductImage)
+		file, err := c.FormFile("photo")
+		var uploadedURL string
+		if err == nil {
+			fileToUpload, err := file.Open()
+			if err != nil {
+				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+			}
+			defer func(fileToUpload multipart.File) {
+				_ = fileToUpload.Close()
+			}(fileToUpload)
+
+			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
+			if err != nil {
+				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+			}
+		}
+		payload.Image = uploadedURL
+		if err := c.Bind(payload); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang anda masukan tidak sesuai")
+		}
+		if err := utils.ValidateStruct(payload); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+
+		}
+		_, err = h.service.CreateImageProduct(*payload)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+		}
+		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan image pada product")
+
 	}
 }

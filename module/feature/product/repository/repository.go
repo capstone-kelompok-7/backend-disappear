@@ -86,12 +86,19 @@ func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, c
 	return tx.Commit().Error
 }
 
-func (r *ProductRepository) GetProductByID(productID int) (*entities.ProductModels, error) {
+func (r *ProductRepository) GetProductByID(productID int) (entities.ProductModels, error) {
 	var product entities.ProductModels
 
-	if err := r.db.Where("id = ? AND deleted_at IS NULL", productID).First(&product).Error; err != nil {
-		return nil, err
+	if err := r.db.Preload("Categories").Preload("ProductPhotos").Where("id = ? AND deleted_at IS NULL", productID).First(&product).Error; err != nil {
+		return product, err
 	}
 
-	return &product, nil
+	return product, nil
+}
+
+func (r *ProductRepository) CreateImageProduct(productImage *entities.ProductPhotosModels) (*entities.ProductPhotosModels, error) {
+	if err := r.db.Create(&productImage).Error; err != nil {
+		return productImage, err
+	}
+	return productImage, nil
 }
