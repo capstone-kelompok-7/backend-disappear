@@ -18,84 +18,87 @@ import (
 )
 
 func RouteAuth(e *echo.Echo, h auth.HandlerAuthInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	e.POST("api/v1/auth/register", h.Register())
-	e.POST("api/v1/auth/login", h.Login())
-	e.POST("/api/v1/auth/verify", h.VerifyEmail())
-	e.POST("/api/v1/auth/resend-otp", h.ResendOTP())
-	e.POST("/api/v1/auth/forgot-password", h.ForgotPassword())
-	e.POST("/api/v1/auth/forgot-password/verify", h.VerifyOTP())
-	e.POST("/api/v1/auth/forgot-password/reset", h.ResetPassword(), middlewares.AuthMiddleware(jwtService, userService))
+	authGroup := e.Group("api/v1/auth")
+	authGroup.POST("/register", h.Register())
+	authGroup.POST("/login", h.Login())
+	authGroup.POST("/verify", h.VerifyEmail())
+	authGroup.POST("/resend-otp", h.ResendOTP())
+	authGroup.POST("/forgot-password", h.ForgotPassword())
+	authGroup.POST("/forgot-password/verify", h.VerifyOTP())
+	authGroup.POST("/forgot-password/reset", h.ResetPassword(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	users := e.Group("api/v1/users")
-	users.GET("", h.GetAllUsers())
-	users.GET("/by-email", h.GetUsersByEmail(), middlewares.AuthMiddleware(jwtService, userService))
-	users.POST("/change-password", h.ChangePassword(), middlewares.AuthMiddleware(jwtService, userService))
-	users.GET("/:id", h.GetUsersById(), middlewares.AuthMiddleware(jwtService, userService))
-	users.POST("/edit-profile", h.EditProfile(), middlewares.AuthMiddleware(jwtService, userService))
-	users.DELETE("/:id", h.DeleteAccount(), middlewares.AuthMiddleware(jwtService, userService))
+	usersGroup := e.Group("api/v1/users")
+	usersGroup.GET("", h.GetAllUsers())
+	usersGroup.GET("/by-email", h.GetUsersByEmail(), middlewares.AuthMiddleware(jwtService, userService))
+	usersGroup.POST("/change-password", h.ChangePassword(), middlewares.AuthMiddleware(jwtService, userService))
+	usersGroup.GET("/:id", h.GetUsersById(), middlewares.AuthMiddleware(jwtService, userService))
+	usersGroup.POST("/edit-profile", h.EditProfile(), middlewares.AuthMiddleware(jwtService, userService))
+	usersGroup.DELETE("/:id", h.DeleteAccount(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	vouchers := e.Group("api/v1/vouchers")
-	vouchers.POST("", h.CreateVoucher(), middlewares.AuthMiddleware(jwtService, userService))
-	vouchers.GET("", h.GetAllVouchers())
-	vouchers.PUT("/:id", h.UpdateVouchers(), middlewares.AuthMiddleware(jwtService, userService))
-	vouchers.GET("/:id", h.GetVoucherById())
-	vouchers.DELETE("/:id", h.DeleteVoucherById(), middlewares.AuthMiddleware(jwtService, userService))
+	voucherGroup := e.Group("api/v1/vouchers")
+	voucherGroup.POST("", h.CreateVoucher(), middlewares.AuthMiddleware(jwtService, userService))
+	voucherGroup.GET("", h.GetAllVouchers())
+	voucherGroup.PUT("/:id", h.UpdateVouchers(), middlewares.AuthMiddleware(jwtService, userService))
+	voucherGroup.GET("/:id", h.GetVoucherById())
+	voucherGroup.DELETE("/:id", h.DeleteVoucherById(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteProduct(e *echo.Echo, h product.HandlerProductInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	products := e.Group("api/v1")
-	products.GET("/products", h.GetAllProducts(), middlewares.AuthMiddleware(jwtService, userService))
-	products.POST("/products", h.CreateProduct(), middlewares.AuthMiddleware(jwtService, userService))
-	products.GET("/products/:id", h.GetProductById())
-	products.POST("/products/images", h.CreateProductImage(), middlewares.AuthMiddleware(jwtService, userService))
+	productsGroup := e.Group("api/v1/products")
+	productsGroup.GET("", h.GetAllProducts(), middlewares.AuthMiddleware(jwtService, userService))
+	productsGroup.POST("", h.CreateProduct(), middlewares.AuthMiddleware(jwtService, userService))
+	productsGroup.GET("/:id", h.GetProductById())
+	productsGroup.POST("/images", h.CreateProductImage(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	articles := e.Group("api/v1/articles")
-	articles.POST("", h.CreateArticle(), middlewares.AuthMiddleware(jwtService, userService))
-	articles.GET("", h.GetAllArticles())
-	articles.PUT("/:id", h.UpdateArticleById(), middlewares.AuthMiddleware(jwtService, userService))
-	articles.DELETE("/:id", h.DeleteArticleById(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup := e.Group("api/v1/articles")
+	articlesGroup.POST("", h.CreateArticle(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.GET("", h.GetAllArticles())
+	articlesGroup.PUT("/:id", h.UpdateArticleById(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.DELETE("/:id", h.DeleteArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	challenges := e.Group("api/v1/challenges")
-	challenges.GET("", h.GetAllChallenges())
-	challenges.POST("", h.CreateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
-	challenges.PUT("/:id", h.UpdateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
-	challenges.DELETE("/:id", h.DeleteChallengeById(), middlewares.AuthMiddleware(jwtService, userService))
-	challenges.GET("/:id", h.GetChallengeById())
+	challengesGroup := e.Group("api/v1/challenges")
+	challengesGroup.GET("", h.GetAllChallenges())
+	challengesGroup.POST("", h.CreateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
+	challengesGroup.PUT("/:id", h.UpdateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
+	challengesGroup.DELETE("/:id", h.DeleteChallengeById(), middlewares.AuthMiddleware(jwtService, userService))
+	challengesGroup.GET("/:id", h.GetChallengeById())
 }
 
 func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	categories := e.Group("/api/v1/categories")
-	categories.POST("", h.CreateCategory(), middlewares.AuthMiddleware(jwtService, userService))
-	categories.GET("", h.GetAllCategory())
-	categories.GET("/:name", h.GetCategoryByName())
-	categories.PUT("/:id", h.UpdateCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
-	categories.DELETE("/:id", h.DeleteCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
+	categoriesGroup := e.Group("/api/v1/categories")
+	categoriesGroup.POST("", h.CreateCategory(), middlewares.AuthMiddleware(jwtService, userService))
+	categoriesGroup.GET("", h.GetAllCategory())
+	categoriesGroup.GET("/:name", h.GetCategoryByName())
+	categoriesGroup.PUT("/:id", h.UpdateCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
+	categoriesGroup.DELETE("/:id", h.DeleteCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
 
 }
 
 func RouteCarousel(e *echo.Echo, h carousel.HandlerCarouselInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	carousels := e.Group("/api/v1/carousel")
-	carousels.GET("", h.GetAllCarousels())
-	carousels.POST("", h.CreateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
-	carousels.PUT("/:id", h.UpdateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
-	carousels.DELETE("/:id", h.DeleteCarousel(), middlewares.AuthMiddleware(jwtService, userService))
+	carouselsGroup := e.Group("/api/v1/carousel")
+	carouselsGroup.GET("", h.GetAllCarousels())
+	carouselsGroup.POST("", h.CreateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
+	carouselsGroup.PUT("/:id", h.UpdateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
+	carouselsGroup.DELETE("/:id", h.DeleteCarousel(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteAddress(e *echo.Echo, h address.HandlerAddressInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	addresses := e.Group("/api/v1/address")
-	addresses.GET("", h.GetAllAddress(), middlewares.AuthMiddleware(jwtService, userService))
-	addresses.POST("", h.CreateAddress(), middlewares.AuthMiddleware(jwtService, userService))
+	addressesGroup := e.Group("/api/v1/address")
+	addressesGroup.GET("", h.GetAllAddress(), middlewares.AuthMiddleware(jwtService, userService))
+	addressesGroup.POST("", h.CreateAddress(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteReview(e *echo.Echo, h review.HandlerReviewInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	reviews := e.Group("/api/v1/reviews")
-	reviews.POST("", h.CreateReview(), middlewares.AuthMiddleware(jwtService, userService))
+	reviewsGroup := e.Group("/api/v1/reviews")
+	reviewsGroup.POST("", h.CreateReview(), middlewares.AuthMiddleware(jwtService, userService))
+	reviewsGroup.POST("/photos", h.CreateReviewImages(), middlewares.AuthMiddleware(jwtService, userService))
+	reviewsGroup.GET("/:id", h.GetReviewById(), middlewares.AuthMiddleware(jwtService, userService))
 }

@@ -15,8 +15,8 @@ type ReviewModels struct {
 }
 
 type ReviewPhotoModels struct {
-	ID        int        `gorm:"column:id;type:int;primaryKey" json:"id"`
-	ReviewID  int        `gorm:"column:review_id;type:int" json:"review_id"`
+	ID        uint64     `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id"`
+	ReviewID  uint64     `gorm:"column:review_id;type:BIGINT UNSIGNED" json:"review_id"`
 	ImageURL  string     `gorm:"column:url;type:varchar(255)" json:"url"`
 	CreatedAt time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`

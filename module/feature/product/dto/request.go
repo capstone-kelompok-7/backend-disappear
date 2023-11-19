@@ -4,7 +4,7 @@ type CreateProductRequest struct {
 	Name        string   `json:"name" form:"name" validate:"required"`
 	Description string   `json:"description" form:"description" validate:"required"`
 	GramPlastic uint64   `json:"gram_plastic" form:"gram_plastic" validate:"required"`
-	Price       float64  `json:"price" form:"price" validate:"required"`
+	Price       uint64   `json:"price" form:"price" validate:"required"`
 	Stock       uint64   `json:"stock" form:"stock" validate:"required"`
 	Discount    uint64   `json:"discount" form:"discount" validate:"required"`
 	Exp         uint64   `json:"exp" form:"exp" validate:"required"`

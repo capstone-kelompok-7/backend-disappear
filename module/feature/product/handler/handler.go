@@ -24,10 +24,10 @@ func NewProductHandler(service product.ServiceProductInterface) product.HandlerP
 
 func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		//currentUser := c.Get("CurrentUser").(*entities.UserModels)
-		//if currentUser.Role != "admin" {
-		//	return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
-		//}
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 10
@@ -46,11 +46,11 @@ func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 		}
 
-		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
-		nextPage := h.service.GetNextPage(current_page, total_pages)
-		prevPage := h.service.GetPrevPage(current_page)
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.Pagination(c, dto.FormatterProduct(products), current_page, total_pages, int(totalItems), nextPage, prevPage, "Daftar produk")
+		return response.Pagination(c, dto.FormatterProduct(products), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar produk")
 	}
 }
 
@@ -63,7 +63,7 @@ func (h *ProductHandler) CreateProduct() echo.HandlerFunc {
 		var request dto.CreateProductRequest
 		if err := c.Bind(&request); err != nil {
 			c.Logger().Error("handler: invalid payload:", err.Error())
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Bad Request")
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
 		if err := utils.ValidateStruct(request); err != nil {
@@ -87,12 +87,11 @@ func (h *ProductHandler) GetProductById() echo.HandlerFunc {
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
-
-		getProductID, err := h.service.GetProductByID(int(productID))
+		getProductID, err := h.service.GetProductByID(productID)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengambil produk")
 		}
-		return response.SendSuccessResponse(c, "Detail produk", dto.FormatProductDetail(getProductID))
+		return response.SendSuccessResponse(c, "Detail produk", dto.FormatProductDetail(*getProductID))
 	}
 }
 

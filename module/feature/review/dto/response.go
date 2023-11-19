@@ -3,25 +3,47 @@ package dto
 import "github.com/capstone-kelompok-7/backend-disappear/module/entities"
 
 type ReviewFormatter struct {
-	ID          uint64 `json:"id"`
-	UserID      uint64 `json:"user_id"`
-	ProductID   uint64 `json:"product_id"`
-	Rating      uint64 `json:"rating"`
-	Description string `json:"description"`
+	ID          uint64                  `json:"id"`
+	UserID      uint64                  `json:"user_id"`
+	ProductID   uint64                  `json:"product_id"`
+	Rating      uint64                  `json:"rating"`
+	Description string                  `json:"description"`
+	Photos      []ReviewPhotosFormatter `json:"photos"`
 }
 
-func FormatReview(address *entities.ReviewModels) *ReviewFormatter {
-	reviewFormatter := &ReviewFormatter{}
-	reviewFormatter.ID = address.ID
-	reviewFormatter.UserID = address.UserID
-	reviewFormatter.ProductID = address.ProductID
-	reviewFormatter.Rating = address.Rating
-	reviewFormatter.Description = address.Description
+type ReviewPhotosFormatter struct {
+	ID       uint64 `json:"id"`
+	ImageURL string `json:"url"`
+}
 
+func FormatReview(review *entities.ReviewModels) *ReviewFormatter {
+	reviewFormatter := &ReviewFormatter{}
+	reviewFormatter.ID = review.ID
+	reviewFormatter.UserID = review.UserID
+	reviewFormatter.ProductID = review.ProductID
+	reviewFormatter.Rating = review.Rating
+	reviewFormatter.Description = review.Description
+
+	var image []ReviewPhotosFormatter
+	for _, images := range review.Photos {
+		categoryFormatter := ReviewPhotosFormatter{
+			ID:       images.ID,
+			ImageURL: images.ImageURL,
+		}
+		image = append(image, categoryFormatter)
+	}
+	reviewFormatter.Photos = image
 	return reviewFormatter
 }
 
-func FormatterAddress(reviews []*entities.ReviewModels) []*ReviewFormatter {
+func FormatReviewPhoto(reviewPhoto *entities.ReviewPhotoModels) *ReviewPhotosFormatter {
+	photoFormatter := &ReviewPhotosFormatter{}
+	photoFormatter.ID = reviewPhoto.ID
+	photoFormatter.ImageURL = reviewPhoto.ImageURL
+	return photoFormatter
+}
+
+func FormatterReview(reviews []*entities.ReviewModels) []*ReviewFormatter {
 	reviewFormatters := make([]*ReviewFormatter, 0)
 
 	for _, review := range reviews {

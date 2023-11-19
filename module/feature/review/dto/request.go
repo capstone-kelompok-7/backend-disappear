@@ -6,3 +6,8 @@ type CreateReviewRequest struct {
 	Rating      uint64 `json:"rating"`
 	Description string `json:"description"`
 }
+
+type CreatePhotoReviewRequest struct {
+	ReviewID uint64 `form:"review_id" json:"review_id"`
+	Photo    string `form:"photo" json:"photo"`
+}

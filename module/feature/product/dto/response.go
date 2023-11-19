@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/capstone-kelompok-7/backend-disappear/module/entities"
+import (
+	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
+)
 
 type ProductFormatter struct {
 	ID          uint64                  `json:"id"`
@@ -9,9 +11,12 @@ type ProductFormatter struct {
 	Stock       uint64                  `json:"stock"`
 	Discount    uint64                  `json:"discount"`
 	Exp         uint64                  `json:"product_exp"`
-	Price       float64                 `json:"price"`
+	Price       uint64                  `json:"price"`
+	Rating      float64                 `json:"rating"`
+	TotalReview uint64                  `json:"total_review"`
 	Categories  []CategoryFormatter     `json:"categories"`
 	Images      []ProductImageFormatter `json:"image_url"`
+	Reviews     []ReviewFormatter       `json:"reviews"`
 }
 
 type CategoryFormatter struct {
@@ -23,6 +28,13 @@ type ProductImageFormatter struct {
 	URL string `json:"image_url"`
 }
 
+type ReviewFormatter struct {
+	ID          uint64 `json:"id"`
+	UserID      uint64 `json:"user_id"`
+	Rating      uint64 `json:"rating"`
+	Description string `json:"description"`
+}
+
 func FormatProduct(product entities.ProductModels) ProductFormatter {
 	productFormatter := ProductFormatter{}
 	productFormatter.ID = product.ID
@@ -32,6 +44,8 @@ func FormatProduct(product entities.ProductModels) ProductFormatter {
 	productFormatter.Stock = product.Stock
 	productFormatter.Discount = product.Discount
 	productFormatter.Exp = product.Exp
+	productFormatter.Rating = product.Rating
+	productFormatter.TotalReview = product.TotalReview
 
 	var categories []CategoryFormatter
 	for _, category := range product.Categories {
@@ -52,6 +66,18 @@ func FormatProduct(product entities.ProductModels) ProductFormatter {
 		images = append(images, image)
 	}
 	productFormatter.Images = images
+
+	var reviews []ReviewFormatter
+	for _, review := range product.ProductReview {
+		reviewFormatter := ReviewFormatter{
+			ID:          review.ID,
+			UserID:      review.UserID,
+			Rating:      review.Rating,
+			Description: review.Description,
+		}
+		reviews = append(reviews, reviewFormatter)
+	}
+	productFormatter.Reviews = reviews
 
 	return productFormatter
 }
@@ -74,7 +100,7 @@ type ProductDetailFormatter struct {
 	Stock       uint64                  `json:"stock"`
 	Discount    uint64                  `json:"discount"`
 	Exp         uint64                  `json:"product_exp"`
-	Price       float64                 `json:"price"`
+	Price       uint64                  `json:"price"`
 	Categories  []CategoryFormatter     `json:"categories,omitempty"`
 	Images      []ProductImageFormatter `json:"image_url,omitempty"`
 }
