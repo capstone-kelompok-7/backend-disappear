@@ -8,6 +8,7 @@ type ReviewModels struct {
 	ProductID   uint64              `gorm:"column:product_id;type:BIGINT UNSIGNED" json:"product_id"`
 	Rating      uint64              `gorm:"column:rating;type:BIGINT UNSIGNED" json:"rating"`
 	Description string              `gorm:"column:description;type:text" json:"description"`
+	Date        time.Time           `gorm:"column:date;type:DATETIME" json:"date"`
 	CreatedAt   time.Time           `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt   time.Time           `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
 	DeletedAt   *time.Time          `gorm:"column:deleted_at;index" json:"deleted_at"`
@@ -21,6 +22,14 @@ type ReviewPhotoModels struct {
 	CreatedAt time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
 	DeletedAt *time.Time `gorm:"column:deleted_at;index" json:"deleted_at"`
+}
+
+type ReviewDetail struct {
+	Name         string    `json:"name"`
+	PhotoProfile string    `json:"photo_profile"`
+	Rating       uint64    `json:"rating"`
+	Date         time.Time `json:"date"`
+	Description  string    `json:"description"`
 }
 
 func (ReviewModels) TableName() string {

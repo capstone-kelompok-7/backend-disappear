@@ -41,3 +41,33 @@ func (r *ReviewRepository) GetReviewsById(reviewID uint64) (*entities.ReviewMode
 
 	return reviews, nil
 }
+
+func (r *ReviewRepository) CountAverageRating(productID uint64) (float64, error) {
+	var averageRating float64
+
+	query := "SELECT AVG(rating) FROM reviews WHERE product_id = ?"
+	if err := r.db.Raw(query, productID).Scan(&averageRating).Error; err != nil {
+		return 0, err
+	}
+
+	return averageRating, nil
+}
+
+func (r *ReviewRepository) GetDetailReviewProduct(productID uint64, page, perPage int) ([]*entities.ReviewDetail, error) {
+	var reviews []*entities.ReviewDetail
+	offset := (page - 1) * perPage
+
+	query := `
+	SELECT users.name, users.photo_profile, reviews.rating, reviews.date, reviews.description
+	FROM reviews
+	INNER JOIN users ON reviews.user_id = users.id
+	WHERE reviews.product_id = ?
+	LIMIT ? OFFSET ?`
+
+	err := r.db.Raw(query, productID, perPage, offset).Scan(&reviews).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return reviews, nil
+}

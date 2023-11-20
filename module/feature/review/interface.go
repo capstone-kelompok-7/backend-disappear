@@ -9,16 +9,21 @@ type RepositoryReviewInterface interface {
 	CreateReview(newData *entities.ReviewModels) (*entities.ReviewModels, error)
 	CreateReviewImages(newData *entities.ReviewPhotoModels) (*entities.ReviewPhotoModels, error)
 	GetReviewsById(reviewID uint64) (*entities.ReviewModels, error)
+	CountAverageRating(productID uint64) (float64, error)
+	GetDetailReviewProduct(productID uint64, page, perPage int) ([]*entities.ReviewDetail, error)
 }
 
 type ServiceReviewInterface interface {
 	CreateReview(newData *entities.ReviewModels) (*entities.ReviewModels, error)
 	CreateReviewImages(reviewData *entities.ReviewPhotoModels) (*entities.ReviewPhotoModels, error)
 	GetReviewById(reviewID uint64) (*entities.ReviewModels, error)
+	CountAverageRating(productID uint64) (float64, error)
+	GetDetailReviewProduct(productID uint64, page, perPage int) ([]*entities.ReviewDetail, error)
 }
 
 type HandlerReviewInterface interface {
 	CreateReview() echo.HandlerFunc
 	CreateReviewImages() echo.HandlerFunc
 	GetReviewById() echo.HandlerFunc
+	GetDetailReviewProduct() echo.HandlerFunc
 }

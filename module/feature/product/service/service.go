@@ -19,7 +19,7 @@ func NewProductService(repo product.RepositoryProductInterface) product.ServiceP
 	}
 }
 
-func (s *ProductService) GetAll(page, perPage int) ([]entities.ProductModels, int64, error) {
+func (s *ProductService) GetAll(page, perPage int) ([]*entities.ProductModels, int64, error) {
 	products, err := s.repo.FindAll(page, perPage)
 	if err != nil {
 		return products, 0, err
@@ -39,13 +39,13 @@ func (s *ProductService) CalculatePaginationValues(page int, totalItems int, per
 		pageInt = 1
 	}
 
-	total_pages := int(math.Ceil(float64(totalItems) / float64(perPage)))
+	totalPages := int(math.Ceil(float64(totalItems) / float64(perPage)))
 
-	if pageInt > total_pages {
-		pageInt = total_pages
+	if pageInt > totalPages {
+		pageInt = totalPages
 	}
 
-	return pageInt, total_pages
+	return pageInt, totalPages
 }
 
 func (s *ProductService) GetNextPage(currentPage, totalPages int) int {
@@ -62,15 +62,15 @@ func (s *ProductService) GetPrevPage(currentPage int) int {
 	return 1
 }
 
-func (s *ProductService) GetProductsByName(page, perPage int, name string) ([]entities.ProductModels, int64, error) {
+func (s *ProductService) GetProductsByName(page, perPage int, name string) ([]*entities.ProductModels, int64, error) {
 	products, err := s.repo.FindByName(page, perPage, name)
 	if err != nil {
-		return products, 0, err
+		return nil, 0, err
 	}
 
 	totalItems, err := s.repo.GetTotalProductCountByName(name)
 	if err != nil {
-		return products, 0, err
+		return nil, 0, err
 	}
 
 	return products, totalItems, nil
@@ -132,4 +132,27 @@ func (s *ProductService) UpdateTotalReview(productID uint64) error {
 	}
 
 	return nil
+}
+
+func (s *ProductService) UpdateProductRating(productID uint64, newRating float64) error {
+	err := s.repo.UpdateProductRating(productID, newRating)
+	if err != nil {
+		return errors.New("gagal memperbarui rating produk")
+	}
+
+	return nil
+}
+
+func (s *ProductService) GetProductReviews(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	products, err := s.repo.GetProductReviews(page, perPage)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalProductCount()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
 }

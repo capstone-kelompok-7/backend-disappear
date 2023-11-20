@@ -35,8 +35,8 @@ type ReviewFormatter struct {
 	Description string `json:"description"`
 }
 
-func FormatProduct(product entities.ProductModels) ProductFormatter {
-	productFormatter := ProductFormatter{}
+func FormatProduct(product *entities.ProductModels) *ProductFormatter {
+	productFormatter := &ProductFormatter{}
 	productFormatter.ID = product.ID
 	productFormatter.Name = product.Name
 	productFormatter.GramPlastic = product.GramPlastic
@@ -82,8 +82,8 @@ func FormatProduct(product entities.ProductModels) ProductFormatter {
 	return productFormatter
 }
 
-func FormatterProduct(products []entities.ProductModels) []ProductFormatter {
-	var productFormatter []ProductFormatter
+func FormatterProduct(products []*entities.ProductModels) []*ProductFormatter {
+	var productFormatter []*ProductFormatter
 
 	for _, product := range products {
 		formatProduct := FormatProduct(product)
@@ -137,4 +137,25 @@ func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter 
 	productFormatter.Images = images
 
 	return productFormatter
+}
+
+type ReviewProductFormatter struct {
+	ID          uint64  `json:"id"`
+	Name        string  `json:"name"`
+	Rating      float64 `json:"rating"`
+	TotalReview uint64  `json:"total_review"`
+}
+
+func FormatReviewProductFormatter(products []*entities.ProductModels) []*ReviewProductFormatter {
+	productFormatters := make([]*ReviewProductFormatter, 0)
+	for _, product := range products {
+		productFormatter := &ReviewProductFormatter{
+			ID:          product.ID,
+			Name:        product.Name,
+			Rating:      product.Rating,
+			TotalReview: product.TotalReview,
+		}
+		productFormatters = append(productFormatters, productFormatter)
+	}
+	return productFormatters
 }

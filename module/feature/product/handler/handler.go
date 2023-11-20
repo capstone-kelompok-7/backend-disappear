@@ -32,7 +32,7 @@ func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 10
 
-		var products []entities.ProductModels
+		var products []*entities.ProductModels
 		var totalItems int64
 		var err error
 		search := c.QueryParam("search")
@@ -132,5 +132,37 @@ func (h *ProductHandler) CreateProductImage() echo.HandlerFunc {
 		}
 		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan image pada product")
 
+	}
+}
+
+func (h *ProductHandler) GetAllProductsReview() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		page, _ := strconv.Atoi(c.QueryParam("page"))
+		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
+		perPage := 10
+
+		var products []*entities.ProductModels
+		var totalItems int64
+		var err error
+		search := c.QueryParam("search")
+		if search != "" {
+			products, totalItems, err = h.service.GetProductsByName(page, perPage, search)
+		} else {
+			products, totalItems, err = h.service.GetProductReviews(pageConv, perPage)
+		}
+		if err != nil {
+			c.Logger().Error("handler: failed to fetch all products:", err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+		}
+
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
+
+		return response.Pagination(c, dto.FormatReviewProductFormatter(products), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar produk reviews")
 	}
 }

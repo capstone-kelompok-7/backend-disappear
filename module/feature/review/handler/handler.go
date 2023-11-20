@@ -107,3 +107,23 @@ func (h *ReviewHandler) GetReviewById() echo.HandlerFunc {
 		return response.SendSuccessResponse(c, "Detail reviews", dto.FormatReview(getReviewID))
 	}
 }
+
+func (h *ReviewHandler) GetDetailReviewProduct() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		productID := c.Param("id")
+		id, err := strconv.ParseUint(productID, 10, 64)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+
+		page, _ := strconv.Atoi(c.QueryParam("page"))
+		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
+		perPage := 8
+
+		result, err := h.service.GetDetailReviewProduct(id, pageConv, perPage)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengambil detail ulasan produk")
+		}
+		return response.SendSuccessResponse(c, "Detail ulasan produk", result)
+	}
+}
