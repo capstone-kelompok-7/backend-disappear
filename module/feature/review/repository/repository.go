@@ -23,3 +23,21 @@ func (r *ReviewRepository) CreateReview(newData *entities.ReviewModels) (*entiti
 	}
 	return newData, nil
 }
+
+func (r *ReviewRepository) CreateReviewImages(newData *entities.ReviewPhotoModels) (*entities.ReviewPhotoModels, error) {
+	err := r.db.Create(&newData).Error
+	if err != nil {
+		return nil, err
+	}
+	return newData, nil
+}
+
+func (r *ReviewRepository) GetReviewsById(reviewID uint64) (*entities.ReviewModels, error) {
+	var reviews *entities.ReviewModels
+
+	if err := r.db.Preload("Photos").Where("id = ? AND deleted_at IS NULL", reviewID).First(&reviews).Error; err != nil {
+		return nil, err
+	}
+
+	return reviews, nil
+}

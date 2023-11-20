@@ -88,7 +88,7 @@ func main() {
 	addressHandler := hAddress.NewAddressHandler(addressService)
 
 	reviewRepo := rReview.NewReviewRepository(db)
-	reviewService := sReview.NewReviewService(reviewRepo)
+	reviewService := sReview.NewReviewService(reviewRepo, productService)
 	reviewHandler := hReview.NewReviewHandler(reviewService)
 
 	e.Pre(middleware.RemoveTrailingSlash())

@@ -48,7 +48,7 @@ func (r *ProductRepository) GetTotalProductCountByName(name string) (int64, erro
 func (r *ProductRepository) FindAll(page, perPage int) ([]entities.ProductModels, error) {
 	var products []entities.ProductModels
 	offset := (page - 1) * perPage
-	err := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos").Find(&products).Error
+	err := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Find(&products).Error
 	if err != nil {
 		return products, err
 	}
@@ -86,14 +86,14 @@ func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, c
 	return tx.Commit().Error
 }
 
-func (r *ProductRepository) GetProductByID(productID int) (entities.ProductModels, error) {
-	var product entities.ProductModels
+func (r *ProductRepository) GetProductByID(productID uint64) (*entities.ProductModels, error) {
+	var products *entities.ProductModels
 
-	if err := r.db.Preload("Categories").Preload("ProductPhotos").Where("id = ? AND deleted_at IS NULL", productID).First(&product).Error; err != nil {
-		return product, err
+	if err := r.db.Preload("Categories").Preload("ProductPhotos").Where("id = ? AND deleted_at IS NULL", productID).First(&products).Error; err != nil {
+		return nil, err
 	}
 
-	return product, nil
+	return products, nil
 }
 
 func (r *ProductRepository) CreateImageProduct(productImage *entities.ProductPhotosModels) (*entities.ProductPhotosModels, error) {
@@ -101,4 +101,13 @@ func (r *ProductRepository) CreateImageProduct(productImage *entities.ProductPho
 		return productImage, err
 	}
 	return productImage, nil
+}
+
+func (r *ProductRepository) UpdateTotalReview(productID uint64) error {
+	var products *entities.ProductModels
+	err := r.db.Model(&products).Where("id = ?", productID).UpdateColumn("total_review", gorm.Expr("total_review + ?", 1)).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

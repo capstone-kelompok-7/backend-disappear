@@ -86,6 +86,8 @@ func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error 
 		Stock:       request.Stock,
 		Discount:    request.Discount,
 		Exp:         request.Exp,
+		Rating:      0.0,
+		TotalReview: 0,
 		CreatedAt:   time.Now(),
 	}
 
@@ -97,12 +99,12 @@ func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error 
 	return nil
 }
 
-func (s *ProductService) GetProductByID(productID int) (entities.ProductModels, error) {
-	product, err := s.repo.GetProductByID(productID)
+func (s *ProductService) GetProductByID(productID uint64) (*entities.ProductModels, error) {
+	products, err := s.repo.GetProductByID(productID)
 	if err != nil {
-		return product, errors.New("produk tidak ditemukan")
+		return nil, errors.New("produk tidak ditemukan")
 	}
-	return product, nil
+	return products, nil
 }
 
 func (s *ProductService) CreateImageProduct(request dto.CreateProductImage) (*entities.ProductPhotosModels, error) {
@@ -117,4 +119,17 @@ func (s *ProductService) CreateImageProduct(request dto.CreateProductImage) (*en
 	}
 
 	return images, nil
+}
+
+func (s *ProductService) UpdateTotalReview(productID uint64) error {
+	_, err := s.repo.GetProductByID(productID)
+	if err != nil {
+		return errors.New("produk tidak ditemukan")
+	}
+	err = s.repo.UpdateTotalReview(productID)
+	if err != nil {
+		return errors.New("gagal memperbarui total review")
+	}
+
+	return nil
 }

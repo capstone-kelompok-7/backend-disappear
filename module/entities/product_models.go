@@ -9,10 +9,12 @@ type ProductModels struct {
 	Name          string                `gorm:"column:name;type:varchar(255)" json:"name"`
 	Description   string                `gorm:"column:description;type:text" json:"description"`
 	GramPlastic   uint64                `gorm:"column:gram_plastic;type:bigint" json:"gram_plastic"`
-	Price         float64               `gorm:"column:price;type:decimal(10,2)" json:"price"`
-	Stock         uint64                `gorm:"column:stock;type:bigint" json:"stock"`
-	Discount      uint64                `gorm:"column:discount;type:bigint" json:"discount"`
-	Exp           uint64                `gorm:"column:exp;type:bigint" json:"product_exp"`
+	Price         uint64                `gorm:"column:price;type:BIGINT UNSIGNED" json:"price"`
+	Stock         uint64                `gorm:"column:stock;type:BIGINT UNSIGNED" json:"stock"`
+	Discount      uint64                `gorm:"column:discount;type:BIGINT UNSIGNED" json:"discount"`
+	Exp           uint64                `gorm:"column:exp;type:BIGINT UNSIGNED" json:"product_exp"`
+	Rating        float64               `gorm:"column:rating;type:DECIMAL(3, 1)" json:"rating"`
+	TotalReview   uint64                `gorm:"column:total_review;type:BIGINT UNSIGNED" json:"total_review"`
 	CreatedAt     time.Time             `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt     time.Time             `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
 	DeletedAt     *time.Time            `gorm:"column:deleted_at;index" json:"deleted_at"`
@@ -23,7 +25,7 @@ type ProductModels struct {
 
 type ProductPhotosModels struct {
 	ID        uint64     `gorm:"column:id;type:bigint;primaryKey" json:"id"`
-	ProductID uint64     `gorm:"column:product_id;type:bigint" json:"product_id"`
+	ProductID uint64     `gorm:"column:product_id;type:BIGINT UNSIGNED" json:"product_id"`
 	ImageURL  string     `gorm:"column:url;type:varchar(255)" json:"url"`
 	CreatedAt time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
