@@ -12,6 +12,7 @@ type AddressFormatter struct {
 	Province     string `json:"province"`
 	PostalCode   int    `json:"postal_code"`
 	Note         string `json:"note"`
+	IsPrimary    bool   `json:"is_primary"`
 }
 
 func FormatAddress(address *entities.AddressModels) *AddressFormatter {
@@ -25,6 +26,7 @@ func FormatAddress(address *entities.AddressModels) *AddressFormatter {
 	addressFormatter.Province = address.Province
 	addressFormatter.PostalCode = address.PostalCode
 	addressFormatter.Note = address.Note
+	addressFormatter.IsPrimary = address.IsPrimary
 
 	return addressFormatter
 }

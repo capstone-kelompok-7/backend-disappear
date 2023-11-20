@@ -95,6 +95,8 @@ func RouteAddress(e *echo.Echo, h address.HandlerAddressInterface, jwtService ut
 	addressesGroup := e.Group("/api/v1/address")
 	addressesGroup.GET("", h.GetAllAddress(), middlewares.AuthMiddleware(jwtService, userService))
 	addressesGroup.POST("", h.CreateAddress(), middlewares.AuthMiddleware(jwtService, userService))
+	addressesGroup.PUT("/:id", h.UpdateAddress(), middlewares.AuthMiddleware(jwtService, userService))
+	addressesGroup.DELETE("/:id", h.DeleteAddress(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteReview(e *echo.Echo, h review.HandlerReviewInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
