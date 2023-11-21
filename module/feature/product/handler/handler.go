@@ -184,6 +184,10 @@ func (h *ProductHandler) UpdateProduct() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
+		if err := utils.ValidateStruct(request); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+
 		err = h.service.UpdateProduct(productID, &request)
 		if err != nil {
 			c.Logger().Error("handler: gagal update produk baru:", err.Error())
