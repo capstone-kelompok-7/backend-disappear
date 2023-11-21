@@ -166,3 +166,30 @@ func (h *ProductHandler) GetAllProductsReview() echo.HandlerFunc {
 		return response.Pagination(c, dto.FormatReviewProductFormatter(products), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar produk reviews")
 	}
 }
+
+func (h *ProductHandler) UpdateProduct() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("id")
+		productID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		var request dto.UpdateProduct
+		if err := c.Bind(&request); err != nil {
+			c.Logger().Error("handler: invalid payload:", err.Error())
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+
+		err = h.service.UpdateProduct(productID, &request)
+		if err != nil {
+			c.Logger().Error("handler: gagal update produk baru:", err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+		}
+
+		return response.SendStatusCreatedResponse(c, "Product berhasil diupdate")
+	}
+}
