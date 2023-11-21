@@ -32,6 +32,7 @@ type AddressModels struct {
 	Province     string     `gorm:"column:province;type:VARCHAR(255)" json:"province"`
 	PostalCode   int        `gorm:"column:postal_code;type:INT" json:"postal_code"`
 	Note         string     `gorm:"column:note;type:TEXT" json:"note"`
+	IsPrimary    bool       `gorm:"column:is_primary;type:BOOLEAN" json:"is_primary"`
 	CreatedAt    time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
 	DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`

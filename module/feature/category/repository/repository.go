@@ -4,6 +4,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"gorm.io/gorm"
+	"time"
 )
 
 type CategoryRepository struct {
@@ -15,6 +16,7 @@ func NewCategoryRepository(db *gorm.DB) category.RepositoryCategoryInterface {
 		db: db,
 	}
 }
+
 func (r *CategoryRepository) CreateCategory(category *entities.CategoryModels) (*entities.CategoryModels, error) {
 	if err := r.db.Create(category).Error; err != nil {
 		return nil, err
@@ -58,14 +60,12 @@ func (r *CategoryRepository) UpdateCategoryById(id uint64, updatedCategory *enti
 }
 
 func (r *CategoryRepository) DeleteCategoryById(id uint64) error {
-	var category entities.CategoryModels
-	if err := r.db.First(&category, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil
-		}
+	categories := &entities.CategoryModels{}
+	if err := r.db.First(&categories, id).Error; err != nil {
 		return err
 	}
-	if err := r.db.Delete(&category).Error; err != nil {
+
+	if err := r.db.Model(&categories).Update("deleted_at", time.Now()).Error; err != nil {
 		return err
 	}
 
@@ -110,6 +110,7 @@ func (r *CategoryRepository) GetTotalCategoryCountByName(name string) (int64, er
 	err := query.Count(&count).Error
 	return count, err
 }
+
 func (r *CategoryRepository) GetTotalCategoryCount() (int64, error) {
 	var count int64
 	err := r.db.Model(&entities.CategoryModels{}).Count(&count).Error

@@ -1,8 +1,10 @@
 package service
 
 import (
+	"errors"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/address"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/address/dto"
 	"math"
 	"time"
 )
@@ -27,12 +29,25 @@ func (s *AddressService) CreateAddress(addressData *entities.AddressModels) (*en
 		Province:     addressData.Province,
 		PostalCode:   addressData.PostalCode,
 		Note:         addressData.Note,
+		IsPrimary:    addressData.IsPrimary,
 		CreatedAt:    time.Now(),
 	}
 
 	createdAddress, err := s.repo.CreateAddress(value)
 	if err != nil {
 		return nil, err
+	}
+	if createdAddress.IsPrimary {
+		currentPrimaryAddress, err := s.repo.GetPrimaryAddressByUserID(createdAddress.UserID)
+		if err != nil {
+			return nil, errors.New("Gagal mendapatkan alamat utama")
+		}
+		if currentPrimaryAddress != nil && currentPrimaryAddress.ID != createdAddress.ID {
+			err = s.repo.UpdateIsPrimary(currentPrimaryAddress.ID, false)
+			if err != nil {
+				return nil, errors.New("Gagal merubah alamat utama")
+			}
+		}
 	}
 
 	return createdAddress, nil
@@ -79,4 +94,60 @@ func (s *AddressService) GetPrevPage(currentPage int) int {
 		return currentPage - 1
 	}
 	return 1
+}
+
+func (s *AddressService) GetAddressByID(addressID uint64) (*entities.AddressModels, error) {
+	result, err := s.repo.GetAddressByID(addressID)
+	if err != nil {
+		return nil, errors.New("Alamat tidak ditemukan")
+	}
+	return result, nil
+}
+
+func (s *AddressService) UpdateAddress(userID, addressID uint64, updatedAddress *dto.UpdateAddressRequest) error {
+	existingAddress, err := s.repo.GetAddressByID(addressID)
+	if err != nil {
+		return errors.New("Alamat tidak ditemukan")
+	}
+
+	currentPrimaryAddress, err := s.repo.GetPrimaryAddressByUserID(userID)
+	if err != nil {
+		return errors.New("Gagal mendapatkan alamat utama")
+	}
+
+	if updatedAddress.IsPrimary && currentPrimaryAddress != nil && currentPrimaryAddress.ID != existingAddress.ID {
+		err = s.repo.UpdateIsPrimary(currentPrimaryAddress.ID, false)
+		if err != nil {
+			return errors.New("Gagal merubah alamat utama")
+		}
+	}
+
+	err = s.repo.UpdateAddress(existingAddress.ID, updatedAddress)
+	if err != nil {
+		return errors.New("Gagal memperbarui alamat")
+	}
+
+	return nil
+}
+
+func (s *AddressService) DeleteAddress(addressID, userID uint64) error {
+	address, err := s.repo.GetAddressByID(addressID)
+	if err != nil {
+		return errors.New("Alamat tidak ditemukan")
+	}
+	primaryAddress, err := s.repo.GetPrimaryAddressByUserID(userID)
+	if err != nil {
+		return errors.New("Gagal mendapatkan alamat utama")
+	}
+
+	if address.ID == primaryAddress.ID {
+		return errors.New("Alamat utama tidak dapat dihapus")
+	}
+
+	err = s.repo.DeleteAddress(address.ID)
+	if err != nil {
+		return errors.New("Gagal menghapus alamat")
+	}
+
+	return nil
 }

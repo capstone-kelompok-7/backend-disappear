@@ -24,6 +24,9 @@ func NewAddressHandler(service address.ServiceAddressInterface) address.HandlerA
 func (h *AddressHandler) CreateAddress() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
+		}
 		addressRequest := new(dto.CreateAddressRequest)
 		if err := c.Bind(addressRequest); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
@@ -41,6 +44,7 @@ func (h *AddressHandler) CreateAddress() echo.HandlerFunc {
 			Province:     addressRequest.Province,
 			PostalCode:   addressRequest.PostalCode,
 			Note:         addressRequest.Note,
+			IsPrimary:    addressRequest.IsPrimary,
 		}
 		createdAddress, err := h.service.CreateAddress(newAddress)
 		if err != nil {
@@ -53,6 +57,9 @@ func (h *AddressHandler) CreateAddress() echo.HandlerFunc {
 func (h *AddressHandler) GetAllAddress() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
+		}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
@@ -70,5 +77,53 @@ func (h *AddressHandler) GetAllAddress() echo.HandlerFunc {
 		prevPage := h.service.GetPrevPage(currentPage)
 
 		return response.Pagination(c, dto.FormatterAddress(addresses), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar alamat")
+	}
+}
+
+func (h *AddressHandler) UpdateAddress() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
+		}
+		addressID := c.Param("id")
+		id, err := strconv.ParseUint(addressID, 10, 64)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		var updatedAddress *dto.UpdateAddressRequest
+		if err := c.Bind(&updatedAddress); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		if err := utils.ValidateStruct(updatedAddress); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+		err = h.service.UpdateAddress(currentUser.ID, id, updatedAddress)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui alamat: "+err.Error())
+		}
+
+		return response.SendStatusOkResponse(c, "Alamat berhasil diperbarui")
+	}
+}
+
+func (h *AddressHandler) DeleteAddress() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan:: Anda tidak memiliki izin")
+		}
+		id := c.Param("id")
+		addressID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+
+		err = h.service.DeleteAddress(addressID, currentUser.ID)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus alamat: "+err.Error())
+		}
+
+		return response.SendStatusOkResponse(c, "Alamat berhasil dihapus")
 	}
 }
