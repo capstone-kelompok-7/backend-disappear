@@ -211,3 +211,25 @@ func (s *ProductService) DeleteProduct(id uint64) error {
 	}
 	return nil
 }
+
+func (s *ProductService) DeleteImageProduct(productId, imageId uint64) error {
+	productData, err := s.repo.GetProductByID(productId)
+	if err != nil {
+		return errors.New("produk tidak ditemukan")
+	}
+	found := false
+	for _, photo := range productData.ProductPhotos {
+		if photo.ID == imageId {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return errors.New("image tidak ditemukan pada produk ini")
+	}
+
+	if err := s.repo.DeleteProductImage(productData.ID, imageId); err != nil {
+		return errors.New("gagal menghapus image pada produk ini")
+	}
+	return nil
+}

@@ -215,3 +215,27 @@ func (h *ProductHandler) DeleteProduct() echo.HandlerFunc {
 		return response.SendStatusOkResponse(c, "Berhasil hapus produk")
 	}
 }
+
+func (h *ProductHandler) DeleteProductImageById() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		productId, err := strconv.ParseUint(c.Param("idProduct"), 10, 64)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		imageId, err := strconv.ParseUint(c.Param("idImage"), 10, 64)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		err = h.service.DeleteImageProduct(productId, imageId)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus image pada produk ini: "+err.Error())
+		}
+
+		return response.SendStatusOkResponse(c, "Image pada produk ini berhasil dhapus")
+	}
+}

@@ -176,3 +176,19 @@ func (r *ProductRepository) DeleteProduct(id uint64) error {
 	}
 	return nil
 }
+
+func (r *ProductRepository) DeleteProductImage(productID, imageID uint64) error {
+	tx := r.db.Begin()
+
+	if err := tx.Model(&entities.ProductPhotosModels{}).Where("id = ? AND product_id = ?", imageID, productID).Update("deleted_at", time.Now()).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Model(&entities.ProductModels{}).Where("id = ?", productID).Update("updated_at", time.Now()).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
