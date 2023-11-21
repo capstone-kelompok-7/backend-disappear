@@ -194,6 +194,6 @@ func (h *ProductHandler) UpdateProduct() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 		}
 
-		return response.SendStatusCreatedResponse(c, "Product berhasil diupdate")
+		return response.SendStatusOkResponse(c, "Product berhasil diupdate")
 	}
 }
