@@ -9,6 +9,7 @@ type CreateProductRequest struct {
 	Discount    uint64   `json:"discount" form:"discount" validate:"required"`
 	Exp         uint64   `json:"exp" form:"exp" validate:"required"`
 	Categories  []uint64 `json:"categories" form:"categories" validate:"required"`
+	ImageURL    string   `json:"image_url" form:"image_url"`
 }
 
 type CreateProductImage struct {
