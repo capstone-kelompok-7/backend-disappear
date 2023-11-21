@@ -90,7 +90,14 @@ func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error 
 		TotalReview: 0,
 		CreatedAt:   time.Now(),
 	}
-
+	if request.ImageURL != "" {
+		productData.ProductPhotos = []entities.ProductPhotosModels{
+			{
+				ImageURL:  request.ImageURL,
+				CreatedAt: time.Now(),
+			},
+		}
+	}
 	err := s.repo.CreateProduct(productData, request.Categories)
 	if err != nil {
 		return err
