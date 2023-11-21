@@ -16,8 +16,8 @@ func NewProductRepository(db *gorm.DB) product.RepositoryProductInterface {
 	}
 }
 
-func (r *ProductRepository) FindByName(page, perPage int, name string) ([]entities.ProductModels, error) {
-	var products []entities.ProductModels
+func (r *ProductRepository) FindByName(page, perPage int, name string) ([]*entities.ProductModels, error) {
+	var products []*entities.ProductModels
 	offset := (page - 1) * perPage
 	query := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos")
 
@@ -27,7 +27,7 @@ func (r *ProductRepository) FindByName(page, perPage int, name string) ([]entiti
 
 	err := query.Find(&products).Error
 	if err != nil {
-		return products, err
+		return nil, err
 	}
 
 	return products, nil
@@ -45,12 +45,12 @@ func (r *ProductRepository) GetTotalProductCountByName(name string) (int64, erro
 	return count, err
 }
 
-func (r *ProductRepository) FindAll(page, perPage int) ([]entities.ProductModels, error) {
-	var products []entities.ProductModels
+func (r *ProductRepository) FindAll(page, perPage int) ([]*entities.ProductModels, error) {
+	var products []*entities.ProductModels
 	offset := (page - 1) * perPage
 	err := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Find(&products).Error
 	if err != nil {
-		return products, err
+		return nil, err
 	}
 	return products, nil
 }
@@ -110,4 +110,21 @@ func (r *ProductRepository) UpdateTotalReview(productID uint64) error {
 		return err
 	}
 	return nil
+}
+
+func (r *ProductRepository) UpdateProductRating(productID uint64, newRating float64) error {
+	if err := r.db.Model(&entities.ProductModels{}).Where("id = ?", productID).Update("rating", newRating).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ProductRepository) GetProductReviews(page, perPage int) ([]*entities.ProductModels, error) {
+	var products []*entities.ProductModels
+	offset := (page - 1) * perPage
+	err := r.db.Where("deleted_at IS NULL").Offset(offset).Limit(perPage).Find(&products).Error
+	if err != nil {
+		return nil, err
+	}
+	return products, nil
 }

@@ -33,6 +33,7 @@ func (s *ReviewService) CreateReview(reviewData *entities.ReviewModels) (*entiti
 		ProductID:   reviewData.ProductID,
 		Rating:      reviewData.Rating,
 		Description: reviewData.Description,
+		Date:        time.Now(),
 		CreatedAt:   time.Now(),
 	}
 
@@ -44,6 +45,16 @@ func (s *ReviewService) CreateReview(reviewData *entities.ReviewModels) (*entiti
 	err = s.productService.UpdateTotalReview(reviewData.ProductID)
 	if err != nil {
 		return nil, errors.New("gagal memperbarui total reviews")
+	}
+
+	averageRating, err := s.repo.CountAverageRating(reviewData.ProductID)
+	if err != nil {
+		return nil, errors.New("gagal menghitung rata-rata rating produk")
+	}
+
+	err = s.productService.UpdateProductRating(reviewData.ProductID, averageRating)
+	if err != nil {
+		return nil, errors.New("gagal memperbarui rating produk")
 	}
 
 	return createdReview, nil
@@ -74,4 +85,20 @@ func (s *ReviewService) GetReviewById(reviewID uint64) (*entities.ReviewModels, 
 		return nil, errors.New("reviews tidak di temukan")
 	}
 	return result, nil
+}
+
+func (s *ReviewService) CountAverageRating(productID uint64) (float64, error) {
+	result, err := s.repo.CountAverageRating(productID)
+	if err != nil {
+		return 0, errors.New("gagal menghitung rata - rata rating")
+	}
+	return result, nil
+}
+
+func (s *ReviewService) GetDetailReviewProduct(productID uint64, page, perPage int) ([]*entities.ReviewDetail, error) {
+	reviews, err := s.repo.GetDetailReviewProduct(productID, page, perPage)
+	if err != nil {
+		return nil, err
+	}
+	return reviews, nil
 }
