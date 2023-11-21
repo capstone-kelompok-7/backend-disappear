@@ -197,3 +197,21 @@ func (h *ProductHandler) UpdateProduct() echo.HandlerFunc {
 		return response.SendStatusOkResponse(c, "Product berhasil diupdate")
 	}
 }
+
+func (h *ProductHandler) DeleteProduct() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		productId, err := strconv.ParseUint(c.Param("id"), 10, 64)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		err = h.service.DeleteProduct(productId)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus produk: "+err.Error())
+		}
+		return response.SendStatusOkResponse(c, "Berhasil hapus produk")
+	}
+}

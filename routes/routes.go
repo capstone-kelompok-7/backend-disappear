@@ -55,6 +55,7 @@ func RouteProduct(e *echo.Echo, h product.HandlerProductInterface, jwtService ut
 	productsGroup.POST("/images", h.CreateProductImage(), middlewares.AuthMiddleware(jwtService, userService))
 	productsGroup.GET("/reviews", h.GetAllProductsReview(), middlewares.AuthMiddleware(jwtService, userService))
 	productsGroup.PUT("/:id", h.UpdateProduct(), middlewares.AuthMiddleware(jwtService, userService))
+	productsGroup.DELETE("/:id", h.DeleteProduct(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

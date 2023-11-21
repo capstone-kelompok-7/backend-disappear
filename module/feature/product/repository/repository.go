@@ -4,6 +4,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"gorm.io/gorm"
+	"time"
 )
 
 type ProductRepository struct {
@@ -19,7 +20,7 @@ func NewProductRepository(db *gorm.DB) product.RepositoryProductInterface {
 func (r *ProductRepository) FindByName(page, perPage int, name string) ([]*entities.ProductModels, error) {
 	var products []*entities.ProductModels
 	offset := (page - 1) * perPage
-	query := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos")
+	query := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos").Where("deleted_at IS NULL")
 
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
@@ -35,7 +36,7 @@ func (r *ProductRepository) FindByName(page, perPage int, name string) ([]*entit
 
 func (r *ProductRepository) GetTotalProductCountByName(name string) (int64, error) {
 	var count int64
-	query := r.db.Model(&entities.ProductModels{})
+	query := r.db.Model(&entities.ProductModels{}).Where("deleted_at IS NULL")
 
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
@@ -48,7 +49,7 @@ func (r *ProductRepository) GetTotalProductCountByName(name string) (int64, erro
 func (r *ProductRepository) FindAll(page, perPage int) ([]*entities.ProductModels, error) {
 	var products []*entities.ProductModels
 	offset := (page - 1) * perPage
-	err := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Find(&products).Error
+	err := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Where("deleted_at IS NULL").Find(&products).Error
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +58,7 @@ func (r *ProductRepository) FindAll(page, perPage int) ([]*entities.ProductModel
 
 func (r *ProductRepository) GetTotalProductCount() (int64, error) {
 	var count int64
-	err := r.db.Model(&entities.ProductModels{}).Count(&count).Error
+	err := r.db.Model(&entities.ProductModels{}).Where("deleted_at IS NULL").Count(&count).Error
 	return count, err
 }
 
@@ -160,4 +161,18 @@ func (r *ProductRepository) UpdateProductCategories(product *entities.ProductMod
 	}
 
 	return tx.Commit().Error
+}
+
+func (r *ProductRepository) DeleteProduct(id uint64) error {
+	var productData entities.ProductModels
+	if err := r.db.First(&productData, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil
+		}
+		return err
+	}
+	if err := r.db.Model(&productData).Update("DeletedAt", time.Now()).Error; err != nil {
+		return err
+	}
+	return nil
 }

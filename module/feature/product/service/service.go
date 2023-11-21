@@ -199,5 +199,15 @@ func (s *ProductService) UpdateProduct(productID uint64, request *dto.UpdateProd
 	}
 
 	return nil
+}
 
+func (s *ProductService) DeleteProduct(id uint64) error {
+	productId, err := s.repo.GetProductByID(id)
+	if err != nil {
+		return errors.New("produk tidak ditemukan")
+	}
+	if err := s.repo.DeleteProduct(productId.ID); err != nil {
+		return errors.New("gagal menghapus product")
+	}
+	return nil
 }
