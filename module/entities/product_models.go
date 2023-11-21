@@ -27,9 +27,9 @@ type ProductPhotosModels struct {
 	ID        uint64     `gorm:"column:id;type:bigint;primaryKey" json:"id"`
 	ProductID uint64     `gorm:"column:product_id;type:BIGINT UNSIGNED" json:"product_id"`
 	ImageURL  string     `gorm:"column:url;type:varchar(255)" json:"url"`
-	CreatedAt time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	UpdatedAt time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	CreatedAt time.Time  `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time  `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt *time.Time `gorm:"column:deleted_at;index" json:"deleted_at"`
 }
 
 func (ProductModels) TableName() string {

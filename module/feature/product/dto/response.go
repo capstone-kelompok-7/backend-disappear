@@ -59,11 +59,13 @@ func FormatProduct(product *entities.ProductModels) *ProductFormatter {
 
 	var images []ProductImageFormatter
 	for _, photo := range product.ProductPhotos {
-		image := ProductImageFormatter{
-			ID:  photo.ID,
-			URL: photo.ImageURL,
+		if photo.DeletedAt == nil {
+			image := ProductImageFormatter{
+				ID:  photo.ID,
+				URL: photo.ImageURL,
+			}
+			images = append(images, image)
 		}
-		images = append(images, image)
 	}
 	productFormatter.Images = images
 

@@ -20,6 +20,7 @@ type RepositoryProductInterface interface {
 	UpdateProduct(product *entities.ProductModels) error
 	UpdateProductCategories(product *entities.ProductModels, categoryIDs []uint64) error
 	DeleteProduct(id uint64) error
+	DeleteProductImage(productID, imageID uint64) error
 }
 
 type ServiceProductInterface interface {
@@ -36,6 +37,7 @@ type ServiceProductInterface interface {
 	GetProductReviews(page, perPage int) ([]*entities.ProductModels, int64, error)
 	UpdateProduct(productID uint64, request *dto.UpdateProduct) error
 	DeleteProduct(id uint64) error
+	DeleteImageProduct(productId, imageId uint64) error
 }
 
 type HandlerProductInterface interface {
@@ -46,4 +48,5 @@ type HandlerProductInterface interface {
 	GetAllProductsReview() echo.HandlerFunc
 	UpdateProduct() echo.HandlerFunc
 	DeleteProduct() echo.HandlerFunc
+	DeleteProductImageById() echo.HandlerFunc
 }
