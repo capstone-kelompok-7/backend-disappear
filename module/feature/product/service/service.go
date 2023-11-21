@@ -163,3 +163,41 @@ func (s *ProductService) GetProductReviews(page, perPage int) ([]*entities.Produ
 
 	return products, totalItems, nil
 }
+
+func (s *ProductService) UpdateProduct(productID uint64, request *dto.UpdateProduct) error {
+	productData, err := s.repo.GetProductByID(productID)
+	if err != nil {
+		return errors.New("product tidak ditemukan")
+	}
+
+	productData.Name = request.Name
+	productData.Description = request.Description
+	productData.GramPlastic = request.GramPlastic
+	productData.Price = request.Price
+	productData.Stock = request.Stock
+	productData.Discount = request.Discount
+	productData.Exp = request.Exp
+	productData.UpdatedAt = time.Now()
+
+	if request.ImageURL != "" {
+		productData.ProductPhotos = []entities.ProductPhotosModels{
+			{
+				ImageURL:  request.ImageURL,
+				CreatedAt: time.Now(),
+			},
+		}
+	}
+
+	err = s.repo.UpdateProductCategories(productData, request.CategoryIDs)
+	if err != nil {
+		return err
+	}
+
+	err = s.repo.UpdateProduct(productData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

@@ -128,3 +128,36 @@ func (r *ProductRepository) GetProductReviews(page, perPage int) ([]*entities.Pr
 	}
 	return products, nil
 }
+func (r *ProductRepository) UpdateProduct(product *entities.ProductModels) error {
+	tx := r.db.Begin()
+
+	if err := tx.Save(product).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
+func (r *ProductRepository) UpdateProductCategories(product *entities.ProductModels, categoryIDs []uint64) error {
+	tx := r.db.Begin()
+
+	if err := tx.Model(product).Association("Categories").Clear(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, categoryID := range categoryIDs {
+		if err := tx.Model(product).Association("Categories").Append(&entities.CategoryModels{ID: categoryID}); err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if err := tx.Model(&entities.CategoryModels{}).Where("id = ?", categoryID).Update("total_product", gorm.Expr("total_product + ?", 1)).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit().Error
+}
