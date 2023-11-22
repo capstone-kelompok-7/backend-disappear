@@ -5,6 +5,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/article"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/cart"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
@@ -108,4 +109,12 @@ func RouteReview(e *echo.Echo, h review.HandlerReviewInterface, jwtService utils
 	reviewsGroup.POST("/photos", h.CreateReviewImages(), middlewares.AuthMiddleware(jwtService, userService))
 	reviewsGroup.GET("/:id", h.GetReviewById(), middlewares.AuthMiddleware(jwtService, userService))
 	reviewsGroup.GET("/detail/:id", h.GetDetailReviewProduct(), middlewares.AuthMiddleware(jwtService, userService))
+}
+
+func RouteCart(e *echo.Echo, h cart.HandlerCartInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	cartGroup := e.Group("/api/v1/carts")
+	cartGroup.POST("", h.AddCartItem(), middlewares.AuthMiddleware(jwtService, userService))
+	cartGroup.GET("", h.GetCart(), middlewares.AuthMiddleware(jwtService, userService))
+	cartGroup.PUT("/reduce/quantity", h.ReduceQuantity(), middlewares.AuthMiddleware(jwtService, userService))
+	cartGroup.DELETE("/cart-items/:id", h.DeleteCartItems(), middlewares.AuthMiddleware(jwtService, userService))
 }
