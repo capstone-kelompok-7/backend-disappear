@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	hAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/handler"
 	rAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/repository"
@@ -34,6 +35,8 @@ import (
 	rVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/repository"
 	sVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/service"
 
+	"net/http"
+
 	hCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/handler"
 	rCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/repository"
 	sCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/service"
@@ -43,7 +46,6 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/utils/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"net/http"
 )
 
 func main() {
@@ -80,7 +82,7 @@ func main() {
 	articleHandler := hArticle.NewArticleHandler(articleService)
 
 	challengeRepo := rChallenge.NewChallengeRepository(db)
-	challengeService := sChallenge.NewChallengeService(challengeRepo)
+	challengeService := sChallenge.NewChallengeService(challengeRepo, userService)
 	challengeHandler := hChallenge.NewChallengeHandler(challengeService)
 
 	carouselRepo := rCarousel.NewCarouselRepository(db)

@@ -23,6 +23,7 @@ type RepositoryChallengeInterface interface {
 	GetTotalSubmitChallengeFormCount() (int64, error)
 	GetSubmitChallengeFormById(id uint64) (entities.ChallengeFormModels, error)
 	UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (entities.ChallengeFormModels, error)
+	GetSubmitChallengeFormByUserAndChallenge(userID uint64) ([]entities.ChallengeFormModels, error)
 }
 
 type ServiceChallengeInterface interface {

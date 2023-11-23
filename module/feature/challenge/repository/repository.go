@@ -142,3 +142,12 @@ func (r *ChallengeRepository) UpdateSubmitChallengeForm(id uint64, updatedStatus
 	}
 	return participant, nil
 }
+
+func (r *ChallengeRepository) GetSubmitChallengeFormByUserAndChallenge(userID uint64) ([]entities.ChallengeFormModels, error) {
+	var submissions []entities.ChallengeFormModels
+	err := r.db.Where("user_id = ?", userID).Find(&submissions).Error
+	if err != nil {
+		return nil, err
+	}
+	return submissions, nil
+}
