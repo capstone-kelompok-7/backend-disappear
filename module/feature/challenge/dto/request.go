@@ -21,3 +21,13 @@ type UpdateChallengeRequest struct {
 	Exp         uint64    `form:"exp" json:"exp"`
 	Status      string    `form:"status" json:"status"`
 }
+
+type CreateChallengeFormRequest struct {
+	ChallengeID uint64 `form:"challenge_id" json:"challenge_id" validate:"required"`
+	Username    string `form:"username" json:"username" validate:"required"`
+	Photo       string `form:"photo" json:"photo"`
+}
+
+type UpdateChallengeFormStatusRequest struct {
+	Status string `form:"status" json:"status" validate:"required"`
+}

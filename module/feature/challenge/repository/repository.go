@@ -5,6 +5,7 @@ import (
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/dto"
 	"gorm.io/gorm"
 )
 
@@ -89,4 +90,55 @@ func (r *ChallengeRepository) DeleteChallenge(id uint64) error {
 	}
 
 	return nil
+}
+
+func (r *ChallengeRepository) CreateSubmitChallengeForm(form *entities.ChallengeFormModels) (*entities.ChallengeFormModels, error) {
+	err := r.db.Create(&form).Error
+	if err != nil {
+		return nil, err
+	}
+	return form, nil
+}
+
+func (r *ChallengeRepository) GetAllSubmitChallengeForm(page, perpage int) ([]entities.ChallengeFormModels, error) {
+	var participants []entities.ChallengeFormModels
+	offset := (page - 1) * perpage
+	err := r.db.Offset(offset).Limit(perpage).Find(&participants).Error
+	if err != nil {
+		return nil, err
+	}
+	return participants, nil
+}
+
+func (r *ChallengeRepository) GetSubmitChallengeFormByStatus(page, perpage int, status string) ([]entities.ChallengeFormModels, error) {
+	var participants []entities.ChallengeFormModels
+	offset := (page - 1) * perpage
+	err := r.db.Where("status = ?", status).Offset(offset).Limit(perpage).Find(&participants).Error
+	if err != nil {
+		return nil, err
+	}
+	return participants, nil
+}
+
+func (r *ChallengeRepository) GetTotalSubmitChallengeFormCount() (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.ChallengeFormModels{}).Count(&count).Error
+	return count, err
+}
+
+func (r *ChallengeRepository) GetSubmitChallengeFormById(id uint64) (entities.ChallengeFormModels, error) {
+	var participant = entities.ChallengeFormModels{}
+	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&participant).Error; err != nil {
+		return participant, err
+	}
+
+	return participant, nil
+}
+
+func (r *ChallengeRepository) UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (entities.ChallengeFormModels, error) {
+	var participant entities.ChallengeFormModels
+	if err := r.db.Model(&entities.ChallengeFormModels{}).Where("id = ? AND deleted_at IS NULL", id).Updates(updatedStatus).Error; err != nil {
+		return participant, err
+	}
+	return participant, nil
 }
