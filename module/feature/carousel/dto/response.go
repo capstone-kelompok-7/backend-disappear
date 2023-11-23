@@ -8,8 +8,8 @@ type CarouselFormatter struct {
 	Photo string `json:"photo"`
 }
 
-func FormatCarousel(carousel entities.CarouselModels) CarouselFormatter {
-	carouselFormatter := CarouselFormatter{}
+func FormatCarousel(carousel *entities.CarouselModels) *CarouselFormatter {
+	carouselFormatter := &CarouselFormatter{}
 	carouselFormatter.ID = carousel.ID
 	carouselFormatter.Name = carousel.Name
 	carouselFormatter.Photo = carousel.Photo
@@ -17,8 +17,8 @@ func FormatCarousel(carousel entities.CarouselModels) CarouselFormatter {
 	return carouselFormatter
 }
 
-func FormatterCarousel(carousels []entities.CarouselModels) []CarouselFormatter {
-	var carouselFormatters []CarouselFormatter
+func FormatterCarousel(carousels []*entities.CarouselModels) []*CarouselFormatter {
+	var carouselFormatters []*CarouselFormatter
 
 	for _, carousel := range carousels {
 		formattedCarousel := FormatCarousel(carousel)

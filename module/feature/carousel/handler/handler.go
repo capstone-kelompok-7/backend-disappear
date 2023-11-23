@@ -19,7 +19,9 @@ type CarouselHandler struct {
 }
 
 func NewCarouselHandler(service carousel.ServiceCarouselInterface) carousel.HandlerCarouselInterface {
-	return &CarouselHandler{service: service}
+	return &CarouselHandler{
+		service: service,
+	}
 }
 
 func (h *CarouselHandler) GetAllCarousels() echo.HandlerFunc {
@@ -28,7 +30,7 @@ func (h *CarouselHandler) GetAllCarousels() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
-		var carousels []entities.CarouselModels
+		var carousels []*entities.CarouselModels
 		var totalItems int64
 		var err error
 		search := c.QueryParam("search")
@@ -39,14 +41,14 @@ func (h *CarouselHandler) GetAllCarousels() echo.HandlerFunc {
 		}
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all carousels:", err.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan carausel: ")
 		}
 
-		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
-		nextPage := h.service.GetNextPage(current_page, total_pages)
-		prevPage := h.service.GetPrevPage(current_page)
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.Pagination(c, dto.FormatterCarousel(carousels), current_page, total_pages, int(totalItems), nextPage, prevPage, "Daftar carousel")
+		return response.Pagination(c, dto.FormatterCarousel(carousels), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar carousel")
 	}
 }
 
@@ -56,7 +58,7 @@ func (h *CarouselHandler) CreateCarousel() echo.HandlerFunc {
 		if currentUser.Role != "admin" {
 			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
-		carouselRequest := new(dto.CreateCarouselRequest)
+		req := new(dto.CreateCarouselRequest)
 		file, err := c.FormFile("photo")
 		var uploadedURL string
 		if err == nil {
@@ -73,15 +75,15 @@ func (h *CarouselHandler) CreateCarousel() echo.HandlerFunc {
 				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
-		if err := c.Bind(carouselRequest); err != nil {
+		if err := c.Bind(req); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		if err := utils.ValidateStruct(carouselRequest); err != nil {
+		if err := utils.ValidateStruct(req); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
-		newCarousel := entities.CarouselModels{
-			Name:  carouselRequest.Name,
+		newCarousel := &entities.CarouselModels{
+			Name:  req.Name,
 			Photo: uploadedURL,
 		}
 		createdCarousel, err := h.service.CreateCarousel(newCarousel)
@@ -98,7 +100,7 @@ func (h *CarouselHandler) UpdateCarousel() echo.HandlerFunc {
 		if currentUser.Role != "admin" {
 			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
-		carouselRequest := new(dto.UpdateCarouselRequest)
+		req := new(dto.UpdateCarouselRequest)
 		carouselID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
@@ -119,23 +121,23 @@ func (h *CarouselHandler) UpdateCarousel() echo.HandlerFunc {
 				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
-		if err := c.Bind(carouselRequest); err != nil {
+		if err := c.Bind(req); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		if err := utils.ValidateStruct(carouselRequest); err != nil {
+		if err := utils.ValidateStruct(req); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
-		newCarousel := entities.CarouselModels{
+		newCarousel := &entities.CarouselModels{
 			ID:    carouselID,
-			Name:  carouselRequest.Name,
+			Name:  req.Name,
 			Photo: uploadedURL,
 		}
-		updatedCarousel, err := h.service.UpdateCarousel(carouselID, newCarousel)
+		err = h.service.UpdateCarousel(carouselID, newCarousel)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui carousel: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil memperbarui carousel", dto.FormatCarousel(updatedCarousel))
+		return response.SendStatusOkResponse(c, "Berhasil memperbarui carousel")
 	}
 }
 

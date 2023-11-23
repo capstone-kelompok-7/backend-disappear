@@ -24,44 +24,28 @@ func (r *CategoryRepository) CreateCategory(category *entities.CategoryModels) (
 	return category, nil
 }
 
-func (r *CategoryRepository) GetCategoryByName(name string) ([]*entities.CategoryModels, error) {
-	var categories []*entities.CategoryModels
-
-	err := r.db.Where("name LIKE ?", "%"+name+"%").Find(&categories).Error
-	if err != nil {
+func (r *CategoryRepository) GetCategoryById(categoryID uint64) (*entities.CategoryModels, error) {
+	var categories entities.CategoryModels
+	if err := r.db.Where("id = ? AND deleted_at IS NULL", categoryID).First(&categories).Error; err != nil {
 		return nil, err
 	}
-
-	return categories, nil
+	return &categories, nil
 }
 
-func (r *CategoryRepository) GetCategoryById(id uint64) (*entities.CategoryModels, error) {
-	var category entities.CategoryModels
-	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&category).Error; err != nil {
-		return nil, err
+func (r *CategoryRepository) UpdateCategoryById(categoryID uint64, updatedCategory *entities.CategoryModels) error {
+	var categories *entities.CategoryModels
+	if err := r.db.Where("id = ? AND deleted_at IS NULL", categoryID).First(&categories).Error; err != nil {
+		return err
 	}
-	return &category, nil
+	if err := r.db.Updates(&updatedCategory).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
-func (r *CategoryRepository) UpdateCategoryById(id uint64, updatedCategory *entities.CategoryModels) (*entities.CategoryModels, error) {
-	var category entities.CategoryModels
-	if err := r.db.First(&category, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	if err := r.db.Model(&category).Updates(updatedCategory).Error; err != nil {
-		return nil, err
-	}
-
-	return updatedCategory, nil
-}
-
-func (r *CategoryRepository) DeleteCategoryById(id uint64) error {
+func (r *CategoryRepository) DeleteCategoryById(categoryID uint64) error {
 	categories := &entities.CategoryModels{}
-	if err := r.db.First(&categories, id).Error; err != nil {
+	if err := r.db.First(&categories, categoryID).Error; err != nil {
 		return err
 	}
 
@@ -75,7 +59,7 @@ func (r *CategoryRepository) DeleteCategoryById(id uint64) error {
 func (r *CategoryRepository) FindAll(page, perPage int) ([]*entities.CategoryModels, error) {
 	var categories []*entities.CategoryModels
 	offset := (page - 1) * perPage
-	err := r.db.Limit(perPage).Offset(offset).Find(&categories).Error
+	err := r.db.Limit(perPage).Offset(offset).Where("deleted_at IS NULL").Find(&categories).Error
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +69,7 @@ func (r *CategoryRepository) FindAll(page, perPage int) ([]*entities.CategoryMod
 func (r *CategoryRepository) FindByName(page, perPage int, name string) ([]*entities.CategoryModels, error) {
 	var categories []*entities.CategoryModels
 	offset := (page - 1) * perPage
-	query := r.db.Offset(offset).Limit(perPage)
+	query := r.db.Offset(offset).Limit(perPage).Where("deleted_at IS NULL")
 
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
@@ -101,7 +85,7 @@ func (r *CategoryRepository) FindByName(page, perPage int, name string) ([]*enti
 
 func (r *CategoryRepository) GetTotalCategoryCountByName(name string) (int64, error) {
 	var count int64
-	query := r.db.Model(&entities.CategoryModels{})
+	query := r.db.Model(&entities.CategoryModels{}).Where("deleted_at IS NULL")
 
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
@@ -113,6 +97,6 @@ func (r *CategoryRepository) GetTotalCategoryCountByName(name string) (int64, er
 
 func (r *CategoryRepository) GetTotalCategoryCount() (int64, error) {
 	var count int64
-	err := r.db.Model(&entities.CategoryModels{}).Count(&count).Error
+	err := r.db.Model(&entities.CategoryModels{}).Where("deleted_at IS NULL").Count(&count).Error
 	return count, err
 }
