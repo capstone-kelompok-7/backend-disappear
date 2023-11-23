@@ -7,14 +7,13 @@ import (
 
 type RepositoryCategoryInterface interface {
 	CreateCategory(category *entities.CategoryModels) (*entities.CategoryModels, error)
-	GetCategoryByName(name string) ([]*entities.CategoryModels, error)
-	GetCategoryById(id uint64) (*entities.CategoryModels, error)
+	GetCategoryById(categoryID uint64) (*entities.CategoryModels, error)
 	FindByName(page, perPage int, name string) ([]*entities.CategoryModels, error)
 	GetTotalCategoryCountByName(name string) (int64, error)
 	FindAll(page, perPage int) ([]*entities.CategoryModels, error)
 	GetTotalCategoryCount() (int64, error)
-	UpdateCategoryById(id uint64, updatedCategory *entities.CategoryModels) (*entities.CategoryModels, error)
-	DeleteCategoryById(id uint64) error
+	UpdateCategoryById(categoryID uint64, updatedCategory *entities.CategoryModels) error
+	DeleteCategoryById(categoryID uint64) error
 }
 
 type ServiceCategoryInterface interface {
@@ -24,15 +23,14 @@ type ServiceCategoryInterface interface {
 	CalculatePaginationValues(page int, totalItems int, perPage int) (int, int)
 	GetNextPage(currentPage int, totalPages int) int
 	GetPrevPage(currentPage int) int
-	UpdateCategoryById(id uint64, updatedCategory *entities.CategoryModels) (*entities.CategoryModels, error)
-	DeleteCategoryById(id uint64) error
-	GetCategoryById(id uint64) (*entities.CategoryModels, error)
+	UpdateCategoryById(categoryID uint64, updatedCategory *entities.CategoryModels) error
+	DeleteCategoryById(categoryID uint64) error
+	GetCategoryById(categoryID uint64) (*entities.CategoryModels, error)
 }
 
 type HandlerCategoryInterface interface {
 	CreateCategory() echo.HandlerFunc
 	GetAllCategory() echo.HandlerFunc
-	GetCategoryByName() echo.HandlerFunc
 	UpdateCategoryById() echo.HandlerFunc
 	DeleteCategoryById() echo.HandlerFunc
 }

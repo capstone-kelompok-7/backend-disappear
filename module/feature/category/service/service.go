@@ -88,35 +88,13 @@ func (s *CategoryService) GetPrevPage(currentPage int) int {
 	return 1
 }
 
-func (s *CategoryService) UpdateCategoryById(id uint64, updatedCategory *entities.CategoryModels) (*entities.CategoryModels, error) {
-	existingCategory, err := s.repo.GetCategoryById(id)
+func (s *CategoryService) UpdateCategoryById(categoryID uint64, updatedCategory *entities.CategoryModels) error {
+	categories, err := s.repo.GetCategoryById(categoryID)
 	if err != nil {
-		return nil, errors.New("kategori tidak ditemukan")
+		return errors.New("kategori tidak ditemukan")
 	}
 
-	if existingCategory == nil {
-		return nil, errors.New("kategori tidak ditemukan")
-	}
-
-	updatedCategory, err = s.repo.UpdateCategoryById(id, updatedCategory)
-	if err != nil {
-		return nil, errors.New("gagal mengubah kategori ")
-	}
-
-	return updatedCategory, nil
-}
-
-func (s *CategoryService) DeleteCategoryById(id uint64) error {
-	existingCategory, err := s.repo.GetCategoryById(id)
-	if err != nil {
-		return errors.New("Kategori tidak ditemukan")
-	}
-
-	if existingCategory == nil {
-		return errors.New("Kategori tidak ditemukan")
-	}
-
-	err = s.repo.DeleteCategoryById(id)
+	err = s.repo.UpdateCategoryById(categories.ID, updatedCategory)
 	if err != nil {
 		return err
 	}
@@ -124,8 +102,22 @@ func (s *CategoryService) DeleteCategoryById(id uint64) error {
 	return nil
 }
 
-func (s *CategoryService) GetCategoryById(id uint64) (*entities.CategoryModels, error) {
-	result, err := s.repo.GetCategoryById(id)
+func (s *CategoryService) DeleteCategoryById(categoryID uint64) error {
+	categories, err := s.repo.GetCategoryById(categoryID)
+	if err != nil {
+		return errors.New("kategori tidak ditemukan")
+	}
+
+	err = s.repo.DeleteCategoryById(categories.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *CategoryService) GetCategoryById(categoryID uint64) (*entities.CategoryModels, error) {
+	result, err := s.repo.GetCategoryById(categoryID)
 	if err != nil {
 		return nil, errors.New("kategori tidak ditemukan")
 	}

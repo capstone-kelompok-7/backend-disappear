@@ -2,7 +2,7 @@ package dto
 
 type CreateCarouselRequest struct {
 	Name  string `form:"name" validate:"required"`
-	Photo string `form:"photo"`
+	Photo string `form:"photo" validate:"required"`
 }
 
 type UpdateCarouselRequest struct {

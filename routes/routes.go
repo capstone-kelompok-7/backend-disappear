@@ -79,17 +79,15 @@ func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtServ
 
 func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	categoriesGroup := e.Group("/api/v1/categories")
+	categoriesGroup.GET("", h.GetAllCategory(), middlewares.AuthMiddleware(jwtService, userService))
 	categoriesGroup.POST("", h.CreateCategory(), middlewares.AuthMiddleware(jwtService, userService))
-	categoriesGroup.GET("", h.GetAllCategory())
-	categoriesGroup.GET("/:name", h.GetCategoryByName())
 	categoriesGroup.PUT("/:id", h.UpdateCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
 	categoriesGroup.DELETE("/:id", h.DeleteCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
-
 }
 
 func RouteCarousel(e *echo.Echo, h carousel.HandlerCarouselInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	carouselsGroup := e.Group("/api/v1/carousel")
-	carouselsGroup.GET("", h.GetAllCarousels())
+	carouselsGroup.GET("", h.GetAllCarousels(), middlewares.AuthMiddleware(jwtService, userService))
 	carouselsGroup.POST("", h.CreateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
 	carouselsGroup.PUT("/:id", h.UpdateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
 	carouselsGroup.DELETE("/:id", h.DeleteCarousel(), middlewares.AuthMiddleware(jwtService, userService))
