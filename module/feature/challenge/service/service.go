@@ -7,6 +7,7 @@ import (
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/dto"
 )
 
 type ChallengeService struct {
@@ -166,4 +167,77 @@ func (s *ChallengeService) DeleteChallenge(id uint64) error {
 		return errors.New("gagal menghapus tantangan")
 	}
 	return nil
+}
+
+func (s *ChallengeService) CreateSubmitChallengeForm(form *entities.ChallengeFormModels) (*entities.ChallengeFormModels, error) {
+	challenge, err := s.repo.GetChallengeById(form.ChallengeID)
+	if err != nil {
+		return nil, err
+	}
+
+	newPartisipan := entities.ChallengeFormModels{
+		UserID:      form.UserID,
+		ChallengeID: form.ChallengeID,
+		Username:    form.Username,
+		Photo:       form.Photo,
+		Status:      "menunggu validasi",
+		Exp:         challenge.Exp,
+		CreatedAt:   form.CreatedAt,
+	}
+
+	result, err := s.repo.CreateSubmitChallengeForm(&newPartisipan)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (s *ChallengeService) GetAllSubmitChallengeForm(page, perPage int) ([]entities.ChallengeFormModels, int64, error) {
+	challenge, err := s.repo.GetAllSubmitChallengeForm(page, perPage)
+	if err != nil {
+		return challenge, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalSubmitChallengeFormCount()
+	if err != nil {
+		return challenge, 0, err
+	}
+
+	return challenge, totalItems, nil
+}
+
+func (s *ChallengeService) GetSubmitChallengeFormByStatus(page, perPage int, status string) ([]entities.ChallengeFormModels, int64, error) {
+	challenge, err := s.repo.GetSubmitChallengeFormByStatus(page, perPage, status)
+	if err != nil {
+		return challenge, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalSubmitChallengeFormCount()
+	if err != nil {
+		return challenge, 0, err
+	}
+
+	return challenge, totalItems, nil
+}
+
+func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.UpdateChallengeFormStatusRequest) (entities.ChallengeFormModels, error) {
+	_, err := s.repo.GetSubmitChallengeFormById(id)
+	if err != nil {
+		return entities.ChallengeFormModels{}, errors.New("Form tidak ditemukan")
+	}
+	result, err := s.repo.UpdateSubmitChallengeForm(id, updatedData)
+	if err != nil {
+		return result, errors.New("gagal memperbarui form")
+	}
+	return result, nil
+}
+
+func (s *ChallengeService) GetSubmitChallengeFormById(id uint64) (entities.ChallengeFormModels, error) {
+	result, err := s.repo.GetSubmitChallengeFormById(id)
+	if err != nil {
+		return result, errors.New("Form tidak ditemukan")
+	}
+
+	return result, nil
 }
