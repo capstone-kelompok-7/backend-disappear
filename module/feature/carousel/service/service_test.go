@@ -320,7 +320,7 @@ func TestCarouselService_UpdateCarousel(t *testing.T) {
 
 }
 
-func TestPlantService_DeleteCarousel(t *testing.T) {
+func TestCarouselService_DeleteCarousel(t *testing.T) {
 	repo := mocks.NewRepositoryCarouselInterface(t)
 	service := NewCarouselService(repo)
 	carousels := &entities.CarouselModels{
