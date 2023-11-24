@@ -2,11 +2,12 @@ package repository
 
 import (
 	"errors"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users/dto"
 	"gorm.io/gorm"
-	"time"
 )
 
 type UserRepository struct {
@@ -119,4 +120,13 @@ func (r *UserRepository) DeleteAccount(userID uint64) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepository) UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error) {
+	user := &entities.UserModels{}
+	if err := r.db.Model(user).Where("id = ?", userID).Update("exp", exp).Error; err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

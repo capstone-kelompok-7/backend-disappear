@@ -8,15 +8,18 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/dto"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 )
 
 type ChallengeService struct {
-	repo challenge.RepositoryChallengeInterface
+	repo        challenge.RepositoryChallengeInterface
+	userService users.ServiceUserInterface
 }
 
-func NewChallengeService(repo challenge.RepositoryChallengeInterface) challenge.ServiceChallengeInterface {
+func NewChallengeService(repo challenge.RepositoryChallengeInterface, userService users.ServiceUserInterface) challenge.ServiceChallengeInterface {
 	return &ChallengeService{
-		repo: repo,
+		repo:        repo,
+		userService: userService,
 	}
 }
 
@@ -89,9 +92,9 @@ func (s *ChallengeService) CreateChallenge(newData entities.ChallengeModels) (en
 
 	currentTime := time.Now()
 	if currentTime.After(newChallenge.EndDate) {
-		newChallenge.Status = "Berakhir"
+		newChallenge.Status = "Kadaluwarsa"
 	} else {
-		newChallenge.Status = "Berlangsung"
+		newChallenge.Status = "Belum Kadaluwarsa"
 	}
 
 	result, err := s.repo.CreateChallenge(newChallenge)
@@ -170,27 +173,42 @@ func (s *ChallengeService) DeleteChallenge(id uint64) error {
 }
 
 func (s *ChallengeService) CreateSubmitChallengeForm(form *entities.ChallengeFormModels) (*entities.ChallengeFormModels, error) {
+	existingSubmits, err := s.repo.GetSubmitChallengeFormByUserAndChallenge(form.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, existingSubmit := range existingSubmits {
+		if existingSubmit.ChallengeID == form.ChallengeID {
+			return nil, errors.New("Anda sudah submit challenge ini sebelumnya")
+		}
+	}
+
 	challenge, err := s.repo.GetChallengeById(form.ChallengeID)
 	if err != nil {
 		return nil, err
 	}
 
-	newPartisipan := entities.ChallengeFormModels{
-		UserID:      form.UserID,
-		ChallengeID: form.ChallengeID,
-		Username:    form.Username,
-		Photo:       form.Photo,
-		Status:      "menunggu validasi",
-		Exp:         challenge.Exp,
-		CreatedAt:   form.CreatedAt,
+	if challenge.Status == "Belum Kadaluwarsa" {
+		newParticipant := entities.ChallengeFormModels{
+			UserID:      form.UserID,
+			ChallengeID: form.ChallengeID,
+			Username:    form.Username,
+			Photo:       form.Photo,
+			Status:      "menunggu validasi",
+			Exp:         challenge.Exp,
+			CreatedAt:   form.CreatedAt,
+		}
+
+		result, err := s.repo.CreateSubmitChallengeForm(&newParticipant)
+		if err != nil {
+			return nil, err
+		}
+
+		return result, nil
 	}
 
-	result, err := s.repo.CreateSubmitChallengeForm(&newPartisipan)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return nil, errors.New("Tantangan sudah kadaluwarsa, tidak dapat submit")
 }
 
 func (s *ChallengeService) GetAllSubmitChallengeForm(page, perPage int) ([]entities.ChallengeFormModels, int64, error) {
@@ -222,14 +240,38 @@ func (s *ChallengeService) GetSubmitChallengeFormByStatus(page, perPage int, sta
 }
 
 func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.UpdateChallengeFormStatusRequest) (entities.ChallengeFormModels, error) {
-	_, err := s.repo.GetSubmitChallengeFormById(id)
+	form, err := s.repo.GetSubmitChallengeFormById(id)
 	if err != nil {
 		return entities.ChallengeFormModels{}, errors.New("Form tidak ditemukan")
 	}
+
+	userID := form.UserID
+	user, err := s.userService.GetUsersById(userID)
+	if err != nil {
+		return form, errors.New("Gagal mendapatkan data user")
+	}
+
+	switch {
+	case form.Status == "valid" && updatedData.Status == "tidak valid":
+		user.Exp -= form.Exp
+	case form.Status == "tidak valid" && updatedData.Status == "valid":
+		user.Exp += form.Exp
+	case form.Status == "menunggu validasi" && updatedData.Status == "valid":
+		user.Exp += form.Exp
+	case form.Status == "valid" && updatedData.Status == "menunggu validasi":
+		user.Exp -= form.Exp
+	}
+
+	_, err = s.userService.UpdateUserExp(userID, user.Exp)
+	if err != nil {
+		return form, errors.New("Gagal menyimpan perubahan exp user ke database")
+	}
+
 	result, err := s.repo.UpdateSubmitChallengeForm(id, updatedData)
 	if err != nil {
-		return result, errors.New("gagal memperbarui form")
+		return result, errors.New("Gagal memperbarui form")
 	}
+
 	return result, nil
 }
 
