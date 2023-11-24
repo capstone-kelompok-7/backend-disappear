@@ -161,22 +161,22 @@ func (h *ArticleHandler) GetAllArticles() echo.HandlerFunc {
 		if search != "" {
 			articles, totalItems, err = h.service.GetArticlesByTitle(page, perPage, search)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: "+err.Error())
+				return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: " + err.Error())
 			}
 		} else if filterType != "" {
 			articles, totalItems, err = h.service.GetArticlesByDateRange(page, perPage, filterType)
         	if err != nil {
-            	return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: "+err.Error())
+            	return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: " + err.Error())
         	}
 		} else {
 			articles, totalItems, err = h.service.GetAll(pageConv, perPage)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: "+err.Error())
+				return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: " + err.Error())
 			}
 		}
 
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: "+err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: " + err.Error())
 		}
 
 		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)

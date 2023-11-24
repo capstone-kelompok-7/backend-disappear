@@ -121,23 +121,23 @@ func (s *ArticleService) GetArticlesByDateRange(page, perPage int, filterType st
 	var startDate, endDate time.Time
 
 	switch filterType {
-	case "today":
+	case "Hari Ini":
 		startDate = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 		endDate = startDate.Add(24 * time.Hour)
-	case "this_week":
+	case "Minggu Ini":
 		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
 		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
 		endDate = startDate.AddDate(0, 0, 7)
-	case "this_month":
+	case "Bulan Ini":
 		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 		nextMonth := startDate.AddDate(0, 1, 0)
 		endDate = nextMonth.Add(-time.Second)
-	case "this_year":
+	case "Tahun Ini":
 		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
 		nextYear := startDate.AddDate(1, 0, 0)
 		endDate = nextYear.Add(-time.Second)
 	default:
-		return nil, 0, errors.New("Invalid filter type")
+		return nil, 0, errors.New("Tipe filter tidak valid")
 	}
 
 	result, err := s.repo.GetArticlesByDateRange(page, perPage, startDate, endDate)
