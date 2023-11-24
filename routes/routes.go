@@ -63,6 +63,7 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService ut
 	articlesGroup := e.Group("api/v1/articles")
 	articlesGroup.POST("", h.CreateArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("", h.GetAllArticles())
+	articlesGroup.GET("/:id", h.GetArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.PUT("/:id", h.UpdateArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.DELETE("/:id", h.DeleteArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 }
