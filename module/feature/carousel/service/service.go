@@ -17,15 +17,15 @@ func NewCarouselService(repo carousel.RepositoryCarouselInterface) carousel.Serv
 	}
 }
 
-func (s *CarouselService) GetAll(page, perPage int) ([]entities.CarouselModels, int64, error) {
+func (s *CarouselService) GetAll(page, perPage int) ([]*entities.CarouselModels, int64, error) {
 	carousels, err := s.repo.FindAll(page, perPage)
 	if err != nil {
-		return carousels, 0, err
+		return nil, 0, err
 	}
 
 	totalItems, err := s.repo.GetTotalCarouselCount()
 	if err != nil {
-		return carousels, 0, err
+		return nil, 0, err
 	}
 
 	return carousels, totalItems, nil
@@ -37,13 +37,13 @@ func (s *CarouselService) CalculatePaginationValues(page int, totalItems int, pe
 		pageInt = 1
 	}
 
-	total_pages := int(math.Ceil(float64(totalItems) / float64(perPage)))
+	totalPages := int(math.Ceil(float64(totalItems) / float64(perPage)))
 
-	if pageInt > total_pages {
-		pageInt = total_pages
+	if pageInt > totalPages {
+		pageInt = totalPages
 	}
 
-	return pageInt, total_pages
+	return pageInt, totalPages
 }
 
 func (s *CarouselService) GetNextPage(currentPage, totalPages int) int {
@@ -60,55 +60,55 @@ func (s *CarouselService) GetPrevPage(currentPage int) int {
 	return 1
 }
 
-func (s *CarouselService) GetCarouselsByName(page, perPage int, name string) ([]entities.CarouselModels, int64, error) {
+func (s *CarouselService) GetCarouselsByName(page, perPage int, name string) ([]*entities.CarouselModels, int64, error) {
 	carousels, err := s.repo.FindByName(page, perPage, name)
 	if err != nil {
-		return carousels, 0, err
+		return nil, 0, err
 	}
 
 	totalItems, err := s.repo.GetTotalCarouselCountByName(name)
 	if err != nil {
-		return carousels, 0, err
+		return nil, 0, err
 	}
 
 	return carousels, totalItems, nil
 }
 
-func (s *CarouselService) CreateCarousel(carouselData entities.CarouselModels) (entities.CarouselModels, error) {
+func (s *CarouselService) CreateCarousel(carouselData *entities.CarouselModels) (*entities.CarouselModels, error) {
 	createdCategory, err := s.repo.CreateCarousel(carouselData)
 	if err != nil {
-		return createdCategory, err
+		return nil, err
 	}
 	return createdCategory, nil
 }
 
-func (s *CarouselService) GetCarouselById(id uint64) (entities.CarouselModels, error) {
-	carousels, err := s.repo.GetCarouselById(id)
+func (s *CarouselService) GetCarouselById(carouselID uint64) (*entities.CarouselModels, error) {
+	carousels, err := s.repo.GetCarouselById(carouselID)
 	if err != nil {
-		return carousels, err
+		return nil, errors.New("carousel tidak ditemukan")
 	}
 	return carousels, nil
 }
 
-func (s *CarouselService) UpdateCarousel(id uint64, updatedCarousel entities.CarouselModels) (entities.CarouselModels, error) {
-	_, err := s.repo.GetCarouselById(id)
-	if err != nil {
-		return updatedCarousel, errors.New("carousel tidak ditemukan")
-	}
-	result, err := s.repo.UpdateCarousel(id, updatedCarousel)
-	if err != nil {
-		return updatedCarousel, errors.New("gagal update carousel")
-	}
-	return result, nil
-
-}
-
-func (s *CarouselService) DeleteCarousel(id uint64) error {
-	_, err := s.repo.GetCarouselById(id)
+func (s *CarouselService) UpdateCarousel(carouselID uint64, updatedCarousel *entities.CarouselModels) error {
+	carousels, err := s.repo.GetCarouselById(carouselID)
 	if err != nil {
 		return errors.New("carousel tidak ditemukan")
 	}
-	if err := s.repo.DeleteCarousel(id); err != nil {
+	err = s.repo.UpdateCarousel(carousels.ID, updatedCarousel)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *CarouselService) DeleteCarousel(carouselID uint64) error {
+	carousels, err := s.repo.GetCarouselById(carouselID)
+	if err != nil {
+		return errors.New("carousel tidak ditemukan")
+	}
+	err = s.repo.DeleteCarousel(carousels.ID)
+	if err != nil {
 		return err
 	}
 	return nil

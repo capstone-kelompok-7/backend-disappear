@@ -2,11 +2,12 @@ package service
 
 import (
 	"errors"
+	"math"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
-	"math"
 )
 
 type UserService struct {
@@ -154,4 +155,13 @@ func (s *UserService) DeleteAccount(userID uint64) error {
 		return err
 	}
 	return nil
+}
+
+func (s *UserService) UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error) {
+	user, err := s.repo.UpdateUserExp(userID, exp)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

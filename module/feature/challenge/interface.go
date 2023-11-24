@@ -2,6 +2,7 @@ package challenge
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/dto"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,6 +15,15 @@ type RepositoryChallengeInterface interface {
 	UpdateChallenge(id uint64, updatedChallenge entities.ChallengeModels) (entities.ChallengeModels, error)
 	GetChallengeById(id uint64) (entities.ChallengeModels, error)
 	DeleteChallenge(id uint64) error
+
+	//partisipan
+	CreateSubmitChallengeForm(form *entities.ChallengeFormModels) (*entities.ChallengeFormModels, error)
+	GetAllSubmitChallengeForm(page, perpage int) ([]entities.ChallengeFormModels, error)
+	GetSubmitChallengeFormByStatus(page, perpage int, status string) ([]entities.ChallengeFormModels, error)
+	GetTotalSubmitChallengeFormCount() (int64, error)
+	GetSubmitChallengeFormById(id uint64) (entities.ChallengeFormModels, error)
+	UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (entities.ChallengeFormModels, error)
+	GetSubmitChallengeFormByUserAndChallenge(userID uint64) ([]entities.ChallengeFormModels, error)
 }
 
 type ServiceChallengeInterface interface {
@@ -26,6 +36,13 @@ type ServiceChallengeInterface interface {
 	UpdateChallenge(id uint64, updatedChallenge entities.ChallengeModels) (entities.ChallengeModels, error)
 	GetChallengeById(id uint64) (entities.ChallengeModels, error)
 	DeleteChallenge(id uint64) error
+
+	//partisipan
+	CreateSubmitChallengeForm(form *entities.ChallengeFormModels) (*entities.ChallengeFormModels, error)
+	GetAllSubmitChallengeForm(page, perPage int) ([]entities.ChallengeFormModels, int64, error)
+	GetSubmitChallengeFormByStatus(page, perPage int, status string) ([]entities.ChallengeFormModels, int64, error)
+	GetSubmitChallengeFormById(id uint64) (entities.ChallengeFormModels, error)
+	UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (entities.ChallengeFormModels, error)
 }
 
 type HandlerChallengeInterface interface {
@@ -34,4 +51,10 @@ type HandlerChallengeInterface interface {
 	UpdateChallenge() echo.HandlerFunc
 	DeleteChallengeById() echo.HandlerFunc
 	GetChallengeById() echo.HandlerFunc
+
+	//partisipan
+	CreateSubmitChallengeForm() echo.HandlerFunc
+	GetAllSubmitChallengeForm() echo.HandlerFunc
+	UpdateSubmitChallengeForm() echo.HandlerFunc
+	GetSubmitChallengeFormById() echo.HandlerFunc
 }

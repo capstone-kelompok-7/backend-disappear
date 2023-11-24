@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	hAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/handler"
 	rAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/repository"
@@ -33,13 +34,18 @@ import (
 	hVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/handler"
 	rVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/repository"
 	sVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/service"
+
+	"net/http"
+
+	hCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/handler"
+	rCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/repository"
+	sCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/service"
 	"github.com/capstone-kelompok-7/backend-disappear/module/middlewares"
 	"github.com/capstone-kelompok-7/backend-disappear/routes"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"net/http"
 )
 
 func main() {
@@ -76,7 +82,7 @@ func main() {
 	articleHandler := hArticle.NewArticleHandler(articleService)
 
 	challengeRepo := rChallenge.NewChallengeRepository(db)
-	challengeService := sChallenge.NewChallengeService(challengeRepo)
+	challengeService := sChallenge.NewChallengeService(challengeRepo, userService)
 	challengeHandler := hChallenge.NewChallengeHandler(challengeService)
 
 	carouselRepo := rCarousel.NewCarouselRepository(db)
@@ -90,6 +96,10 @@ func main() {
 	reviewRepo := rReview.NewReviewRepository(db)
 	reviewService := sReview.NewReviewService(reviewRepo, productService)
 	reviewHandler := hReview.NewReviewHandler(reviewService)
+
+	cartRepo := rCart.NewCartRepository(db)
+	cartService := sCart.NewCartService(cartRepo, productService)
+	cartHandler := hCart.NewCartHandler(cartService)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -111,5 +121,6 @@ func main() {
 	routes.RouteCarousel(e, carouselHandler, jwtService, userService)
 	routes.RouteAddress(e, addressHandler, jwtService, userService)
 	routes.RouteReview(e, reviewHandler, jwtService, userService)
+	routes.RouteCart(e, cartHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }

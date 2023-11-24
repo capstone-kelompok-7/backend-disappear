@@ -17,6 +17,7 @@ type RepositoryUserInterface interface {
 	GetTotalUserCount() (int64, error)
 	EditProfile(userID uint64, updatedData dto.EditProfileRequest) (*entities.UserModels, error)
 	DeleteAccount(userID uint64) error
+	UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error)
 }
 
 type ServiceUserInterface interface {
@@ -31,6 +32,7 @@ type ServiceUserInterface interface {
 	GetPrevPage(currentPage int) int
 	EditProfile(userID uint64, updatedData dto.EditProfileRequest) (*entities.UserModels, error)
 	DeleteAccount(userID uint64) error
+	UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error)
 }
 
 type HandlerUserInterface interface {

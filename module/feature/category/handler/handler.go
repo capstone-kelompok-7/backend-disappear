@@ -60,7 +60,7 @@ func (h *CategoryHandler) CreateCategory() echo.HandlerFunc {
 		}
 		createdCategory, err := h.service.CreateCategory(newCategory)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menambahkan kategori: "+err.Error())
 		}
 		return response.SendSuccessResponse(c, "Berhasil menambahkan kategory", dto.FormatCategory(createdCategory))
 	}
@@ -78,41 +78,19 @@ func (h *CategoryHandler) GetAllCategory() echo.HandlerFunc {
 		search := c.QueryParam("search")
 		if search != "" {
 			categories, totalItems, err = h.service.GetCategoryByName(page, perPage, search)
-			if err != nil {
-				c.Logger().Error("handler: failed to fetch categories by name:", err.Error())
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
-			}
 		} else {
 			categories, totalItems, err = h.service.GetAllCategory(pageConv, perPage)
 		}
 		if err != nil {
-			c.Logger().Error("handler: failed to fetch all categories:", err.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+			c.Logger().Error("handler: failed to fetch all carousels:", err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan carausel: ")
 		}
 
-		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
-		nextPage := h.service.GetNextPage(current_page, total_pages)
-		prevPage := h.service.GetPrevPage(current_page)
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.Pagination(c, dto.FormatterCategory(categories), current_page, total_pages, int(totalItems), nextPage, prevPage, "Daftar kategori")
-	}
-}
-
-func (h *CategoryHandler) GetCategoryByName() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		page, perPage := 1, 10
-		name := c.Param("name")
-
-		categories, totalItems, err := h.service.GetCategoryByName(page, perPage, name)
-		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil kategori")
-		}
-
-		if len(categories) == 0 {
-			return response.SendErrorResponse(c, http.StatusNotFound, "Kategori tidak ditemukan")
-		}
-
-		return response.Pagination(c, dto.FormatterCategory(categories), 1, 1, int(totalItems), 1, 1, "Daftar kategori")
+		return response.Pagination(c, dto.FormatterCategory(categories), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar kategori")
 	}
 }
 
@@ -164,11 +142,11 @@ func (h *CategoryHandler) UpdateCategoryById() echo.HandlerFunc {
 			Name:  updateRequest.Name,
 			Photo: uploadedURL,
 		}
-		updatedCategory, err := h.service.UpdateCategoryById(categoryID, newData)
+		err = h.service.UpdateCategoryById(categoryID, newData)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal update category:"+err.Error())
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal memperbarui kategori: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil mengubah kategori", dto.FormatCategory(updatedCategory))
+		return response.SendStatusOkResponse(c, "Berhasil mengubah kategori")
 	}
 }
 
@@ -184,17 +162,9 @@ func (h *CategoryHandler) DeleteCategoryById() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		existingCategory, err := h.service.GetCategoryById(categoryID)
-		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan kategori: "+err.Error())
-		}
-		if existingCategory == nil {
-			return response.SendErrorResponse(c, http.StatusNotFound, "Kategori tidak ditemukan"+err.Error())
-		}
-
 		err = h.service.DeleteCategoryById(categoryID)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Server Internal Error"+err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus kategori: "+err.Error())
 		}
 
 		return response.SendStatusOkResponse(c, "Berhasil hapus kategori")
