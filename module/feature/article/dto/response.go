@@ -13,6 +13,7 @@ type ArticleFormatter struct {
 	Content string    `json:"content"`
 	Author  string    `json:"author"`
 	Date    time.Time `json:"date"`
+	Views   uint64    `json:"views"`
 }
 
 func FormatArticle(article entities.ArticleModels) ArticleFormatter {
@@ -23,6 +24,7 @@ func FormatArticle(article entities.ArticleModels) ArticleFormatter {
 	articleFormatter.Content = article.Content
 	articleFormatter.Author = article.Author
 	articleFormatter.Date = article.UpdatedAt
+	articleFormatter.Views = article.Views
 
 	return articleFormatter
 }
