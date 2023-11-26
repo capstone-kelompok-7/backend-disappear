@@ -107,6 +107,46 @@ type ProductDetailFormatter struct {
 	Images      []ProductImageFormatter `json:"image_url,omitempty"`
 }
 
+type CreateProductFormatter struct {
+	ID          uint64 `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	GramPlastic uint64 `json:"gram_plastic"`
+	Stock       uint64 `json:"stock"`
+	Discount    uint64 `json:"discount"`
+	Exp         uint64 `json:"exp"`
+	Price       uint64 `json:"price"`
+}
+
+func FormatCreateProductResponse(product *entities.ProductModels) CreateProductFormatter {
+	createdProduct := CreateProductFormatter{}
+	createdProduct.ID = product.ID
+	createdProduct.Name = product.Name
+	createdProduct.Description = product.Description
+	createdProduct.GramPlastic = product.GramPlastic
+	createdProduct.Stock = product.Stock
+	createdProduct.Discount = product.Discount
+	createdProduct.Exp = product.Exp
+	createdProduct.Price = product.Price
+
+	return createdProduct
+
+}
+
+type CreateImageFormatter struct {
+	ID        uint64 `json:"id"`
+	ProductID uint64 `json:"product_id"`
+	Image     string `json:"image_url"`
+}
+
+func ProductPhotoCreatedResponse(productPhoto *entities.ProductPhotosModels) CreateImageFormatter {
+	response := CreateImageFormatter{}
+	response.ID = productPhoto.ID
+	response.ProductID = productPhoto.ProductID
+	response.Image = productPhoto.ImageURL
+	return response
+}
+
 func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter {
 	productFormatter := ProductDetailFormatter{
 		ID:          product.ID,

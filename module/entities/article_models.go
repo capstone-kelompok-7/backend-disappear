@@ -13,7 +13,7 @@ type ArticleModels struct {
 	Views     uint64       `gorm:"column:views;type:BIGINT UNSIGNED" json:"views"`
 	CreatedAt time.Time    `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time    `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
-	DeletedAt *time.Time   `gorm:"column:deleted_at;index" json:"deleted_at"`
+	DeletedAt *time.Time   `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Users     []UserModels `gorm:"many2many:user_bookmarks;" json:"users"`
 }
 

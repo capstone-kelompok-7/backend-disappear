@@ -76,8 +76,7 @@ func (s *ProductService) GetProductsByName(page, perPage int, name string) ([]*e
 	return products, totalItems, nil
 }
 
-func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error {
-
+func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) (*entities.ProductModels, error) {
 	productData := &entities.ProductModels{
 		Name:        request.Name,
 		Description: request.Description,
@@ -98,12 +97,12 @@ func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error 
 			},
 		}
 	}
-	err := s.repo.CreateProduct(productData, request.Categories)
+	createdProduct, err := s.repo.CreateProduct(productData, request.Categories)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return createdProduct, nil
 }
 
 func (s *ProductService) GetProductByID(productID uint64) (*entities.ProductModels, error) {
@@ -164,10 +163,10 @@ func (s *ProductService) GetProductReviews(page, perPage int) ([]*entities.Produ
 	return products, totalItems, nil
 }
 
-func (s *ProductService) UpdateProduct(productID uint64, request *dto.UpdateProduct) error {
+func (s *ProductService) UpdateProduct(productID uint64, request *dto.UpdateProduct) (*entities.ProductModels, error) {
 	productData, err := s.repo.GetProductByID(productID)
 	if err != nil {
-		return errors.New("product tidak ditemukan")
+		return nil, errors.New("product tidak ditemukan")
 	}
 
 	productData.Name = request.Name
@@ -190,15 +189,15 @@ func (s *ProductService) UpdateProduct(productID uint64, request *dto.UpdateProd
 
 	err = s.repo.UpdateProductCategories(productData, request.CategoryIDs)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = s.repo.UpdateProduct(productData)
+	productData, err = s.repo.UpdateProduct(productData)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return productData, nil
 }
 
 func (s *ProductService) DeleteProduct(id uint64) error {

@@ -44,12 +44,15 @@ func (s *ArticleService) UpdateArticleById(id uint64, updatedArticle *entities.A
 		return nil, errors.New("artikel tidak ditemukan:" + err.Error())
 	}
 
-	updatedArticle, err = s.repo.UpdateArticleById(id, updatedArticle)
+	_, err = s.repo.UpdateArticleById(id, updatedArticle)
 	if err != nil {
 		return nil, errors.New("Gagal Mengubah Artikel: " + err.Error())
 	}
 
 	getUpdatedArticle, err := s.repo.GetArticleById(id)
+	if err != nil {
+		return nil, errors.New("Gagal mengambil Artikel: " + err.Error())
+	}
 
 	return getUpdatedArticle, nil
 }

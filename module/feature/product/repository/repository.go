@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"gorm.io/gorm"
@@ -62,29 +63,34 @@ func (r *ProductRepository) GetTotalProductCount() (int64, error) {
 	return count, err
 }
 
-func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, categoryIDs []uint64) error {
+func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, categoryIDs []uint64) (*entities.ProductModels, error) {
 	tx := r.db.Begin()
 
 	if err := tx.Create(productData).Error; err != nil {
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	if len(categoryIDs) > 0 {
 		for _, categoryID := range categoryIDs {
 			if err := tx.Model(productData).Association("Categories").Append(&entities.CategoryModels{ID: categoryID}); err != nil {
 				tx.Rollback()
-				return err
+				return nil, err
 			}
 
 			if err := tx.Model(&entities.CategoryModels{}).Where("id = ?", categoryID).Update("total_product", gorm.Expr("total_product + ?", 1)).Error; err != nil {
 				tx.Rollback()
-				return err
+				return nil, err
 			}
 		}
 	}
 
-	return tx.Commit().Error
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return productData, nil
 }
 
 func (r *ProductRepository) GetProductByID(productID uint64) (*entities.ProductModels, error) {
@@ -129,15 +135,15 @@ func (r *ProductRepository) GetProductReviews(page, perPage int) ([]*entities.Pr
 	}
 	return products, nil
 }
-func (r *ProductRepository) UpdateProduct(product *entities.ProductModels) error {
+func (r *ProductRepository) UpdateProduct(product *entities.ProductModels) (*entities.ProductModels, error) {
 	tx := r.db.Begin()
 
 	if err := tx.Save(product).Error; err != nil {
 		tx.Rollback()
-		return err
+		return nil, errors.New("gagal menyimpan produk: " + err.Error())
 	}
 
-	return tx.Commit().Error
+	return product, tx.Commit().Error
 }
 
 func (r *ProductRepository) UpdateProductCategories(product *entities.ProductModels, categoryIDs []uint64) error {
@@ -145,18 +151,18 @@ func (r *ProductRepository) UpdateProductCategories(product *entities.ProductMod
 
 	if err := tx.Model(product).Association("Categories").Clear(); err != nil {
 		tx.Rollback()
-		return err
+		return errors.New("gagal menghapus asosiasi kategori: " + err.Error())
 	}
 
 	for _, categoryID := range categoryIDs {
 		if err := tx.Model(product).Association("Categories").Append(&entities.CategoryModels{ID: categoryID}); err != nil {
 			tx.Rollback()
-			return err
+			return errors.New("gagal menambahkan asosiasi kategori: " + err.Error())
 		}
 
 		if err := tx.Model(&entities.CategoryModels{}).Where("id = ?", categoryID).Update("total_product", gorm.Expr("total_product + ?", 1)).Error; err != nil {
 			tx.Rollback()
-			return err
+			return errors.New("gagal memperbarui total produk kategori: " + err.Error())
 		}
 	}
 
