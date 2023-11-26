@@ -232,3 +232,11 @@ func (s *ProductService) DeleteImageProduct(productId, imageId uint64) error {
 	}
 	return nil
 }
+
+func (s *ProductService) GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
+	products, totalItems, err := s.repo.GetProductsByCategory(categoryID, page, perPage)
+	if err != nil {
+		return nil, 0, err
+	}
+	return products, totalItems, nil
+}

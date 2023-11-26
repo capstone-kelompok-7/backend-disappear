@@ -35,11 +35,17 @@ func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 		var products []*entities.ProductModels
 		var totalItems int64
 		var err error
-		search := c.QueryParam("search")
-		if search != "" {
-			products, totalItems, err = h.service.GetProductsByName(page, perPage, search)
+
+		categoryID, err := strconv.ParseUint(c.QueryParam("categoryID"), 10, 64)
+		if err == nil && categoryID > 0 {
+			products, totalItems, err = h.service.GetProductsByCategory(categoryID, pageConv, perPage)
 		} else {
-			products, totalItems, err = h.service.GetAll(pageConv, perPage)
+			search := c.QueryParam("search")
+			if search != "" {
+				products, totalItems, err = h.service.GetProductsByName(pageConv, perPage, search)
+			} else {
+				products, totalItems, err = h.service.GetAll(pageConv, perPage)
+			}
 		}
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all products:", err.Error())
