@@ -8,7 +8,7 @@ type CarouselModels struct {
 	Photo     string     `gorm:"column:photo;type:VARCHAR(255)" json:"photo"`
 	CreatedAt time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	DeletedAt *time.Time `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 }
 
 func (CarouselModels) TableName() string {

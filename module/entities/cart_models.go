@@ -8,7 +8,7 @@ type CartModels struct {
 	GrandTotal uint64            `gorm:"column:grand_total;type:BIGINT UNSIGNED" json:"grand_total"`
 	CreatedAt  time.Time         `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt  time.Time         `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
-	DeletedAt  *time.Time        `gorm:"column:deleted_at;index" json:"deleted_at"`
+	DeletedAt  *time.Time        `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	User       *UserModels       `json:"user" gorm:"foreignKey:UserID"`
 	CartItems  []*CartItemModels `json:"cart_items,omitempty" gorm:"foreignKey:CartID"`
 }

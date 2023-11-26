@@ -16,7 +16,7 @@ type UserModels struct {
 	IsVerified   bool            `gorm:"column:is_verified;default:false" json:"is_verified"`
 	CreatedAt    time.Time       `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time       `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt    *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	DeletedAt    *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Address      []AddressModels `gorm:"foreignKey:UserID" json:"addresses"`
 	Articles     []ArticleModels `gorm:"many2many:user_bookmarks;" json:"users"`
 	Reviews      []ReviewModels  `gorm:"foreignKey:UserID" json:"reviews"`
@@ -35,7 +35,7 @@ type AddressModels struct {
 	IsPrimary    bool       `gorm:"column:is_primary;type:BOOLEAN" json:"is_primary"`
 	CreatedAt    time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 }
 
 type OTPModels struct {

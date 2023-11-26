@@ -30,7 +30,7 @@ func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 		}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
-		perPage := 10
+		perPage := 8
 
 		var products []*entities.ProductModels
 		var totalItems int64
@@ -70,13 +70,13 @@ func (h *ProductHandler) CreateProduct() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
 
-		err := h.service.CreateProduct(&request)
+		createdProduct, err := h.service.CreateProduct(&request)
 		if err != nil {
 			c.Logger().Error("handler: gagal membuat produk baru:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 		}
 
-		return response.SendStatusCreatedResponse(c, "Product berhasil dibuat")
+		return response.SendSuccessResponse(c, "Product berhasil dibuat", dto.FormatCreateProductResponse(createdProduct))
 	}
 }
 
@@ -126,11 +126,11 @@ func (h *ProductHandler) CreateProductImage() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 
 		}
-		_, err = h.service.CreateImageProduct(*payload)
+		image, err := h.service.CreateImageProduct(*payload)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
 		}
-		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan image pada product")
+		return response.SendSuccessResponse(c, "Berhasil menambahkan image pada product", dto.ProductPhotoCreatedResponse(image))
 
 	}
 }
@@ -188,13 +188,13 @@ func (h *ProductHandler) UpdateProduct() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
 
-		err = h.service.UpdateProduct(productID, &request)
+		updatedProduct, err := h.service.UpdateProduct(productID, &request)
 		if err != nil {
 			c.Logger().Error("handler: gagal update produk baru:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 		}
 
-		return response.SendStatusOkResponse(c, "Product berhasil diupdate")
+		return response.SendSuccessResponse(c, "Product berhasil diupdate", dto.FormatCreateProductResponse(updatedProduct))
 	}
 }
 
