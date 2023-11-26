@@ -30,7 +30,7 @@ func (h *ChallengeHandler) GetAllChallenges() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
-		var challenge []entities.ChallengeModels
+		var challenge []*entities.ChallengeModels
 		var err error
 		search := c.QueryParam("search")
 		if search != "" {
@@ -39,11 +39,10 @@ func (h *ChallengeHandler) GetAllChallenges() echo.HandlerFunc {
 			challenge, _, err = h.service.GetAllChallenges(pageConv, perPage)
 		}
 		if err != nil {
-			c.Logger().Error("handler: failed to fetch all challenge:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 		}
 
-		var activeChallenges []entities.ChallengeModels
+		var activeChallenges []*entities.ChallengeModels
 		for _, ch := range challenge {
 			if ch.DeletedAt == nil {
 				activeChallenges = append(activeChallenges, ch)
@@ -95,7 +94,7 @@ func (h *ChallengeHandler) CreateChallenge() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Tanggal mulai tidak dapat setelah tanggal selesai.")
 		}
 
-		newChallenge := entities.ChallengeModels{
+		newChallenge := &entities.ChallengeModels{
 			Title:       challengeRequest.Title,
 			Photo:       uploadedURL,
 			StartDate:   challengeRequest.StartDate,
@@ -145,7 +144,7 @@ func (h *ChallengeHandler) UpdateChallenge() echo.HandlerFunc {
 			}
 		}
 
-		updatedChallenge := entities.ChallengeModels{
+		updatedChallenge := &entities.ChallengeModels{
 			ID:          challengeID,
 			Title:       updateRequest.Title,
 			Photo:       uploadedURL,
@@ -241,10 +240,10 @@ func (h *ChallengeHandler) CreateSubmitChallengeForm() echo.HandlerFunc {
 
 		createdForm, err := h.service.CreateSubmitChallengeForm(&newForm)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengikuti tantangan: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil mengikuti tantangan", dto.FormatChallengeForm(*createdForm, challenge.Exp, createdForm.CreatedAt))
+		return response.SendSuccessResponse(c, "Berhasil mengikuti tantangan", dto.FormatChallengeForm(createdForm, challenge.Exp, createdForm.CreatedAt))
 	}
 }
 
@@ -254,7 +253,7 @@ func (h *ChallengeHandler) GetAllSubmitChallengeForm() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
-		var partisipan []entities.ChallengeFormModels
+		var partisipan []*entities.ChallengeFormModels
 		var totalItems int64
 		var err error
 		filterStatus := c.QueryParam("status")
@@ -312,7 +311,6 @@ func (h *ChallengeHandler) UpdateSubmitChallengeForm() echo.HandlerFunc {
 		}
 		_, err = h.service.UpdateSubmitChallengeForm(formID, formRequest)
 		if err != nil {
-			c.Logger().Error("handler: failed create voucher:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
 		}
 		return response.SendStatusOkResponse(c, "form berhasil dirubah")

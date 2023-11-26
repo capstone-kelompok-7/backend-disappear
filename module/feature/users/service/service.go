@@ -165,3 +165,12 @@ func (s *UserService) UpdateUserExp(userID uint64, exp uint64) (*entities.UserMo
 
 	return user, nil
 }
+
+func (s *UserService) UpdateUserChallengeFollow(userID uint64, totalChallenge uint64) (*entities.UserModels, error) {
+	user, err := s.repo.UpdateUserChallengeFollow(userID, totalChallenge)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

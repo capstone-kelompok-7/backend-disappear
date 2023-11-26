@@ -17,8 +17,8 @@ type ChallengeFormatter struct {
 	Exp         uint64    `json:"exp"`
 }
 
-func FormatChallenge(challenge entities.ChallengeModels) ChallengeFormatter {
-	challengeFormatter := ChallengeFormatter{}
+func FormatChallenge(challenge *entities.ChallengeModels) *ChallengeFormatter {
+	challengeFormatter := &ChallengeFormatter{}
 	challengeFormatter.ID = challenge.ID
 	challengeFormatter.Title = challenge.Title
 	challengeFormatter.Photo = challenge.Photo
@@ -31,8 +31,8 @@ func FormatChallenge(challenge entities.ChallengeModels) ChallengeFormatter {
 	return challengeFormatter
 }
 
-func FormatterChallenge(challenge []entities.ChallengeModels) []ChallengeFormatter {
-	var challengeFormatter []ChallengeFormatter
+func FormatterChallenge(challenge []*entities.ChallengeModels) []*ChallengeFormatter {
+	var challengeFormatter []*ChallengeFormatter
 
 	for _, challenge := range challenge {
 		FormatChallenge := FormatChallenge(challenge)
@@ -53,8 +53,8 @@ type ChallengeFormFormatter struct {
 	CreatedAt   time.Time `json:"tanggal_berpartisipasi"`
 }
 
-func FormatChallengeForm(form entities.ChallengeFormModels, exp uint64, createdAt time.Time) ChallengeFormFormatter {
-	challengeFormFormatter := ChallengeFormFormatter{}
+func FormatChallengeForm(form *entities.ChallengeFormModels, exp uint64, createdAt time.Time) *ChallengeFormFormatter {
+	challengeFormFormatter := &ChallengeFormFormatter{}
 	challengeFormFormatter.ID = form.ID
 	challengeFormFormatter.UserID = form.UserID
 	challengeFormFormatter.ChallengeID = form.ChallengeID
@@ -67,8 +67,8 @@ func FormatChallengeForm(form entities.ChallengeFormModels, exp uint64, createdA
 	return challengeFormFormatter
 }
 
-func FormatterChallengeForm(forms []entities.ChallengeFormModels, exp uint64, createdAt time.Time) []ChallengeFormFormatter {
-	var formFormatter []ChallengeFormFormatter
+func FormatterChallengeForm(forms []*entities.ChallengeFormModels, exp uint64, createdAt time.Time) []*ChallengeFormFormatter {
+	var formFormatter []*ChallengeFormFormatter
 	for _, form := range forms {
 		formattedForm := FormatChallengeForm(form, exp, createdAt)
 		formFormatter = append(formFormatter, formattedForm)

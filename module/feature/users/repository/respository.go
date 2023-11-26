@@ -130,3 +130,12 @@ func (r *UserRepository) UpdateUserExp(userID uint64, exp uint64) (*entities.Use
 
 	return user, nil
 }
+
+func (r *UserRepository) UpdateUserChallengeFollow(userID uint64, totalChallenge uint64) (*entities.UserModels, error) {
+	user := &entities.UserModels{}
+	if err := r.db.Model(user).Where("id = ?", userID).Update("total_challenge", totalChallenge).Error; err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

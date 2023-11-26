@@ -19,8 +19,8 @@ func NewChallengeRepository(db *gorm.DB) challenge.RepositoryChallengeInterface 
 	}
 }
 
-func (r *ChallengeRepository) FindAll(page, perpage int) ([]entities.ChallengeModels, error) {
-	var challenge []entities.ChallengeModels
+func (r *ChallengeRepository) FindAll(page, perpage int) ([]*entities.ChallengeModels, error) {
+	var challenge []*entities.ChallengeModels
 	offset := (page - 1) * perpage
 	err := r.db.Offset(offset).Limit(perpage).Find(&challenge).Error
 	if err != nil {
@@ -35,8 +35,8 @@ func (r *ChallengeRepository) GetTotalChallengeCount() (int64, error) {
 	return count, err
 }
 
-func (r *ChallengeRepository) FindByTitle(page, perpage int, title string) ([]entities.ChallengeModels, error) {
-	var challenge []entities.ChallengeModels
+func (r *ChallengeRepository) FindByTitle(page, perpage int, title string) ([]*entities.ChallengeModels, error) {
+	var challenge []*entities.ChallengeModels
 	offset := (page - 1) * perpage
 	err := r.db.Offset(offset).Limit(perpage).Where("title LIKE?", "%"+title+"%").Find(&challenge).Error
 	if err != nil {
@@ -51,7 +51,7 @@ func (r *ChallengeRepository) GetTotalChallengeCountByTitle(title string) (int64
 	return count, err
 }
 
-func (r *ChallengeRepository) CreateChallenge(newData entities.ChallengeModels) (entities.ChallengeModels, error) {
+func (r *ChallengeRepository) CreateChallenge(newData *entities.ChallengeModels) (*entities.ChallengeModels, error) {
 	if err := r.db.Create(&newData).Error; err != nil {
 		return newData, err
 	}
@@ -59,8 +59,8 @@ func (r *ChallengeRepository) CreateChallenge(newData entities.ChallengeModels) 
 	return newData, nil
 }
 
-func (r *ChallengeRepository) GetChallengeById(id uint64) (entities.ChallengeModels, error) {
-	var challenge = entities.ChallengeModels{}
+func (r *ChallengeRepository) GetChallengeById(id uint64) (*entities.ChallengeModels, error) {
+	var challenge = &entities.ChallengeModels{}
 	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&challenge).Error; err != nil {
 		return challenge, err
 	}
@@ -68,9 +68,9 @@ func (r *ChallengeRepository) GetChallengeById(id uint64) (entities.ChallengeMod
 	return challenge, nil
 }
 
-func (r *ChallengeRepository) UpdateChallenge(challengeID uint64, updatedChallenge entities.ChallengeModels) (entities.ChallengeModels, error) {
+func (r *ChallengeRepository) UpdateChallenge(challengeID uint64, updatedChallenge *entities.ChallengeModels) (*entities.ChallengeModels, error) {
 	if err := r.db.Model(&entities.ChallengeModels{}).Where("id = ?", challengeID).Updates(updatedChallenge).Error; err != nil {
-		return entities.ChallengeModels{}, err
+		return &entities.ChallengeModels{}, err
 	}
 
 	return updatedChallenge, nil
@@ -100,8 +100,8 @@ func (r *ChallengeRepository) CreateSubmitChallengeForm(form *entities.Challenge
 	return form, nil
 }
 
-func (r *ChallengeRepository) GetAllSubmitChallengeForm(page, perpage int) ([]entities.ChallengeFormModels, error) {
-	var participants []entities.ChallengeFormModels
+func (r *ChallengeRepository) GetAllSubmitChallengeForm(page, perpage int) ([]*entities.ChallengeFormModels, error) {
+	var participants []*entities.ChallengeFormModels
 	offset := (page - 1) * perpage
 	err := r.db.Offset(offset).Limit(perpage).Find(&participants).Error
 	if err != nil {
@@ -110,8 +110,8 @@ func (r *ChallengeRepository) GetAllSubmitChallengeForm(page, perpage int) ([]en
 	return participants, nil
 }
 
-func (r *ChallengeRepository) GetSubmitChallengeFormByStatus(page, perpage int, status string) ([]entities.ChallengeFormModels, error) {
-	var participants []entities.ChallengeFormModels
+func (r *ChallengeRepository) GetSubmitChallengeFormByStatus(page, perpage int, status string) ([]*entities.ChallengeFormModels, error) {
+	var participants []*entities.ChallengeFormModels
 	offset := (page - 1) * perpage
 	err := r.db.Where("status = ?", status).Offset(offset).Limit(perpage).Find(&participants).Error
 	if err != nil {
@@ -126,8 +126,8 @@ func (r *ChallengeRepository) GetTotalSubmitChallengeFormCount() (int64, error) 
 	return count, err
 }
 
-func (r *ChallengeRepository) GetSubmitChallengeFormById(id uint64) (entities.ChallengeFormModels, error) {
-	var participant = entities.ChallengeFormModels{}
+func (r *ChallengeRepository) GetSubmitChallengeFormById(id uint64) (*entities.ChallengeFormModels, error) {
+	var participant = &entities.ChallengeFormModels{}
 	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&participant).Error; err != nil {
 		return participant, err
 	}
@@ -135,16 +135,16 @@ func (r *ChallengeRepository) GetSubmitChallengeFormById(id uint64) (entities.Ch
 	return participant, nil
 }
 
-func (r *ChallengeRepository) UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (entities.ChallengeFormModels, error) {
-	var participant entities.ChallengeFormModels
+func (r *ChallengeRepository) UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (*entities.ChallengeFormModels, error) {
+	var participant *entities.ChallengeFormModels
 	if err := r.db.Model(&entities.ChallengeFormModels{}).Where("id = ? AND deleted_at IS NULL", id).Updates(updatedStatus).Error; err != nil {
 		return participant, err
 	}
 	return participant, nil
 }
 
-func (r *ChallengeRepository) GetSubmitChallengeFormByUserAndChallenge(userID uint64) ([]entities.ChallengeFormModels, error) {
-	var submissions []entities.ChallengeFormModels
+func (r *ChallengeRepository) GetSubmitChallengeFormByUserAndChallenge(userID uint64) ([]*entities.ChallengeFormModels, error) {
+	var submissions []*entities.ChallengeFormModels
 	err := r.db.Where("user_id = ?", userID).Find(&submissions).Error
 	if err != nil {
 		return nil, err
