@@ -76,7 +76,7 @@ func (s *ProductService) GetProductsByName(page, perPage int, name string) ([]*e
 	return products, totalItems, nil
 }
 
-func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error {
+func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) (*entities.ProductModels, error) {
 
 	productData := &entities.ProductModels{
 		Name:        request.Name,
@@ -98,12 +98,12 @@ func (s *ProductService) CreateProduct(request *dto.CreateProductRequest) error 
 			},
 		}
 	}
-	err := s.repo.CreateProduct(productData, request.Categories)
+	newProduct, err := s.repo.CreateProduct(productData, request.Categories)
 	if err != nil {
-		return err
+		return newProduct, err
 	}
 
-	return nil
+	return newProduct, nil
 }
 
 func (s *ProductService) GetProductByID(productID uint64) (*entities.ProductModels, error) {

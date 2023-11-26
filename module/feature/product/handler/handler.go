@@ -70,13 +70,13 @@ func (h *ProductHandler) CreateProduct() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
 
-		err := h.service.CreateProduct(&request)
+		newProduct, err := h.service.CreateProduct(&request)
 		if err != nil {
 			c.Logger().Error("handler: gagal membuat produk baru:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 		}
 
-		return response.SendStatusCreatedResponse(c, "Product berhasil dibuat")
+		return response.SendSuccessResponse(c, "Product berhasil dibuat", dto.ProductCreatedResponse(newProduct))
 	}
 }
 
@@ -126,11 +126,11 @@ func (h *ProductHandler) CreateProductImage() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 
 		}
-		_, err = h.service.CreateImageProduct(*payload)
+		newPhoto, err := h.service.CreateImageProduct(*payload)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
 		}
-		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan image pada product")
+		return response.SendSuccessResponse(c, "Berhasil menambahkan image pada product", dto.ProductPhotoCreatedResponse(newPhoto))
 
 	}
 }

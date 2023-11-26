@@ -62,29 +62,29 @@ func (r *ProductRepository) GetTotalProductCount() (int64, error) {
 	return count, err
 }
 
-func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, categoryIDs []uint64) error {
+func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, categoryIDs []uint64) (*entities.ProductModels, error) {
 	tx := r.db.Begin()
 
 	if err := tx.Create(productData).Error; err != nil {
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	if len(categoryIDs) > 0 {
 		for _, categoryID := range categoryIDs {
 			if err := tx.Model(productData).Association("Categories").Append(&entities.CategoryModels{ID: categoryID}); err != nil {
 				tx.Rollback()
-				return err
+				return nil, err
 			}
 
 			if err := tx.Model(&entities.CategoryModels{}).Where("id = ?", categoryID).Update("total_product", gorm.Expr("total_product + ?", 1)).Error; err != nil {
 				tx.Rollback()
-				return err
+				return nil, err
 			}
 		}
 	}
 
-	return tx.Commit().Error
+	return productData, nil
 }
 
 func (r *ProductRepository) GetProductByID(productID uint64) (*entities.ProductModels, error) {

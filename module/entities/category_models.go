@@ -9,7 +9,7 @@ type CategoryModels struct {
 	TotalProduct uint64          `gorm:"column:total_product;type:BIGINT UNSIGNED" json:"total_product"`
 	CreatedAt    time.Time       `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time       `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt    *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	DeletedAt    *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Products     []ProductModels `gorm:"many2many:product_categories;" json:"products"`
 }
 

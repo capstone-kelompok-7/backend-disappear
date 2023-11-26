@@ -11,7 +11,7 @@ type ReviewModels struct {
 	Date        time.Time           `gorm:"column:date;type:DATETIME" json:"date"`
 	CreatedAt   time.Time           `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
 	UpdatedAt   time.Time           `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt   *time.Time          `gorm:"column:deleted_at;type:TIMESTAMP;index" json:"deleted_at"`
+	DeletedAt   *time.Time          `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Photos      []ReviewPhotoModels `gorm:"foreignKey:ReviewID" json:"photos"`
 }
 

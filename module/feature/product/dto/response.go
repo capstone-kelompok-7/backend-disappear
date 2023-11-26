@@ -34,6 +34,42 @@ type ReviewFormatter struct {
 	Rating      uint64 `json:"rating"`
 	Description string `json:"description"`
 }
+type CreateImageFormatter struct {
+	ID        uint64 `json:"id"`
+	ProductID uint64 `json:"product_id"`
+	Image     string `json:"image_url"`
+}
+
+type FormatProductCreated struct {
+	ID          uint64 `json:"id"`
+	Name        string `json:"name"`
+	GramPlastic uint64 `json:"gram_plastic"`
+	Stock       uint64 `json:"stock"`
+	Discount    uint64 `json:"discount"`
+	Exp         uint64 `json:"product_exp"`
+	Price       uint64 `json:"price"`
+}
+
+func ProductPhotoCreatedResponse(productPhoto *entities.ProductPhotosModels) CreateImageFormatter {
+	response := CreateImageFormatter{}
+	response.ID = productPhoto.ID
+	response.ProductID = productPhoto.ProductID
+	response.Image = productPhoto.ImageURL
+	return response
+}
+
+func ProductCreatedResponse(product *entities.ProductModels) FormatProductCreated {
+	productResponse := FormatProductCreated{}
+	productResponse.ID = product.ID
+	productResponse.Name = product.Name
+	productResponse.GramPlastic = product.GramPlastic
+	productResponse.Stock = product.Stock
+	productResponse.Discount = product.Discount
+	productResponse.Exp = product.Exp
+	productResponse.Price = product.Price
+
+	return productResponse
+}
 
 func FormatProduct(product *entities.ProductModels) *ProductFormatter {
 	productFormatter := &ProductFormatter{}

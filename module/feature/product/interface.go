@@ -11,7 +11,7 @@ type RepositoryProductInterface interface {
 	GetTotalProductCountByName(name string) (int64, error)
 	FindAll(page, perPage int) ([]*entities.ProductModels, error)
 	GetTotalProductCount() (int64, error)
-	CreateProduct(productData *entities.ProductModels, categoryIDs []uint64) error
+	CreateProduct(productData *entities.ProductModels, categoryIDs []uint64) (*entities.ProductModels, error)
 	GetProductByID(productID uint64) (*entities.ProductModels, error)
 	CreateImageProduct(productImage *entities.ProductPhotosModels) (*entities.ProductPhotosModels, error)
 	UpdateTotalReview(productID uint64) error
@@ -29,7 +29,7 @@ type ServiceProductInterface interface {
 	GetNextPage(currentPage, totalPages int) int
 	GetPrevPage(currentPage int) int
 	GetProductsByName(page, perPage int, name string) ([]*entities.ProductModels, int64, error)
-	CreateProduct(request *dto.CreateProductRequest) error
+	CreateProduct(request *dto.CreateProductRequest) (*entities.ProductModels, error)
 	GetProductByID(productID uint64) (*entities.ProductModels, error)
 	CreateImageProduct(request dto.CreateProductImage) (*entities.ProductPhotosModels, error)
 	UpdateTotalReview(productID uint64) error
