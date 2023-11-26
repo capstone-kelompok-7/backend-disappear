@@ -98,13 +98,17 @@ func FormatterProduct(products []*entities.ProductModels) []*ProductFormatter {
 type ProductDetailFormatter struct {
 	ID          uint64                  `json:"id"`
 	Name        string                  `json:"name"`
+	Description string                  `json:"description"`
 	GramPlastic uint64                  `json:"gram_plastic"`
 	Stock       uint64                  `json:"stock"`
 	Discount    uint64                  `json:"discount"`
-	Exp         uint64                  `json:"product_exp"`
+	Exp         uint64                  `json:"exp"`
 	Price       uint64                  `json:"price"`
-	Categories  []CategoryFormatter     `json:"categories,omitempty"`
-	Images      []ProductImageFormatter `json:"image_url,omitempty"`
+	Rating      float64                 `json:"rating"`
+	TotalReview uint64                  `json:"total_review"`
+	Categories  []CategoryFormatter     `json:"categories"`
+	Images      []ProductImageFormatter `json:"image_url"`
+	Reviews     []ReviewFormatter       `json:"reviews"`
 }
 
 type CreateProductFormatter struct {
@@ -151,11 +155,14 @@ func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter 
 	productFormatter := ProductDetailFormatter{
 		ID:          product.ID,
 		Name:        product.Name,
+		Description: product.Description,
 		GramPlastic: product.GramPlastic,
 		Price:       product.Price,
 		Stock:       product.Stock,
 		Discount:    product.Discount,
 		Exp:         product.Exp,
+		Rating:      product.Rating,
+		TotalReview: product.TotalReview,
 	}
 
 	var categories []CategoryFormatter
@@ -177,6 +184,18 @@ func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter 
 		images = append(images, image)
 	}
 	productFormatter.Images = images
+
+	var reviews []ReviewFormatter
+	for _, review := range product.ProductReview {
+		reviewFormatter := ReviewFormatter{
+			ID:          review.ID,
+			UserID:      review.UserID,
+			Rating:      review.Rating,
+			Description: review.Description,
+		}
+		reviews = append(reviews, reviewFormatter)
+	}
+	productFormatter.Reviews = reviews
 
 	return productFormatter
 }

@@ -198,3 +198,27 @@ func (r *ProductRepository) DeleteProductImage(productID, imageID uint64) error 
 
 	return tx.Commit().Error
 }
+
+func (r *ProductRepository) GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.ProductModels{}).
+		Joins("JOIN product_categories ON product_categories.product_models_id = products.id").
+		Where("product_categories.category_models_id = ?", categoryID).
+		Where("products.deleted_at IS NULL")
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).
+		Preload("Categories").
+		Preload("ProductPhotos").
+		Preload("ProductReview").
+		Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}

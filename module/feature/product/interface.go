@@ -21,6 +21,7 @@ type RepositoryProductInterface interface {
 	UpdateProductCategories(product *entities.ProductModels, categoryIDs []uint64) error
 	DeleteProduct(id uint64) error
 	DeleteProductImage(productID, imageID uint64) error
+	GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 }
 
 type ServiceProductInterface interface {
@@ -38,6 +39,7 @@ type ServiceProductInterface interface {
 	UpdateProduct(productID uint64, request *dto.UpdateProduct) (*entities.ProductModels, error)
 	DeleteProduct(id uint64) error
 	DeleteImageProduct(productId, imageId uint64) error
+	GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 }
 
 type HandlerProductInterface interface {
