@@ -18,6 +18,7 @@ type RepositoryUserInterface interface {
 	EditProfile(userID uint64, updatedData dto.EditProfileRequest) (*entities.UserModels, error)
 	DeleteAccount(userID uint64) error
 	UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error)
+	UpdateUserChallengeFollow(userID uint64, totalChallenge uint64) (*entities.UserModels, error)
 }
 
 type ServiceUserInterface interface {
@@ -33,6 +34,7 @@ type ServiceUserInterface interface {
 	EditProfile(userID uint64, updatedData dto.EditProfileRequest) (*entities.UserModels, error)
 	DeleteAccount(userID uint64) error
 	UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error)
+	UpdateUserChallengeFollow(userID uint64, totalChallenge uint64) (*entities.UserModels, error)
 }
 
 type HandlerUserInterface interface {

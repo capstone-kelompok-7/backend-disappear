@@ -76,7 +76,6 @@ func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtServ
 	challengesGroup.PUT("/:id", h.UpdateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.DELETE("/:id", h.DeleteChallengeById(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.GET("/:id", h.GetChallengeById())
-
 	challengesGroup.POST("/submit", h.CreateSubmitChallengeForm(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.PUT("/participants/status/:id", h.UpdateSubmitChallengeForm(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.GET("/participants", h.GetAllSubmitChallengeForm())

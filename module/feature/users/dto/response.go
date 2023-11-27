@@ -5,17 +5,18 @@ import (
 )
 
 type UserFormatter struct {
-	ID           uint64             `json:"id"`
-	Email        string             `json:"email"`
-	Role         string             `json:"role"`
-	Name         string             `json:"name"`
-	Phone        string             `json:"phone"`
-	PhotoProfile string             `json:"photo_profile"`
-	TotalGram    uint64             `json:"total_gram"`
-	IsVerified   bool               `json:"is_verified"`
-	Level        string             `json:"level"`
-	Exp          uint64             `json:"exp"`
-	Addresses    []AddressFormatter `json:"addresses"`
+	ID             uint64             `json:"id"`
+	Email          string             `json:"email"`
+	Role           string             `json:"role"`
+	Name           string             `json:"name"`
+	Phone          string             `json:"phone"`
+	PhotoProfile   string             `json:"photo_profile"`
+	TotalGram      uint64             `json:"total_gram"`
+	TotalChallenge uint64             `json:"total_challenge"`
+	IsVerified     bool               `json:"is_verified"`
+	Level          string             `json:"level"`
+	Exp            uint64             `json:"exp"`
+	Addresses      []AddressFormatter `json:"addresses"`
 }
 
 type AddressFormatter struct {
@@ -38,6 +39,7 @@ func FormatUser(user *entities.UserModels) *UserFormatter {
 	userFormatter.Phone = user.Phone
 	userFormatter.PhotoProfile = user.PhotoProfile
 	userFormatter.TotalGram = user.TotalGram
+	userFormatter.TotalChallenge = user.TotalChallenge
 	userFormatter.IsVerified = user.IsVerified
 	userFormatter.Level = user.Level
 	userFormatter.Exp = user.Exp

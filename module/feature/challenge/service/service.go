@@ -23,15 +23,15 @@ func NewChallengeService(repo challenge.RepositoryChallengeInterface, userServic
 	}
 }
 
-func (s *ChallengeService) GetAllChallenges(page, perPage int) ([]entities.ChallengeModels, int64, error) {
+func (s *ChallengeService) GetAllChallenges(page, perPage int) ([]*entities.ChallengeModels, int64, error) {
 	challenge, err := s.repo.FindAll(page, perPage)
 	if err != nil {
-		return challenge, 0, err
+		return nil, 0, err
 	}
 
 	totalItems, err := s.repo.GetTotalChallengeCount()
 	if err != nil {
-		return challenge, 0, err
+		return nil, 0, err
 	}
 
 	return challenge, totalItems, nil
@@ -66,22 +66,22 @@ func (s *ChallengeService) GetPrevPage(currentPage int) int {
 	return 1
 }
 
-func (s *ChallengeService) GetChallengeByTitle(page, perPage int, title string) ([]entities.ChallengeModels, int64, error) {
+func (s *ChallengeService) GetChallengeByTitle(page, perPage int, title string) ([]*entities.ChallengeModels, int64, error) {
 	challenge, err := s.repo.FindByTitle(page, perPage, title)
 	if err != nil {
-		return challenge, 0, err
+		return nil, 0, err
 	}
 
 	totalItems, err := s.repo.GetTotalChallengeCountByTitle(title)
 	if err != nil {
-		return challenge, 0, err
+		return nil, 0, err
 	}
 
 	return challenge, totalItems, nil
 }
 
-func (s *ChallengeService) CreateChallenge(newData entities.ChallengeModels) (entities.ChallengeModels, error) {
-	newChallenge := entities.ChallengeModels{
+func (s *ChallengeService) CreateChallenge(newData *entities.ChallengeModels) (*entities.ChallengeModels, error) {
+	newChallenge := &entities.ChallengeModels{
 		Title:       newData.Title,
 		Photo:       newData.Photo,
 		StartDate:   newData.StartDate,
@@ -104,7 +104,7 @@ func (s *ChallengeService) CreateChallenge(newData entities.ChallengeModels) (en
 	return result, nil
 }
 
-func (s *ChallengeService) GetChallengeById(id uint64) (entities.ChallengeModels, error) {
+func (s *ChallengeService) GetChallengeById(id uint64) (*entities.ChallengeModels, error) {
 	result, err := s.repo.GetChallengeById(id)
 	if err != nil {
 		return result, errors.New("challenge tidak ditemukan")
@@ -131,10 +131,10 @@ func updateIfNotZeroUint64(target *uint64, value uint64) {
 	}
 }
 
-func (s *ChallengeService) UpdateChallenge(challengeID uint64, updateData entities.ChallengeModels) (entities.ChallengeModels, error) {
+func (s *ChallengeService) UpdateChallenge(challengeID uint64, updateData *entities.ChallengeModels) (*entities.ChallengeModels, error) {
 	existingChallenge, err := s.repo.GetChallengeById(challengeID)
 	if err != nil {
-		return entities.ChallengeModels{}, err
+		return &entities.ChallengeModels{}, err
 	}
 
 	updateIfNotEmpty(&existingChallenge.Title, updateData.Title)
@@ -146,16 +146,16 @@ func (s *ChallengeService) UpdateChallenge(challengeID uint64, updateData entiti
 
 	currentTime := time.Now()
 	if currentTime.After(existingChallenge.EndDate) {
-		existingChallenge.Status = "Berakhir"
+		existingChallenge.Status = "Kadaluwarsa"
 	} else {
-		existingChallenge.Status = "Berlangsung"
+		existingChallenge.Status = "Belum Kadaluwarsa"
 	}
 
 	updateIfNotEmpty(&existingChallenge.Status, updateData.Status)
 
 	updatedChallenge, err := s.repo.UpdateChallenge(challengeID, existingChallenge)
 	if err != nil {
-		return entities.ChallengeModels{}, err
+		return &entities.ChallengeModels{}, err
 	}
 
 	return updatedChallenge, nil
@@ -211,38 +211,38 @@ func (s *ChallengeService) CreateSubmitChallengeForm(form *entities.ChallengeFor
 	return nil, errors.New("Tantangan sudah kadaluwarsa, tidak dapat submit")
 }
 
-func (s *ChallengeService) GetAllSubmitChallengeForm(page, perPage int) ([]entities.ChallengeFormModels, int64, error) {
+func (s *ChallengeService) GetAllSubmitChallengeForm(page, perPage int) ([]*entities.ChallengeFormModels, int64, error) {
 	challenge, err := s.repo.GetAllSubmitChallengeForm(page, perPage)
 	if err != nil {
-		return challenge, 0, err
+		return nil, 0, err
 	}
 
 	totalItems, err := s.repo.GetTotalSubmitChallengeFormCount()
 	if err != nil {
-		return challenge, 0, err
+		return nil, 0, err
 	}
 
 	return challenge, totalItems, nil
 }
 
-func (s *ChallengeService) GetSubmitChallengeFormByStatus(page, perPage int, status string) ([]entities.ChallengeFormModels, int64, error) {
+func (s *ChallengeService) GetSubmitChallengeFormByStatus(page, perPage int, status string) ([]*entities.ChallengeFormModels, int64, error) {
 	challenge, err := s.repo.GetSubmitChallengeFormByStatus(page, perPage, status)
 	if err != nil {
-		return challenge, 0, err
+		return nil, 0, err
 	}
 
 	totalItems, err := s.repo.GetTotalSubmitChallengeFormCount()
 	if err != nil {
-		return challenge, 0, err
+		return nil, 0, err
 	}
 
 	return challenge, totalItems, nil
 }
 
-func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.UpdateChallengeFormStatusRequest) (entities.ChallengeFormModels, error) {
+func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.UpdateChallengeFormStatusRequest) (*entities.ChallengeFormModels, error) {
 	form, err := s.repo.GetSubmitChallengeFormById(id)
 	if err != nil {
-		return entities.ChallengeFormModels{}, errors.New("Form tidak ditemukan")
+		return &entities.ChallengeFormModels{}, errors.New("Form tidak ditemukan")
 	}
 
 	userID := form.UserID
@@ -251,15 +251,28 @@ func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.
 		return form, errors.New("Gagal mendapatkan data user")
 	}
 
+	var changeTotalChallenge uint64
+
 	switch {
 	case form.Status == "valid" && updatedData.Status == "tidak valid":
 		user.Exp -= form.Exp
+		changeTotalChallenge--
 	case form.Status == "tidak valid" && updatedData.Status == "valid":
 		user.Exp += form.Exp
+		changeTotalChallenge++
 	case form.Status == "menunggu validasi" && updatedData.Status == "valid":
 		user.Exp += form.Exp
+		changeTotalChallenge++
 	case form.Status == "valid" && updatedData.Status == "menunggu validasi":
 		user.Exp -= form.Exp
+		changeTotalChallenge--
+	}
+
+	user.TotalChallenge += changeTotalChallenge
+
+	_, err = s.userService.UpdateUserChallengeFollow(userID, user.TotalChallenge)
+	if err != nil {
+		return form, errors.New("Gagal menyimpan perubahan total challenge user ke database")
 	}
 
 	_, err = s.userService.UpdateUserExp(userID, user.Exp)
@@ -275,7 +288,7 @@ func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.
 	return result, nil
 }
 
-func (s *ChallengeService) GetSubmitChallengeFormById(id uint64) (entities.ChallengeFormModels, error) {
+func (s *ChallengeService) GetSubmitChallengeFormById(id uint64) (*entities.ChallengeFormModels, error) {
 	result, err := s.repo.GetSubmitChallengeFormById(id)
 	if err != nil {
 		return result, errors.New("Form tidak ditemukan")
