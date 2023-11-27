@@ -139,3 +139,28 @@ func (r *UserRepository) UpdateUserChallengeFollow(userID uint64, totalChallenge
 
 	return user, nil
 }
+
+func (r *UserRepository) UpdateUserContribution(userID uint64, gramPlastic uint64) (*entities.UserModels, error) {
+	user := &entities.UserModels{}
+	if err := r.db.Model(user).Where("id = ?", userID).Update("total_gram", gramPlastic).Error; err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepository) UpdateUserLevel(userID uint64, level string) error {
+	var user entities.UserModels
+	if err := r.db.Model(&user).Where("id = ?", userID).Update("level", level).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepository) GetUserLevel(userID uint64) (string, error) {
+	var user entities.UserModels
+	if err := r.db.Select("level").Where("id = ? AND deleted_at IS NULL", userID).First(&user).Error; err != nil {
+		return "", err
+	}
+	return user.Level, nil
+}

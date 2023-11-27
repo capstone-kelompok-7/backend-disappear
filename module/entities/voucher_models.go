@@ -5,7 +5,7 @@ import "time"
 type VoucherModels struct {
 	ID          uint64     `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id" `
 	Name        string     `gorm:"column:name;type:VARCHAR(255)" json:"name" `
-	Code        string     `gorm:"column:code;type:VARCHAR(255);unique" json:"code" `
+	Code        string     `gorm:"column:code;type:VARCHAR(255)" json:"code" `
 	Category    string     `gorm:"column:category;type:VARCHAR(255)" json:"category" `
 	Description string     `gorm:"column:description;type:TEXT" json:"description" `
 	Discount    uint64     `gorm:"column:discount;type:BIGINT UNSIGNED" json:"discount" `
@@ -21,4 +21,16 @@ type VoucherModels struct {
 
 func (VoucherModels) TableName() string {
 	return "vouchers"
+}
+
+type VoucherClaimModels struct {
+	ID        uint64         `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id"`
+	UserID    uint64         `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
+	VoucherID uint64         `gorm:"column:voucher_id;type:BIGINT UNSIGNED" json:"voucher_id"`
+	User      *UserModels    `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	Voucher   *VoucherModels `gorm:"foreignKey:VoucherID" json:"voucher,omitempty"`
+}
+
+func (VoucherClaimModels) TableName() string {
+	return "voucher_claims"
 }

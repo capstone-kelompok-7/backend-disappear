@@ -8,12 +8,12 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/cart"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/review"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher"
 	"github.com/capstone-kelompok-7/backend-disappear/module/middlewares"
-
-	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/labstack/echo/v4"
 )
@@ -42,10 +42,12 @@ func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTI
 func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	voucherGroup := e.Group("api/v1/vouchers")
 	voucherGroup.POST("", h.CreateVoucher(), middlewares.AuthMiddleware(jwtService, userService))
-	voucherGroup.GET("", h.GetAllVouchers())
+	voucherGroup.GET("", h.GetAllVouchers(), middlewares.AuthMiddleware(jwtService, userService))
 	voucherGroup.PUT("/:id", h.UpdateVouchers(), middlewares.AuthMiddleware(jwtService, userService))
-	voucherGroup.GET("/:id", h.GetVoucherById())
+	voucherGroup.GET("/:id", h.GetVoucherById(), middlewares.AuthMiddleware(jwtService, userService))
 	voucherGroup.DELETE("/:id", h.DeleteVoucherById(), middlewares.AuthMiddleware(jwtService, userService))
+	voucherGroup.POST("/claims", h.ClaimVoucher(), middlewares.AuthMiddleware(jwtService, userService))
+	voucherGroup.GET("/users", h.GetVoucherUser(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteProduct(e *echo.Echo, h product.HandlerProductInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
@@ -120,4 +122,12 @@ func RouteCart(e *echo.Echo, h cart.HandlerCartInterface, jwtService utils.JWTIn
 	cartGroup.GET("", h.GetCart(), middlewares.AuthMiddleware(jwtService, userService))
 	cartGroup.PUT("/reduce/quantity", h.ReduceQuantity(), middlewares.AuthMiddleware(jwtService, userService))
 	cartGroup.DELETE("/cart-items/:id", h.DeleteCartItems(), middlewares.AuthMiddleware(jwtService, userService))
+}
+
+func RouteOrder(e *echo.Echo, h order.HandlerOrderInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	orderGroup := e.Group("/api/v1/order")
+	orderGroup.GET("", h.GetAllOrders(), middlewares.AuthMiddleware(jwtService, userService))
+	orderGroup.GET("/:id", h.GetOrderById(), middlewares.AuthMiddleware(jwtService, userService))
+	orderGroup.POST("", h.CreateOrder(), middlewares.AuthMiddleware(jwtService, userService))
+	orderGroup.POST("/:id", h.ConfirmPayment(), middlewares.AuthMiddleware(jwtService, userService))
 }

@@ -19,6 +19,9 @@ type RepositoryUserInterface interface {
 	DeleteAccount(userID uint64) error
 	UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error)
 	UpdateUserChallengeFollow(userID uint64, totalChallenge uint64) (*entities.UserModels, error)
+	UpdateUserContribution(userID uint64, gramPlastic uint64) (*entities.UserModels, error)
+	UpdateUserLevel(userID uint64, level string) error
+	GetUserLevel(userID uint64) (string, error)
 }
 
 type ServiceUserInterface interface {
@@ -35,6 +38,8 @@ type ServiceUserInterface interface {
 	DeleteAccount(userID uint64) error
 	UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error)
 	UpdateUserChallengeFollow(userID uint64, totalChallenge uint64) (*entities.UserModels, error)
+	UpdateUserContribution(userID uint64, gramPlastic uint64) (*entities.UserModels, error)
+	GetUserLevel(userID uint64) (string, error)
 }
 
 type HandlerUserInterface interface {

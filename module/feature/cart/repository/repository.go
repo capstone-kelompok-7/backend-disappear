@@ -62,7 +62,8 @@ func (r *CartRepository) GetCart(userID uint64) (*entities.CartModels, error) {
 		Preload("CartItems", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id, cart_id, product_id, quantity, total_price").
 				Preload("Product", func(db *gorm.DB) *gorm.DB {
-					return db.Select("id, name, gram_plastic, price")
+					return db.Select("id, name, gram_plastic, price").
+						Preload("ProductPhotos")
 				})
 		}).
 		Where("user_id = ?", userID).
@@ -108,6 +109,40 @@ func (r *CartRepository) DeleteCartItem(cartItemID uint64) error {
 	result := r.db.Where("id = ?", cartItemID).Delete(&entities.CartItemModels{})
 	if result.Error != nil {
 		return result.Error
+	}
+	return nil
+}
+
+func (r *CartRepository) IsProductInCart(userID, productID uint64) bool {
+	var count int64
+	r.db.Model(&entities.CartItemModels{}).
+		Joins("JOIN carts ON cart_items.cart_id = carts.id").
+		Where("carts.user_id = ? AND cart_items.product_id = ?", userID, productID).
+		Count(&count)
+	return count > 0
+}
+
+func (r *CartRepository) RemoveProductFromCart(userID, productID uint64) error {
+	var carts entities.CartModels
+	if err := r.db.Where("user_id = ?", userID).Preload("CartItems").First(&carts).Error; err != nil {
+		return err
+	}
+
+	var cartItem entities.CartItemModels
+	for _, item := range carts.CartItems {
+		if item.ProductID == productID {
+			cartItem = *item
+			break
+		}
+	}
+
+	if cartItem.ID == 0 {
+		return nil
+	}
+
+	err := r.db.Delete(&cartItem).Error
+	if err != nil {
+		return err
 	}
 	return nil
 }

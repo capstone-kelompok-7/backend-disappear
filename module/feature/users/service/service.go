@@ -158,12 +158,63 @@ func (s *UserService) DeleteAccount(userID uint64) error {
 }
 
 func (s *UserService) UpdateUserExp(userID uint64, exp uint64) (*entities.UserModels, error) {
-	user, err := s.repo.UpdateUserExp(userID, exp)
+	user, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+
+	user.Exp = exp
+	updatedUser, err := s.repo.UpdateUserExp(userID, exp)
 	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	level := determineLevel(updatedUser.Exp)
+	if level != updatedUser.Level {
+		updatedUser.Level = level
+		if err := s.repo.UpdateUserLevel(userID, level); err != nil {
+			return nil, err
+		}
+	}
+
+	return updatedUser, nil
+}
+
+func (s *UserService) UpdateUserContribution(userID uint64, gramPlastic uint64) (*entities.UserModels, error) {
+	user, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+
+	user.TotalGram = gramPlastic
+	updatedUser, err := s.repo.UpdateUserContribution(userID, gramPlastic)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedUser, nil
+}
+
+func determineLevel(exp uint64) string {
+	if exp <= 500 {
+		return "Bronze"
+	} else if exp <= 1000 {
+		return "Silver"
+	} else {
+		return "Gold"
+	}
+}
+
+func (s *UserService) GetUserLevel(userID uint64) (string, error) {
+	user, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return "", errors.New("pengguna tidak ditemukan")
+	}
+	userLevel, err := s.repo.GetUserLevel(user.ID)
+	if err != nil {
+		return "", err
+	}
+	return userLevel, nil
 }
 
 func (s *UserService) UpdateUserChallengeFollow(userID uint64, totalChallenge uint64) (*entities.UserModels, error) {

@@ -199,6 +199,14 @@ func (r *ProductRepository) DeleteProductImage(productID, imageID uint64) error 
 	return tx.Commit().Error
 }
 
+func (r *ProductRepository) ReduceStockWhenPurchasing(productID, quantity uint64) error {
+	var products entities.ProductModels
+	if err := r.db.Model(&products).Where("id = ?", productID).Update("stock", gorm.Expr("stock - ?", quantity)).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *ProductRepository) GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
 	var products []*entities.ProductModels
 	var totalItems int64
