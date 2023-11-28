@@ -25,18 +25,18 @@ func (h *VoucherHandler) CreateVoucher() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		voucherRequest := new(dto.CreateVoucherRequest)
-		if err := c.Bind(&voucherRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		if err := c.Bind(voucherRequest); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai")
 		}
 
 		if err := utils.ValidateStruct(voucherRequest); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
 
-		newVoucher := entities.VoucherModels{
+		newVoucher := &entities.VoucherModels{
 			Name:        voucherRequest.Name,
 			Code:        voucherRequest.Code,
 			Category:    voucherRequest.Category,
@@ -51,7 +51,7 @@ func (h *VoucherHandler) CreateVoucher() echo.HandlerFunc {
 		result, err := h.service.CreateVoucher(newVoucher)
 		if err != nil {
 			c.Logger().Error("handler: failed create voucher:", err.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menambahkan kupon: "+err.Error())
 		}
 
 		return response.SendSuccessResponse(c, "Kupon berhasil ditambahkan", dto.FormatVoucher(result))
@@ -61,29 +61,27 @@ func (h *VoucherHandler) CreateVoucher() echo.HandlerFunc {
 
 func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
-		var vouchers []entities.VoucherModels
+		var vouchers []*entities.VoucherModels
 		var totalItems int64
 		var err error
-		search := c.QueryParam("search")
-		if search != "" {
-			vouchers, totalItems, err = h.service.GetVouchersByName(page, perPage, search)
-		} else {
-			vouchers, totalItems, err = h.service.GetAllVoucher(pageConv, perPage)
-		}
+		vouchers, totalItems, err = h.service.GetAllVoucher(pageConv, perPage)
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all vouchers:", err.Error())
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: "+err.Error())
 		}
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
 
-		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
-		nextPage := h.service.GetNextPage(current_page, total_pages)
-		prevPage := h.service.GetPrevPage(current_page)
-
-		return response.Pagination(c, dto.FormatterVoucher(vouchers), current_page, total_pages, int(totalItems), nextPage, prevPage, "Daftar kupon")
+		return response.Pagination(c, dto.FormatterVoucher(vouchers), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar kupon")
 	}
 }
 
@@ -91,24 +89,37 @@ func (h *VoucherHandler) UpdateVouchers() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
-		var voucherRequest dto.UpdateVoucherRequest
+		req := new(dto.UpdateVoucherRequest)
 		voucherID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
 		}
-		if err := c.Bind(&voucherRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
-		}
-
-		if err := utils.ValidateStruct(&voucherRequest); err != nil {
+		if err := c.Bind(req); err != nil {
 			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
 		}
-		_, err = h.service.UpdateVoucher(voucherID, voucherRequest)
+		updatedVoucher := &entities.VoucherModels{
+			ID:          voucherID,
+			Name:        req.Name,
+			Code:        req.Code,
+			Category:    req.Category,
+			Description: req.Description,
+			Discount:    req.Discount,
+			StartDate:   req.StartDate,
+			EndDate:     req.EndDate,
+			MinPurchase: req.MinPurchase,
+			Stock:       req.Stock,
+			Status:      req.Status,
+		}
+
+		if err := utils.ValidateStruct(req); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+		err = h.service.UpdateVoucher(voucherID, updatedVoucher)
 		if err != nil {
 			c.Logger().Error("handler: failed create voucher:", err.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui kupon: "+err.Error())
 		}
 		return response.SendStatusOkResponse(c, "Kupon berhasil dirubah")
 	}
@@ -118,7 +129,7 @@ func (h *VoucherHandler) DeleteVoucherById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		voucherID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
@@ -143,5 +154,53 @@ func (h *VoucherHandler) GetVoucherById() echo.HandlerFunc {
 			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan voucher: "+err.Error())
 		}
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan voucher", dto.FormatVoucher(vouchers))
+	}
+}
+
+func (h *VoucherHandler) ClaimVoucher() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		req := new(dto.ClaimsVoucherRequest)
+		if err := c.Bind(req); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+		}
+
+		if err := utils.ValidateStruct(req); err != nil {
+			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+		}
+		newClaims := &entities.VoucherClaimModels{
+			UserID:    currentUser.ID,
+			VoucherID: req.VoucherID,
+		}
+		if err := h.service.ClaimVoucher(newClaims); err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal klaim kupon: "+err.Error())
+		}
+
+		return response.SendStatusOkResponse(c, "Berhasil klaim kupon")
+
+	}
+
+}
+
+func (h *VoucherHandler) GetVoucherUser() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		result, err := h.service.GetUserVouchers(currentUser.ID)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan kupon user: "+err.Error())
+		}
+
+		formattedResponse, err := dto.GetVoucherUserFormatter(result)
+		if err != nil {
+			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memformat respons: "+err.Error())
+		}
+
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan kupon user", formattedResponse)
 	}
 }

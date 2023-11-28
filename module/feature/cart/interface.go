@@ -18,13 +18,18 @@ type RepositoryCartInterface interface {
 	UpdateCartItem(cartItem *entities.CartItemModels) error
 	UpdateGrandTotal(cartID, grandTotal uint64) error
 	DeleteCartItem(cartItemID uint64) error
+	IsProductInCart(userID, productID uint64) bool
+	RemoveProductFromCart(userID, productID uint64) error
 }
 
 type ServiceCartInterface interface {
 	AddCartItems(userID uint64, request *dto.AddCartItemsRequest) (*entities.CartItemModels, error)
 	GetCart(userID uint64) (*entities.CartModels, error)
+	GetCartItems(cartItem uint64) (*entities.CartItemModels, error)
 	ReduceCartItemQuantity(cartItemID, quantity uint64) error
 	DeleteCartItem(cartItemID uint64) error
+	IsProductInCart(userID, productID uint64) bool
+	RemoveProductFromCart(userID, productID uint64) error
 }
 
 type HandlerCartInterface interface {

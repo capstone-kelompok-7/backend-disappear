@@ -25,7 +25,7 @@ func (h *CartHandler) AddCartItem() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		req := new(dto.AddCartItemsRequest)
 		if err := c.Bind(req); err != nil {
@@ -48,7 +48,7 @@ func (h *CartHandler) GetCart() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		cartItemsSummary, err := h.service.GetCart(currentUser.ID)
 		if err != nil {
@@ -62,7 +62,7 @@ func (h *CartHandler) ReduceQuantity() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
 		req := new(dto.ReduceCartItemsRequest)
@@ -87,7 +87,7 @@ func (h *CartHandler) DeleteCartItems() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendErrorResponse(c, http.StatusForbidden, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		id := c.Param("id")
 		cartItemsID, err := strconv.ParseUint(id, 10, 64)

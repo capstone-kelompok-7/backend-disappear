@@ -165,3 +165,30 @@ func (s *CartService) recalculateGrandTotal(cart *entities.CartModels) error {
 
 	return nil
 }
+
+func (s *CartService) IsProductInCart(userID, productID uint64) bool {
+	isInCart := s.repo.IsProductInCart(userID, productID)
+	return isInCart
+}
+
+func (s *CartService) RemoveProductFromCart(userID, productID uint64) error {
+	isProductInCart := s.repo.IsProductInCart(userID, productID)
+	if !isProductInCart {
+		return errors.New("produk tidak ada dalam keranjang pengguna")
+	}
+
+	err := s.repo.RemoveProductFromCart(userID, productID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *CartService) GetCartItems(cartItem uint64) (*entities.CartItemModels, error) {
+	cartItems, err := s.repo.GetCartItemByID(cartItem)
+	if err != nil {
+		return nil, err
+	}
+	return cartItems, nil
+}

@@ -16,12 +16,18 @@ import (
 	hCarousel "github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel/handler"
 	rCarousel "github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel/repository"
 	sCarousel "github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel/service"
+	hCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/handler"
+	rCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/repository"
+	sCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/service"
 	hCategory "github.com/capstone-kelompok-7/backend-disappear/module/feature/category/handler"
 	rCategory "github.com/capstone-kelompok-7/backend-disappear/module/feature/category/repository"
 	sCategory "github.com/capstone-kelompok-7/backend-disappear/module/feature/category/service"
 	hChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/handler"
 	rChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/repository"
 	sChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/service"
+	hOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/handler"
+	rOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/repository"
+	sOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/service"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/handler"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/repository"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/service"
@@ -37,9 +43,6 @@ import (
 
 	"net/http"
 
-	hCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/handler"
-	rCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/repository"
-	sCart "github.com/capstone-kelompok-7/backend-disappear/module/feature/cart/service"
 	"github.com/capstone-kelompok-7/backend-disappear/module/middlewares"
 	"github.com/capstone-kelompok-7/backend-disappear/routes"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
@@ -56,6 +59,7 @@ func main() {
 	database.Migrate(db)
 	jwtService := utils.NewJWT(initConfig.Secret)
 	hash := utils.NewHash()
+	generatorID := utils.NewGeneratorUUID()
 
 	userRepo := rUser.NewUserRepository(db)
 	userService := sUser.NewUserService(userRepo, hash)
@@ -66,7 +70,7 @@ func main() {
 	authHandler := hAuth.NewAuthHandler(authService, userService)
 
 	voucherRepo := rVoucher.NewVoucherRepository(db)
-	voucherService := sVoucher.NewVoucherService(voucherRepo)
+	voucherService := sVoucher.NewVoucherService(voucherRepo, userService)
 	voucherHandler := hVoucher.NewVoucherHandler(voucherService)
 
 	productRepo := repository.NewProductRepository(db)
@@ -101,6 +105,10 @@ func main() {
 	cartService := sCart.NewCartService(cartRepo, productService)
 	cartHandler := hCart.NewCartHandler(cartService)
 
+	orderRepo := rOrder.NewOrderRepository(db)
+	orderService := sOrder.NewOrderService(orderRepo, generatorID, productService, voucherService, addressService, userService, cartService)
+	orderHandler := hOrder.NewOrderHandler(orderService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -122,5 +130,6 @@ func main() {
 	routes.RouteAddress(e, addressHandler, jwtService, userService)
 	routes.RouteReview(e, reviewHandler, jwtService, userService)
 	routes.RouteCart(e, cartHandler, jwtService, userService)
+	routes.RouteOrder(e, orderHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }

@@ -2,11 +2,12 @@ package service
 
 import (
 	"errors"
+	"math"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/dto"
-	"math"
-	"time"
 )
 
 type ProductService struct {
@@ -239,4 +240,20 @@ func (s *ProductService) GetProductsByCategory(categoryID uint64, page, perPage 
 		return nil, 0, err
 	}
 	return products, totalItems, nil
+}
+
+func (s *ProductService) ReduceStockWhenPurchasing(productID, quantity uint64) error {
+	products, err := s.repo.GetProductByID(productID)
+	if err != nil {
+		return errors.New("produk tidak ditemukan")
+	}
+
+	if products.Stock < quantity {
+		return errors.New("stok tidak mencukupi untuk pesanan ini")
+	}
+
+	if err := s.repo.ReduceStockWhenPurchasing(products.ID, quantity); err != nil {
+		return err
+	}
+	return nil
 }
