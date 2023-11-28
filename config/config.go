@@ -9,17 +9,19 @@ import (
 )
 
 type Config struct {
-	ServerPort  int
-	DBPort      int
-	DBHost      string
-	DBUser      string
-	DBPass      string
-	DBName      string
-	Secret      string
-	CCName      string
-	CCAPIKey    string
-	CCAPISecret string
-	CCFolder    string
+	ServerPort   int
+	DBPort       int
+	DBHost       string
+	DBUser       string
+	DBPass       string
+	DBName       string
+	Secret       string
+	CCName       string
+	CCAPIKey     string
+	CCAPISecret  string
+	CCFolder     string
+	MongoURL     string
+	OpenAiApiKey string
 }
 
 func InitConfig() *Config {
@@ -84,6 +86,12 @@ func loadConfig() *Config {
 	}
 	if value, found := os.LookupEnv("CCFOLDER"); found {
 		res.CCFolder = value
+	}
+	if value, found := os.LookupEnv("MONGOURL"); found {
+		res.MongoURL = value
+	}
+	if value, found := os.LookupEnv("OPENAIAPIKEY"); found {
+		res.OpenAiApiKey = value
 	}
 	return res
 }
