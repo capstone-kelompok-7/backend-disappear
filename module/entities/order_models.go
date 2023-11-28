@@ -6,7 +6,7 @@ type OrderModels struct {
 	ID                    string               `gorm:"column:id;type:VARCHAR(255);primaryKey" json:"id"`
 	AddressID             uint64               `gorm:"column:address_id;type:BIGINT UNSIGNED" json:"address_id"`
 	UserID                uint64               `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
-	VoucherID             uint64               `gorm:"column:voucher_id;type:BIGINT UNSIGNED" json:"voucher_id"`
+	VoucherID             *uint64              `gorm:"column:voucher_id;type:BIGINT UNSIGNED" json:"voucher_id"`
 	Note                  string               `gorm:"column:note;type:VARCHAR(255)" json:"note"`
 	GrandTotalGramPlastic uint64               `gorm:"column:grand_total_gram_plastic;type:VARCHAR(255)" json:"grand_total_gram_plastic"`
 	GrandTotalExp         uint64               `gorm:"column:grand_total_exp;type:BIGINT UNSIGNED" json:"grand_total_exp"`
