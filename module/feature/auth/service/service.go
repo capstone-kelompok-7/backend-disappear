@@ -29,6 +29,11 @@ func NewAuthService(repo auth.RepositoryAuthInterface, jwt utils.JWTInterface, u
 }
 
 func (s *AuthService) Register(newData *entities.UserModels) (*entities.UserModels, error) {
+	existingUser, _ := s.userService.GetUsersByEmail(newData.Email)
+	if existingUser != nil {
+		return nil, errors.New("email sudah terdaftar")
+	}
+
 	hashPassword, err := s.hash.GenerateHash(newData.Password)
 	if err != nil {
 		return nil, err

@@ -115,8 +115,12 @@ func (s *ProductService) GetProductByID(productID uint64) (*entities.ProductMode
 }
 
 func (s *ProductService) CreateImageProduct(request dto.CreateProductImage) (*entities.ProductPhotosModels, error) {
+	products, err := s.repo.GetProductByID(request.ProductID)
+	if err != nil {
+		return nil, errors.New("produk tidak ditemukan")
+	}
 	value := &entities.ProductPhotosModels{
-		ProductID: request.ProductID,
+		ProductID: products.ID,
 		ImageURL:  request.Image,
 	}
 
@@ -167,7 +171,7 @@ func (s *ProductService) GetProductReviews(page, perPage int) ([]*entities.Produ
 func (s *ProductService) UpdateProduct(productID uint64, request *dto.UpdateProduct) (*entities.ProductModels, error) {
 	productData, err := s.repo.GetProductByID(productID)
 	if err != nil {
-		return nil, errors.New("product tidak ditemukan")
+		return nil, errors.New("produk tidak ditemukan")
 	}
 
 	productData.Name = request.Name

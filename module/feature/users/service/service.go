@@ -141,7 +141,7 @@ func (s *UserService) EditProfile(userID uint64, updatedData dto.EditProfileRequ
 	}
 	result, err := s.repo.EditProfile(userID, updatedData)
 	if err != nil {
-		return nil, errors.New("gagal mengubah profil")
+		return nil, err
 	}
 	return result, nil
 }

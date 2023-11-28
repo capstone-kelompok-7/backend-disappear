@@ -26,7 +26,7 @@ func (r *VoucherRepository) CreateVoucher(newData *entities.VoucherModels) (*ent
 }
 
 func (r *VoucherRepository) UpdateVoucher(voucherID uint64, updatedVoucher *entities.VoucherModels) error {
-	var vouchers *entities.CarouselModels
+	var vouchers *entities.VoucherModels
 	if err := r.db.Where("id = ? AND deleted_at IS NULL", voucherID).First(&vouchers).Error; err != nil {
 		return err
 	}

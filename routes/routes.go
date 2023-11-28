@@ -31,7 +31,7 @@ func RouteAuth(e *echo.Echo, h auth.HandlerAuthInterface, jwtService utils.JWTIn
 
 func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	usersGroup := e.Group("api/v1/users")
-	usersGroup.GET("", h.GetAllUsers())
+	usersGroup.GET("", h.GetAllUsers(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.GET("/by-email", h.GetUsersByEmail(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.POST("/change-password", h.ChangePassword(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.GET("/:id", h.GetUsersById(), middlewares.AuthMiddleware(jwtService, userService))
@@ -54,7 +54,7 @@ func RouteProduct(e *echo.Echo, h product.HandlerProductInterface, jwtService ut
 	productsGroup := e.Group("api/v1/products")
 	productsGroup.GET("", h.GetAllProducts(), middlewares.AuthMiddleware(jwtService, userService))
 	productsGroup.POST("", h.CreateProduct(), middlewares.AuthMiddleware(jwtService, userService))
-	productsGroup.GET("/:id", h.GetProductById())
+	productsGroup.GET("/:id", h.GetProductById(), middlewares.AuthMiddleware(jwtService, userService))
 	productsGroup.POST("/images", h.CreateProductImage(), middlewares.AuthMiddleware(jwtService, userService))
 	productsGroup.GET("/reviews", h.GetAllProductsReview(), middlewares.AuthMiddleware(jwtService, userService))
 	productsGroup.PUT("/:id", h.UpdateProduct(), middlewares.AuthMiddleware(jwtService, userService))
