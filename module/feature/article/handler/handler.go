@@ -2,7 +2,6 @@ package handler
 
 import (
 	"mime/multipart"
-	"net/http"
 	"strconv"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -27,7 +26,7 @@ func (h *ArticleHandler) CreateArticle() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
 		articleRequest := new(dto.CreateArticleRequest)
@@ -36,7 +35,7 @@ func (h *ArticleHandler) CreateArticle() echo.HandlerFunc {
 		if err == nil {
 			fileToUpload, err := file.Open()
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal membuka file: "+err.Error())
 			}
 
 			defer func(fileToUpload multipart.File) {
@@ -45,16 +44,16 @@ func (h *ArticleHandler) CreateArticle() echo.HandlerFunc {
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
 
 		if err := c.Bind(articleRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai: "+err.Error())
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai: "+err.Error())
 		}
 
 		if err := utils.ValidateStruct(articleRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 
 		newArticle := &entities.ArticleModels{
@@ -65,10 +64,10 @@ func (h *ArticleHandler) CreateArticle() echo.HandlerFunc {
 
 		createdArticle, err := h.service.CreateArticle(newArticle)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menambahkan artikel: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil menambahkan artikel", dto.FormatArticle(*createdArticle))
+		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan artikel", dto.FormatArticle(*createdArticle))
 	}
 }
 
@@ -76,13 +75,13 @@ func (h *ArticleHandler) UpdateArticleById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
 		updateRequest := new(dto.UpdateArticleRequest)
 		articleID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai: "+err.Error())
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai: "+err.Error())
 		}
 
 		file, err := c.FormFile("photo")
@@ -90,7 +89,7 @@ func (h *ArticleHandler) UpdateArticleById() echo.HandlerFunc {
 		if err == nil {
 			fileToUpload, err := file.Open()
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal membuka file: "+err.Error())
 			}
 
 			defer func(fileToUpload multipart.File) {
@@ -99,16 +98,16 @@ func (h *ArticleHandler) UpdateArticleById() echo.HandlerFunc {
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
 
 		if err := c.Bind(updateRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai: "+err.Error())
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai: "+err.Error())
 		}
 
 		if err := utils.ValidateStruct(updateRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 
 		newData := &entities.ArticleModels{
@@ -117,12 +116,12 @@ func (h *ArticleHandler) UpdateArticleById() echo.HandlerFunc {
 			Content: updateRequest.Content,
 		}
 
-		updatedArticle, err := h.service.UpdateArticleById(articleID, newData)
+		_, err = h.service.UpdateArticleById(articleID, newData)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengubah artikel: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal memperbarui artikel: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil mengubah artikel", dto.FormatArticle(*updatedArticle))
+		return response.SendStatusOkResponse(c, "Berhasil memperbarui artikel")
 	}
 }
 
@@ -130,17 +129,17 @@ func (h *ArticleHandler) DeleteArticleById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
 		articleID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai: "+err.Error())
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai: "+err.Error())
 		}
 
 		err = h.service.DeleteArticleById(articleID)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus artikel: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menghapus artikel: "+err.Error())
 		}
 
 		return response.SendStatusOkResponse(c, "Berhasil menghapus artikel")
@@ -161,29 +160,29 @@ func (h *ArticleHandler) GetAllArticles() echo.HandlerFunc {
 		if search != "" {
 			articles, totalItems, err = h.service.GetArticlesByTitle(page, perPage, search)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: " + err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan pencarian artikel: "+err.Error())
 			}
 		} else if filterType != "" {
 			articles, totalItems, err = h.service.GetArticlesByDateRange(page, perPage, filterType)
-        	if err != nil {
-            	return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: " + err.Error())
-        	}
+			if err != nil {
+				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan filter artikel: "+err.Error())
+			}
 		} else {
 			articles, totalItems, err = h.service.GetAll(pageConv, perPage)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: " + err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel: "+err.Error())
 			}
 		}
 
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: " + err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar artikel: "+err.Error())
 		}
 
-		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
-		nextPage := h.service.GetNextPage(current_page, total_pages)
-		prevPage := h.service.GetPrevPage(current_page)
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.Pagination(c, dto.FormatterArticle(articles), current_page, total_pages, int(totalItems), nextPage, prevPage, "Daftar artikel")
+		return response.SendPaginationResponse(c, dto.FormatterArticle(articles), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar artikel")
 	}
 }
 
@@ -192,17 +191,17 @@ func (h *ArticleHandler) GetArticleById() echo.HandlerFunc {
 		id := c.Param("id")
 		articleID, err := strconv.ParseUint(id, 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai: " + err.Error())
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai: "+err.Error())
 		}
 
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
-        incrementViews := currentUser.Role != "admin"
+		incrementViews := currentUser.Role != "admin"
 
 		getArticleID, err := h.service.GetArticleById(articleID, incrementViews)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil artikel: " + err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail artikel: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Detail artikel", dto.FormatArticle(*getArticleID))
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail artikel", dto.FormatArticle(*getArticleID))
 	}
 }

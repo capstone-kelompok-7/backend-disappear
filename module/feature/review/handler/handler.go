@@ -9,7 +9,6 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/utils/upload"
 	"github.com/labstack/echo/v4"
 	"mime/multipart"
-	"net/http"
 	"strconv"
 )
 
@@ -27,15 +26,15 @@ func (h *ReviewHandler) CreateReview() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		reviewRequest := new(dto.CreateReviewRequest)
 		if err := c.Bind(reviewRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
 		if err := utils.ValidateStruct(reviewRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 		newReview := &entities.ReviewModels{
 			UserID:      currentUser.ID,
@@ -45,9 +44,9 @@ func (h *ReviewHandler) CreateReview() echo.HandlerFunc {
 		}
 		result, err := h.service.CreateReview(newReview)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan server internal: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menambahkan ulasan "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil menambahkan review", dto.FormatReview(result))
+		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan ulasan", dto.CreateFormatReview(result))
 	}
 }
 
@@ -55,7 +54,7 @@ func (h *ReviewHandler) CreateReviewImages() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		reviewRequest := new(dto.CreatePhotoReviewRequest)
 		file, err := c.FormFile("photo")
@@ -63,7 +62,7 @@ func (h *ReviewHandler) CreateReviewImages() echo.HandlerFunc {
 		if err == nil {
 			fileToUpload, err := file.Open()
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal membuka file: "+err.Error())
 			}
 			defer func(fileToUpload multipart.File) {
 				_ = fileToUpload.Close()
@@ -71,15 +70,15 @@ func (h *ReviewHandler) CreateReviewImages() echo.HandlerFunc {
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
 		if err := c.Bind(reviewRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
 		if err := utils.ValidateStruct(reviewRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 		newReviewPhoto := &entities.ReviewPhotoModels{
 			ReviewID: reviewRequest.ReviewID,
@@ -87,9 +86,9 @@ func (h *ReviewHandler) CreateReviewImages() echo.HandlerFunc {
 		}
 		result, err := h.service.CreateReviewImages(newReviewPhoto)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan server internal: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menambahkan foto ulasan "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil menambahkan review photo", dto.FormatReviewPhoto(result))
+		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan foto ulasan", dto.FormatReviewPhoto(result))
 	}
 }
 
@@ -98,13 +97,13 @@ func (h *ReviewHandler) GetReviewById() echo.HandlerFunc {
 		id := c.Param("id")
 		reviewID, err := strconv.ParseUint(id, 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai.")
 		}
-		getReviewID, err := h.service.GetReviewById(reviewID)
+		result, err := h.service.GetReviewById(reviewID)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengambil reviews")
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapat ulasan: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Detail reviews", dto.FormatReview(getReviewID))
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail ulasan", dto.FormatReview(result))
 	}
 }
 
@@ -113,7 +112,7 @@ func (h *ReviewHandler) GetDetailReviewProduct() echo.HandlerFunc {
 		productID := c.Param("id")
 		id, err := strconv.ParseUint(productID, 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai.")
 		}
 
 		page, _ := strconv.Atoi(c.QueryParam("page"))
@@ -122,8 +121,8 @@ func (h *ReviewHandler) GetDetailReviewProduct() echo.HandlerFunc {
 
 		result, err := h.service.GetDetailReviewProduct(id, pageConv, perPage)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Gagal mengambil detail ulasan produk")
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail ulasan produk: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Detail ulasan produk", result)
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail ulasan produk", result)
 	}
 }

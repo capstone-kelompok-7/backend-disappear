@@ -81,3 +81,23 @@ func FormatReviewDetails(reviews []*entities.ReviewDetail) []*ReviewDetail {
 
 	return formattedReviews
 }
+
+// CreateReviewResponse formatter create review
+type CreateReviewResponse struct {
+	ID          uint64 `json:"id"`
+	UserID      uint64 `json:"user_id"`
+	ProductID   uint64 `json:"product_id"`
+	Rating      uint64 `json:"rating"`
+	Description string `json:"description"`
+}
+
+func CreateFormatReview(review *entities.ReviewModels) *CreateReviewResponse {
+	reviewFormatter := &CreateReviewResponse{}
+	reviewFormatter.ID = review.ID
+	reviewFormatter.UserID = review.UserID
+	reviewFormatter.ProductID = review.ProductID
+	reviewFormatter.Rating = review.Rating
+	reviewFormatter.Description = review.Description
+
+	return reviewFormatter
+}

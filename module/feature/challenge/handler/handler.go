@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"net/http"
+	"mime/multipart"
 	"strconv"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -39,7 +39,7 @@ func (h *ChallengeHandler) GetAllChallenges() echo.HandlerFunc {
 			challenge, _, err = h.service.GetAllChallenges(pageConv, perPage)
 		}
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar tantangan: ")
 		}
 
 		var activeChallenges []*entities.ChallengeModels
@@ -51,11 +51,11 @@ func (h *ChallengeHandler) GetAllChallenges() echo.HandlerFunc {
 
 		totalItems := int64(len(activeChallenges))
 
-		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, len(activeChallenges), perPage)
-		nextPage := h.service.GetNextPage(current_page, total_pages)
-		prevPage := h.service.GetPrevPage(current_page)
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, len(activeChallenges), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.Pagination(c, dto.FormatterChallenge(activeChallenges), current_page, total_pages, int(totalItems), nextPage, prevPage, "Daftar challenge")
+		return response.SendPaginationResponse(c, dto.FormatterChallenge(activeChallenges), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar challenge")
 	}
 }
 
@@ -63,12 +63,12 @@ func (h *ChallengeHandler) CreateChallenge() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
 		challengeRequest := new(dto.CreateChallengeRequest)
 		if err := c.Bind(challengeRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
 		}
 
 		file, err := c.FormFile("photo")
@@ -76,22 +76,24 @@ func (h *ChallengeHandler) CreateChallenge() echo.HandlerFunc {
 		if err == nil {
 			fileToUpload, err := file.Open()
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal membuka file: "+err.Error())
 			}
-			defer fileToUpload.Close()
+			defer func(fileToUpload multipart.File) {
+				_ = fileToUpload.Close()
+			}(fileToUpload)
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
 
 		if err := utils.ValidateStruct(challengeRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 
 		if challengeRequest.StartDate.After(challengeRequest.EndDate) {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Tanggal mulai tidak dapat setelah tanggal selesai.")
+			return response.SendBadRequestResponse(c, "Tanggal mulai tidak dapat setelah tanggal selesai.")
 		}
 
 		newChallenge := &entities.ChallengeModels{
@@ -105,10 +107,10 @@ func (h *ChallengeHandler) CreateChallenge() echo.HandlerFunc {
 
 		createdChallenge, err := h.service.CreateChallenge(newChallenge)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal memambahkan tantangan: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil menambahkan tantangan", dto.FormatChallenge(createdChallenge))
+		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan tantangan", dto.FormatChallenge(createdChallenge))
 	}
 }
 
@@ -116,17 +118,17 @@ func (h *ChallengeHandler) UpdateChallenge() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
 		challengeID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "ID tantangan tidak valid")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")
 		}
 
 		var updateRequest dto.UpdateChallengeRequest
 		if err := c.Bind(&updateRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
 		}
 
 		file, err := c.FormFile("photo")
@@ -134,13 +136,15 @@ func (h *ChallengeHandler) UpdateChallenge() echo.HandlerFunc {
 		if err == nil {
 			fileToUpload, err := file.Open()
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal membuka file: "+err.Error())
 			}
-			defer fileToUpload.Close()
+			defer func(fileToUpload multipart.File) {
+				_ = fileToUpload.Close()
+			}(fileToUpload)
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
 
@@ -156,10 +160,10 @@ func (h *ChallengeHandler) UpdateChallenge() echo.HandlerFunc {
 
 		updatedChallenge, err = h.service.UpdateChallenge(challengeID, updatedChallenge)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal memperbarui tantangan: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil memperbarui tantangan", dto.FormatChallenge(updatedChallenge))
+		return response.SendStatusOkResponse(c, "Berhasil memperbarui tantangan")
 	}
 }
 
@@ -167,17 +171,17 @@ func (h *ChallengeHandler) DeleteChallengeById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		challengeId, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")
 		}
 		err = h.service.DeleteChallenge(challengeId)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus tantangan: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menghapus tantangan: "+err.Error())
 		}
-		return response.SendStatusOkResponse(c, "Berhasil hapus tantangan")
+		return response.SendStatusOkResponse(c, "Berhasil menghapus tantangan")
 	}
 }
 
@@ -185,13 +189,13 @@ func (h *ChallengeHandler) GetChallengeById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		challengeId, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")
 		}
 		challenges, err := h.service.GetChallengeById(challengeId)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan tantangan: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail tantangan: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan tantangan", dto.FormatChallenge(challenges))
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail tantangan", dto.FormatChallenge(challenges))
 	}
 }
 
@@ -199,12 +203,12 @@ func (h *ChallengeHandler) CreateSubmitChallengeForm() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
 		formRequest := new(dto.CreateChallengeFormRequest)
 		if err := c.Bind(formRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
 		}
 
 		file, err := c.FormFile("photo")
@@ -212,18 +216,20 @@ func (h *ChallengeHandler) CreateSubmitChallengeForm() echo.HandlerFunc {
 		if err == nil {
 			fileToUpload, err := file.Open()
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal membuka file: "+err.Error())
 			}
-			defer fileToUpload.Close()
+			defer func(fileToUpload multipart.File) {
+				_ = fileToUpload.Close()
+			}(fileToUpload)
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
 
 		if err := utils.ValidateStruct(formRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 
 		newForm := entities.ChallengeFormModels{
@@ -233,17 +239,17 @@ func (h *ChallengeHandler) CreateSubmitChallengeForm() echo.HandlerFunc {
 			Photo:       uploadedURL,
 		}
 
-		challenge, err := h.service.GetChallengeById(formRequest.ChallengeID)
+		challenges, err := h.service.GetChallengeById(formRequest.ChallengeID)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan informasi tantangan: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan informasi tantangan: "+err.Error())
 		}
 
 		createdForm, err := h.service.CreateSubmitChallengeForm(&newForm)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengikuti tantangan: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mengikuti tantangan: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil mengikuti tantangan", dto.FormatChallengeForm(createdForm, challenge.Exp, createdForm.CreatedAt))
+		return response.SendStatusCreatedResponse(c, "Berhasil mengikuti tantangan", dto.FormatChallengeForm(createdForm, challenges.Exp, createdForm.CreatedAt))
 	}
 }
 
@@ -253,35 +259,35 @@ func (h *ChallengeHandler) GetAllSubmitChallengeForm() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
-		var partisipan []*entities.ChallengeFormModels
+		var participant []*entities.ChallengeFormModels
 		var totalItems int64
 		var err error
 		filterStatus := c.QueryParam("status")
 
 		validStatus := map[string]bool{"valid": true, "menunggu validasi": true, "tidak valid": true}
 		if filterStatus != "" && !validStatus[filterStatus] {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Invalid status parameter")
+			return response.SendBadRequestResponse(c, "Invalid status parameter")
 		}
 
 		if filterStatus != "" {
-			partisipan, totalItems, err = h.service.GetSubmitChallengeFormByStatus(pageConv, perPage, filterStatus)
+			participant, totalItems, err = h.service.GetSubmitChallengeFormByStatus(pageConv, perPage, filterStatus)
 		} else {
-			partisipan, totalItems, err = h.service.GetAllSubmitChallengeForm(pageConv, perPage)
+			participant, totalItems, err = h.service.GetAllSubmitChallengeForm(pageConv, perPage)
 		}
 
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Internal Server Error: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Internal Server Error: "+err.Error())
 		}
 
-		challenge, _ := h.service.GetChallengeById(partisipan[0].ChallengeID)
-		exp := challenge.Exp
-		createdAt := challenge.CreatedAt
+		challenges, _ := h.service.GetChallengeById(participant[0].ChallengeID)
+		exp := challenges.Exp
+		createdAt := challenges.CreatedAt
 
-		current_page, total_pages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
-		nextPage := h.service.GetNextPage(current_page, total_pages)
-		prevPage := h.service.GetPrevPage(current_page)
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.Pagination(c, dto.FormatterChallengeForm(partisipan, exp, createdAt), current_page, total_pages, int(totalItems), nextPage, prevPage, "Daftar peserta")
+		return response.SendPaginationResponse(c, dto.FormatterChallengeForm(participant, exp, createdAt), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasul mendapatkan daftar peserta tantangan")
 	}
 }
 
@@ -289,31 +295,31 @@ func (h *ChallengeHandler) UpdateSubmitChallengeForm() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
 		var formRequest dto.UpdateChallengeFormStatusRequest
 		formID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")
 		}
 		if err := c.Bind(&formRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
 		}
 
 		validStatus := map[string]bool{"valid": true, "menunggu validasi": true, "tidak valid": true}
 		if !validStatus[formRequest.Status] {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Status hanya bisa diubah menjadi 'valid', 'menunggu validasi', atau 'tidak valid'.")
+			return response.SendBadRequestResponse(c, "Status hanya bisa diubah menjadi 'valid', 'menunggu validasi', atau 'tidak valid'.")
 		}
 
 		if err := utils.ValidateStruct(&formRequest); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 		_, err = h.service.UpdateSubmitChallengeForm(formID, formRequest)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal memperbarui formulir tantangan: "+err.Error())
 		}
-		return response.SendStatusOkResponse(c, "form berhasil dirubah")
+		return response.SendStatusOkResponse(c, "Berhasil memperbarui formulir tantangan")
 	}
 }
 
@@ -321,14 +327,14 @@ func (h *ChallengeHandler) GetSubmitChallengeFormById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		formID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")
 		}
 
 		form, err := h.service.GetSubmitChallengeFormById(formID)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan form: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail formulir tantangan: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan form submit", dto.FormatChallengeForm(form, form.Exp, form.CreatedAt))
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail formulir tantangan", dto.FormatChallengeForm(form, form.Exp, form.CreatedAt))
 	}
 }

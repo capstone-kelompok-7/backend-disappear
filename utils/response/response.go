@@ -13,6 +13,7 @@ type SuccessResponse struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
+
 type PaginationMeta struct {
 	CurrentPage int `json:"current_page"`
 	TotalPage   int `json:"total_page"`
@@ -27,44 +28,26 @@ type PaginationRes struct {
 	Meta    PaginationMeta `json:"meta"`
 }
 
-func SendErrorResponse(c echo.Context, status int, message string) error {
-	return c.JSON(status, ErrorResponse{
+func SendStatusForbiddenResponse(c echo.Context, message string) error {
+	return c.JSON(http.StatusForbidden, ErrorResponse{
 		Message: message,
 	})
 }
 
-func SendSuccessResponse(c echo.Context, message string, data interface{}) error {
-	return c.JSON(http.StatusOK, SuccessResponse{
+func SendStatusCreatedResponse(c echo.Context, message string, data interface{}) error {
+	return c.JSON(http.StatusCreated, SuccessResponse{
 		Message: message,
 		Data:    data,
 	})
 }
+
 func SendStatusOkResponse(c echo.Context, message string) error {
 	return c.JSON(http.StatusOK, ErrorResponse{
 		Message: message,
 	})
 }
 
-func SendStatusCreatedResponse(c echo.Context, message string) error {
-	return c.JSON(http.StatusCreated, ErrorResponse{
-		Message: message,
-	})
-}
-
-func PaginationResponse(c echo.Context, data interface{}, totalItems, page, pageSize int, message string) error {
-	pagination := map[string]interface{}{
-		"totalItems": totalItems,
-		"page":       page,
-		"pageSize":   pageSize,
-	}
-
-	return c.JSON(http.StatusOK, SuccessResponse{
-		Message: message,
-		Data:    map[string]interface{}{"items": data, "pagination": pagination},
-	})
-}
-
-func Pagination(c echo.Context, data interface{}, currentPage, totalPages, totalItems, nextPage, prevPage int, message string) error {
+func SendPaginationResponse(c echo.Context, data interface{}, currentPage, totalPages, totalItems, nextPage, prevPage int, message string) error {
 	pagination := PaginationMeta{
 		CurrentPage: currentPage,
 		TotalPage:   totalPages,
@@ -76,5 +59,42 @@ func Pagination(c echo.Context, data interface{}, currentPage, totalPages, total
 		Message: message,
 		Data:    data,
 		Meta:    pagination,
+	})
+}
+
+func SendStatusInternalServerResponse(c echo.Context, message string) error {
+	return c.JSON(http.StatusInternalServerError, ErrorResponse{
+		Message: message,
+	})
+}
+
+func SendBadRequestResponse(c echo.Context, message string) error {
+	return c.JSON(http.StatusBadRequest, ErrorResponse{
+		Message: message,
+	})
+}
+
+func SendSuccessResponse(c echo.Context, message string, data interface{}) error {
+	return c.JSON(http.StatusOK, SuccessResponse{
+		Message: message,
+		Data:    data,
+	})
+}
+
+func SendStatusConflictResponse(c echo.Context, message string) error {
+	return c.JSON(http.StatusConflict, ErrorResponse{
+		Message: message,
+	})
+}
+
+func SendStatusNotFoundResponse(c echo.Context, message string) error {
+	return c.JSON(http.StatusNotFound, ErrorResponse{
+		Message: message,
+	})
+}
+
+func SendStatusUnauthorizedResponse(c echo.Context, message string) error {
+	return c.JSON(http.StatusUnauthorized, ErrorResponse{
+		Message: message,
 	})
 }

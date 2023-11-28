@@ -7,7 +7,6 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/upload"
 	"mime/multipart"
-	"net/http"
 	"strconv"
 
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
@@ -26,6 +25,10 @@ func NewCarouselHandler(service carousel.ServiceCarouselInterface) carousel.Hand
 
 func (h *CarouselHandler) GetAllCarousels() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
@@ -41,14 +44,14 @@ func (h *CarouselHandler) GetAllCarousels() echo.HandlerFunc {
 		}
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all carousels:", err.Error())
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mendapatkan carausel: ")
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar carausel: "+err.Error())
 		}
 
 		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
 		nextPage := h.service.GetNextPage(currentPage, totalPages)
 		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.Pagination(c, dto.FormatterCarousel(carousels), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar carousel")
+		return response.SendPaginationResponse(c, dto.FormatterCarousel(carousels), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar carousel")
 	}
 }
 
@@ -56,7 +59,7 @@ func (h *CarouselHandler) CreateCarousel() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		req := new(dto.CreateCarouselRequest)
 		file, err := c.FormFile("photo")
@@ -64,7 +67,7 @@ func (h *CarouselHandler) CreateCarousel() echo.HandlerFunc {
 		if err == nil {
 			fileToUpload, err := file.Open()
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal membuka file: "+err.Error())
 			}
 			defer func(fileToUpload multipart.File) {
 				_ = fileToUpload.Close()
@@ -72,15 +75,15 @@ func (h *CarouselHandler) CreateCarousel() echo.HandlerFunc {
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
 		if err := c.Bind(req); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
 		}
 
 		if err := utils.ValidateStruct(req); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 		newCarousel := &entities.CarouselModels{
 			Name:  req.Name,
@@ -88,9 +91,9 @@ func (h *CarouselHandler) CreateCarousel() echo.HandlerFunc {
 		}
 		createdCarousel, err := h.service.CreateCarousel(newCarousel)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Kesalahan Server Internal: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menambahkan carousel: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil menambahkan carousel", dto.FormatCarousel(createdCarousel))
+		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan carousel", dto.FormatCarousel(createdCarousel))
 	}
 }
 
@@ -98,19 +101,19 @@ func (h *CarouselHandler) UpdateCarousel() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		req := new(dto.UpdateCarouselRequest)
 		carouselID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai.")
 		}
 		file, err := c.FormFile("photo")
 		var uploadedURL string
 		if err == nil {
 			fileToUpload, err := file.Open()
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal membuka file: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal membuka file: "+err.Error())
 			}
 			defer func(fileToUpload multipart.File) {
 				_ = fileToUpload.Close()
@@ -118,15 +121,15 @@ func (h *CarouselHandler) UpdateCarousel() echo.HandlerFunc {
 
 			uploadedURL, err = upload.ImageUploadHelper(fileToUpload)
 			if err != nil {
-				return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal mengunggah foto: "+err.Error())
+				return response.SendStatusInternalServerResponse(c, "Gagal mengunggah foto: "+err.Error())
 			}
 		}
 		if err := c.Bind(req); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
 		}
 
 		if err := utils.ValidateStruct(req); err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Validasi gagal: "+err.Error())
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 		newCarousel := &entities.CarouselModels{
 			ID:    carouselID,
@@ -135,7 +138,7 @@ func (h *CarouselHandler) UpdateCarousel() echo.HandlerFunc {
 		}
 		err = h.service.UpdateCarousel(carouselID, newCarousel)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal memperbarui carousel: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal memperbarui carousel: "+err.Error())
 		}
 		return response.SendStatusOkResponse(c, "Berhasil memperbarui carousel")
 	}
@@ -145,15 +148,15 @@ func (h *CarouselHandler) DeleteCarousel() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "admin" {
-			return response.SendErrorResponse(c, http.StatusUnauthorized, "Tidak diizinkan: Anda tidak memiliki izin")
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 		carouselID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusBadRequest, "Format input yang Anda masukkan tidak sesuai.")
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")
 		}
 		err = h.service.DeleteCarousel(carouselID)
 		if err != nil {
-			return response.SendErrorResponse(c, http.StatusInternalServerError, "Gagal menghapus carousel: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menghapus carousel: "+err.Error())
 		}
 		return response.SendStatusOkResponse(c, "Berhasil hapus carousel")
 	}
