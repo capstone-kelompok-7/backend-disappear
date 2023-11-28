@@ -93,7 +93,7 @@ func FormatOrderDetail(order *entities.OrderModels) OrderResponse {
 		ID:                    order.ID,
 		AddressID:             order.AddressID,
 		UserID:                order.UserID,
-		VoucherID:             order.VoucherID,
+		VoucherID:             0,
 		Note:                  order.Note,
 		GrandTotalGramPlastic: order.GrandTotalGramPlastic,
 		GrandTotalExp:         order.GrandTotalExp,
@@ -175,6 +175,9 @@ func FormatOrderDetail(order *entities.OrderModels) OrderResponse {
 			orderDetail.Product.ProductPhotos = []ProductPhotoResponse{productPhoto}
 		}
 		orderDetails = append(orderDetails, orderDetail)
+	}
+	if order.VoucherID != nil {
+		orderResponse.VoucherID = *order.VoucherID
 	}
 
 	orderResponse.OrderDetails = orderDetails
@@ -263,7 +266,7 @@ func CreateOrderFormatter(order *entities.OrderModels) OrderCreationResponse {
 		ID:                    order.ID,
 		AddressID:             order.AddressID,
 		UserID:                order.UserID,
-		VoucherID:             order.VoucherID,
+		VoucherID:             0,
 		Note:                  order.Note,
 		GrandTotalGramPlastic: order.GrandTotalGramPlastic,
 		GrandTotalExp:         order.GrandTotalExp,
@@ -293,7 +296,9 @@ func CreateOrderFormatter(order *entities.OrderModels) OrderCreationResponse {
 		}
 		orderDetails = append(orderDetails, orderDetail)
 	}
-
+	if order.VoucherID != nil {
+		orderResponse.VoucherID = *order.VoucherID
+	}
 	orderResponse.OrderDetails = orderDetails
 	return orderResponse
 }

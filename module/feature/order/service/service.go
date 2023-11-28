@@ -174,11 +174,9 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 		discountFromVoucher = vouchers.Discount
 	}
 
-	var voucherID uint64
-	if request.VoucherID == 0 {
-		voucherID = 0
-	} else {
-		voucherID = request.VoucherID
+	var voucherID *uint64
+	if request.VoucherID != 0 {
+		voucherID = &request.VoucherID
 	}
 
 	grandTotalPrice := totalPrice
