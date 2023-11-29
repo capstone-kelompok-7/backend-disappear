@@ -53,7 +53,7 @@ type ChallengeFormFormatter struct {
 	CreatedAt   time.Time `json:"tanggal_berpartisipasi"`
 }
 
-func FormatChallengeForm(form *entities.ChallengeFormModels, exp uint64, createdAt time.Time) *ChallengeFormFormatter {
+func FormatChallengeForm(form *entities.ChallengeFormModels) *ChallengeFormFormatter {
 	challengeFormFormatter := &ChallengeFormFormatter{}
 	challengeFormFormatter.ID = form.ID
 	challengeFormFormatter.UserID = form.UserID
@@ -67,10 +67,10 @@ func FormatChallengeForm(form *entities.ChallengeFormModels, exp uint64, created
 	return challengeFormFormatter
 }
 
-func FormatterChallengeForm(forms []*entities.ChallengeFormModels, exp uint64, createdAt time.Time) []*ChallengeFormFormatter {
+func FormatterChallengeForm(forms []*entities.ChallengeFormModels) []*ChallengeFormFormatter {
 	var formFormatter []*ChallengeFormFormatter
 	for _, form := range forms {
-		formattedForm := FormatChallengeForm(form, exp, createdAt)
+		formattedForm := FormatChallengeForm(form)
 		formFormatter = append(formFormatter, formattedForm)
 	}
 	return formFormatter

@@ -30,32 +30,46 @@ func (h *ChallengeHandler) GetAllChallenges() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
-		var challenge []*entities.ChallengeModels
+		var challenges []*entities.ChallengeModels
+		var totalItems int64
 		var err error
+
 		search := c.QueryParam("search")
-		if search != "" {
-			challenge, _, err = h.service.GetChallengeByTitle(page, perPage, search)
-		} else {
-			challenge, _, err = h.service.GetAllChallenges(pageConv, perPage)
+		status := c.QueryParam("status")
+
+		validStatusValues := map[string]bool{
+			"belum kadaluwarsa": true,
+			"kadaluwarsa":       true,
 		}
+
+		if status != "" && !validStatusValues[status] {
+			return response.SendBadRequestResponse(c, "Nilai parameter status tidak valid")
+		}
+
+		if search != "" {
+			challenges, totalItems, err = h.service.GetChallengeByTitle(page, perPage, search)
+		} else if status != "" {
+			challenges, totalItems, err = h.service.GetChallengeByStatus(pageConv, perPage, status)
+		} else {
+			challenges, totalItems, err = h.service.GetAllChallenges(pageConv, perPage)
+		}
+
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar tantangan: ")
 		}
 
 		var activeChallenges []*entities.ChallengeModels
-		for _, ch := range challenge {
+		for _, ch := range challenges {
 			if ch.DeletedAt == nil {
 				activeChallenges = append(activeChallenges, ch)
 			}
 		}
 
-		totalItems := int64(len(activeChallenges))
-
-		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, len(activeChallenges), perPage)
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
 		nextPage := h.service.GetNextPage(currentPage, totalPages)
 		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.SendPaginationResponse(c, dto.FormatterChallenge(activeChallenges), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar challenge")
+		return response.SendPaginationResponse(c, dto.FormatterChallenge(activeChallenges), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar tantangan")
 	}
 }
 
@@ -158,7 +172,7 @@ func (h *ChallengeHandler) UpdateChallenge() echo.HandlerFunc {
 			Exp:         updateRequest.Exp,
 		}
 
-		updatedChallenge, err = h.service.UpdateChallenge(challengeID, updatedChallenge)
+		_, err = h.service.UpdateChallenge(challengeID, updatedChallenge)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal memperbarui tantangan: "+err.Error())
 		}
@@ -239,7 +253,7 @@ func (h *ChallengeHandler) CreateSubmitChallengeForm() echo.HandlerFunc {
 			Photo:       uploadedURL,
 		}
 
-		challenges, err := h.service.GetChallengeById(formRequest.ChallengeID)
+		_, err = h.service.GetChallengeById(formRequest.ChallengeID)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan informasi tantangan: "+err.Error())
 		}
@@ -249,7 +263,7 @@ func (h *ChallengeHandler) CreateSubmitChallengeForm() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mengikuti tantangan: "+err.Error())
 		}
 
-		return response.SendStatusCreatedResponse(c, "Berhasil mengikuti tantangan", dto.FormatChallengeForm(createdForm, challenges.Exp, createdForm.CreatedAt))
+		return response.SendStatusCreatedResponse(c, "Berhasil mengikuti tantangan", dto.FormatChallengeForm(createdForm))
 	}
 }
 
@@ -259,35 +273,31 @@ func (h *ChallengeHandler) GetAllSubmitChallengeForm() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
-		var participant []*entities.ChallengeFormModels
+		var participants []*entities.ChallengeFormModels
 		var totalItems int64
 		var err error
 		filterStatus := c.QueryParam("status")
 
 		validStatus := map[string]bool{"valid": true, "menunggu validasi": true, "tidak valid": true}
 		if filterStatus != "" && !validStatus[filterStatus] {
-			return response.SendBadRequestResponse(c, "Invalid status parameter")
+			return response.SendBadRequestResponse(c, "Nilai parameter status tidak valid")
 		}
 
 		if filterStatus != "" {
-			participant, totalItems, err = h.service.GetSubmitChallengeFormByStatus(pageConv, perPage, filterStatus)
+			participants, totalItems, err = h.service.GetSubmitChallengeFormByStatus(pageConv, perPage, filterStatus)
 		} else {
-			participant, totalItems, err = h.service.GetAllSubmitChallengeForm(pageConv, perPage)
+			participants, totalItems, err = h.service.GetAllSubmitChallengeForm(pageConv, perPage)
 		}
 
 		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Internal Server Error: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar peserta: ")
 		}
-
-		challenges, _ := h.service.GetChallengeById(participant[0].ChallengeID)
-		exp := challenges.Exp
-		createdAt := challenges.CreatedAt
 
 		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
 		nextPage := h.service.GetNextPage(currentPage, totalPages)
 		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.SendPaginationResponse(c, dto.FormatterChallengeForm(participant, exp, createdAt), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasul mendapatkan daftar peserta tantangan")
+		return response.SendPaginationResponse(c, dto.FormatterChallengeForm(participants), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar peserta tantangan")
 	}
 }
 
@@ -335,6 +345,6 @@ func (h *ChallengeHandler) GetSubmitChallengeFormById() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail formulir tantangan: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail formulir tantangan", dto.FormatChallengeForm(form, form.Exp, form.CreatedAt))
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail formulir tantangan", dto.FormatChallengeForm(form))
 	}
 }

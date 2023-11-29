@@ -22,7 +22,7 @@ func NewChallengeRepository(db *gorm.DB) challenge.RepositoryChallengeInterface 
 func (r *ChallengeRepository) FindAll(page, perpage int) ([]*entities.ChallengeModels, error) {
 	var challenge []*entities.ChallengeModels
 	offset := (page - 1) * perpage
-	err := r.db.Offset(offset).Limit(perpage).Find(&challenge).Error
+	err := r.db.Offset(offset).Limit(perpage).Where("deleted_at IS NULL").Find(&challenge).Error
 	if err != nil {
 		return challenge, err
 	}
@@ -48,6 +48,22 @@ func (r *ChallengeRepository) FindByTitle(page, perpage int, title string) ([]*e
 func (r *ChallengeRepository) GetTotalChallengeCountByTitle(title string) (int64, error) {
 	var count int64
 	err := r.db.Model(&entities.ChallengeModels{}).Where("title LIKE?", "%"+title+"%").Count(&count).Error
+	return count, err
+}
+
+func (r *ChallengeRepository) FindByStatus(page, perpage int, status string) ([]*entities.ChallengeModels, error) {
+	var challenge []*entities.ChallengeModels
+	offset := (page - 1) * perpage
+	err := r.db.Offset(offset).Limit(perpage).Where("status = ?", status).Find(&challenge).Error
+	if err != nil {
+		return challenge, err
+	}
+	return challenge, nil
+}
+
+func (r *ChallengeRepository) GetTotalChallengeCountByStatus(status string) (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.ChallengeModels{}).Where("status = ?", status).Count(&count).Error
 	return count, err
 }
 
@@ -103,7 +119,7 @@ func (r *ChallengeRepository) CreateSubmitChallengeForm(form *entities.Challenge
 func (r *ChallengeRepository) GetAllSubmitChallengeForm(page, perpage int) ([]*entities.ChallengeFormModels, error) {
 	var participants []*entities.ChallengeFormModels
 	offset := (page - 1) * perpage
-	err := r.db.Offset(offset).Limit(perpage).Find(&participants).Error
+	err := r.db.Offset(offset).Limit(perpage).Where("deleted_at IS NULL").Find(&participants).Error
 	if err != nil {
 		return nil, err
 	}
@@ -123,6 +139,12 @@ func (r *ChallengeRepository) GetSubmitChallengeFormByStatus(page, perpage int, 
 func (r *ChallengeRepository) GetTotalSubmitChallengeFormCount() (int64, error) {
 	var count int64
 	err := r.db.Model(&entities.ChallengeFormModels{}).Count(&count).Error
+	return count, err
+}
+
+func (r *ChallengeRepository) GetTotalSubmitChallengeFormCountByStatus(status string) (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.ChallengeFormModels{}).Where("status = ?", status).Count(&count).Error
 	return count, err
 }
 
