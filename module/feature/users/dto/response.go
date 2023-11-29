@@ -4,22 +4,23 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 )
 
-type UserFormatter struct {
-	ID             uint64             `json:"id"`
-	Email          string             `json:"email"`
-	Role           string             `json:"role"`
-	Name           string             `json:"name"`
-	Phone          string             `json:"phone"`
-	PhotoProfile   string             `json:"photo_profile"`
-	TotalGram      uint64             `json:"total_gram"`
-	TotalChallenge uint64             `json:"total_challenge"`
-	IsVerified     bool               `json:"is_verified"`
-	Level          string             `json:"level"`
-	Exp            uint64             `json:"exp"`
-	Addresses      []AddressFormatter `json:"addresses"`
+// UserDetailResponse for detail users
+type UserDetailResponse struct {
+	ID             uint64            `json:"id"`
+	Email          string            `json:"email"`
+	Role           string            `json:"role"`
+	Name           string            `json:"name"`
+	Phone          string            `json:"phone"`
+	PhotoProfile   string            `json:"photo_profile"`
+	TotalGram      uint64            `json:"total_gram"`
+	TotalChallenge uint64            `json:"total_challenge"`
+	IsVerified     bool              `json:"is_verified"`
+	Level          string            `json:"level"`
+	Exp            uint64            `json:"exp"`
+	Addresses      []AddressResponse `json:"addresses"`
 }
 
-type AddressFormatter struct {
+type AddressResponse struct {
 	ID           uint64 `json:"id"`
 	AcceptedName string `json:"accepted_name"`
 	Street       string `json:"street"`
@@ -28,25 +29,26 @@ type AddressFormatter struct {
 	Province     string `json:"province"`
 	PostalCode   int    `json:"postal_code"`
 	Note         string `json:"note"`
+	IsPrimary    bool   `json:"is_primary"`
 }
 
-func FormatUser(user *entities.UserModels) *UserFormatter {
-	userFormatter := &UserFormatter{}
-	userFormatter.ID = user.ID
-	userFormatter.Email = user.Email
-	userFormatter.Role = user.Role
-	userFormatter.Name = user.Name
-	userFormatter.Phone = user.Phone
-	userFormatter.PhotoProfile = user.PhotoProfile
-	userFormatter.TotalGram = user.TotalGram
-	userFormatter.TotalChallenge = user.TotalChallenge
-	userFormatter.IsVerified = user.IsVerified
-	userFormatter.Level = user.Level
-	userFormatter.Exp = user.Exp
-
-	var addresses []AddressFormatter
+func FormatterDetailUser(user *entities.UserModels) *UserDetailResponse {
+	userFormatter := &UserDetailResponse{
+		ID:             user.ID,
+		Email:          user.Email,
+		Role:           user.Role,
+		Name:           user.Name,
+		Phone:          user.Phone,
+		PhotoProfile:   user.PhotoProfile,
+		TotalGram:      user.TotalGram,
+		TotalChallenge: user.TotalChallenge,
+		IsVerified:     user.IsVerified,
+		Level:          user.Level,
+		Exp:            user.Exp,
+	}
+	var addresses []AddressResponse
 	for _, address := range user.Address {
-		addressesFormatter := AddressFormatter{
+		addressesFormatter := AddressResponse{
 			ID:           address.ID,
 			AcceptedName: address.AcceptedName,
 			Street:       address.Street,
@@ -55,6 +57,7 @@ func FormatUser(user *entities.UserModels) *UserFormatter {
 			Province:     address.Province,
 			PostalCode:   address.PostalCode,
 			Note:         address.Note,
+			IsPrimary:    address.IsPrimary,
 		}
 		addresses = append(addresses, addressesFormatter)
 	}
@@ -63,11 +66,41 @@ func FormatUser(user *entities.UserModels) *UserFormatter {
 	return userFormatter
 }
 
-func FormatterUsers(users []*entities.UserModels) []*UserFormatter {
-	usersFormatters := make([]*UserFormatter, 0)
+// UserPaginationResponse for get all pagination
+type UserPaginationResponse struct {
+	ID             uint64 `json:"id"`
+	Email          string `json:"email"`
+	Role           string `json:"role"`
+	Name           string `json:"name"`
+	Phone          string `json:"phone"`
+	PhotoProfile   string `json:"photo_profile"`
+	TotalGram      uint64 `json:"total_gram"`
+	TotalChallenge uint64 `json:"total_challenge"`
+	Level          string `json:"level"`
+	Exp            uint64 `json:"exp"`
+}
+
+func FormatUserPagination(user *entities.UserModels) *UserPaginationResponse {
+	userFormatter := &UserPaginationResponse{
+		ID:             user.ID,
+		Email:          user.Email,
+		Role:           user.Role,
+		Name:           user.Name,
+		Phone:          user.Phone,
+		PhotoProfile:   user.PhotoProfile,
+		TotalGram:      user.TotalGram,
+		TotalChallenge: user.TotalChallenge,
+		Level:          user.Level,
+		Exp:            user.Exp,
+	}
+	return userFormatter
+}
+
+func FormatterUsersPagination(users []*entities.UserModels) []*UserPaginationResponse {
+	usersFormatters := make([]*UserPaginationResponse, 0)
 
 	for _, user := range users {
-		formattedUsers := FormatUser(user)
+		formattedUsers := FormatUserPagination(user)
 		usersFormatters = append(usersFormatters, formattedUsers)
 	}
 

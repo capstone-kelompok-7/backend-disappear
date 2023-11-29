@@ -22,6 +22,7 @@ type RepositoryUserInterface interface {
 	UpdateUserContribution(userID uint64, gramPlastic uint64) (*entities.UserModels, error)
 	UpdateUserLevel(userID uint64, level string) error
 	GetUserLevel(userID uint64) (string, error)
+	GetFilterLevel(level string) ([]*entities.UserModels, error)
 }
 
 type ServiceUserInterface interface {
