@@ -25,6 +25,9 @@ import (
 	hChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/handler"
 	rChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/repository"
 	sChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/service"
+	hChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/handler"
+	rChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/repository"
+	sChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/service"
 	hOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/handler"
 	rOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/repository"
 	sOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/service"
@@ -40,6 +43,7 @@ import (
 	hVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/handler"
 	rVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/repository"
 	sVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/service"
+	"github.com/sashabaranov/go-openai"
 
 	"net/http"
 
@@ -109,6 +113,12 @@ func main() {
 	orderService := sOrder.NewOrderService(orderRepo, generatorID, productService, voucherService, addressService, userService, cartService)
 	orderHandler := hOrder.NewOrderHandler(orderService)
 
+	mgodb := database.InitMongoDB(*initConfig)
+	var client = openai.NewClient(initConfig.OpenAiApiKey)
+	chatbotRepo := rChatbot.NewChatbotRepository(mgodb)
+	chatbotService := sChatbot.NewChatbotService(chatbotRepo, client, *initConfig)
+	chatbotHandler := hChatbot.NewChatbotHandler(chatbotService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -131,5 +141,6 @@ func main() {
 	routes.RouteReview(e, reviewHandler, jwtService, userService)
 	routes.RouteCart(e, cartHandler, jwtService, userService)
 	routes.RouteOrder(e, orderHandler, jwtService, userService)
+	routes.RouteChatbot(e, chatbotHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }

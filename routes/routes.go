@@ -8,6 +8,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/cart"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/review"
@@ -130,4 +131,11 @@ func RouteOrder(e *echo.Echo, h order.HandlerOrderInterface, jwtService utils.JW
 	orderGroup.GET("/:id", h.GetOrderById(), middlewares.AuthMiddleware(jwtService, userService))
 	orderGroup.POST("", h.CreateOrder(), middlewares.AuthMiddleware(jwtService, userService))
 	orderGroup.POST("/:id", h.ConfirmPayment(), middlewares.AuthMiddleware(jwtService, userService))
+}
+
+func RouteChatbot(e *echo.Echo, h chatbot.HandlerChatbotInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	chatbot := e.Group("/api/v1/chatbot")
+	chatbot.POST("/question", h.CreateQuestion(), middlewares.AuthMiddleware(jwtService, userService))
+	chatbot.POST("/answer/:name", h.CreateAnswer(), middlewares.AuthMiddleware(jwtService, userService))
+	chatbot.GET("/:id", h.GetChatByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
 }
