@@ -74,15 +74,15 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService ut
 
 func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	challengesGroup := e.Group("api/v1/challenges")
-	challengesGroup.GET("", h.GetAllChallenges())
+	challengesGroup.GET("", h.GetAllChallenges(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.POST("", h.CreateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.PUT("/:id", h.UpdateChallenge(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.DELETE("/:id", h.DeleteChallengeById(), middlewares.AuthMiddleware(jwtService, userService))
-	challengesGroup.GET("/:id", h.GetChallengeById())
+	challengesGroup.GET("/:id", h.GetChallengeById(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.POST("/submit", h.CreateSubmitChallengeForm(), middlewares.AuthMiddleware(jwtService, userService))
 	challengesGroup.PUT("/participants/status/:id", h.UpdateSubmitChallengeForm(), middlewares.AuthMiddleware(jwtService, userService))
-	challengesGroup.GET("/participants", h.GetAllSubmitChallengeForm())
-	challengesGroup.GET("/participants/:id", h.GetSubmitChallengeFormById())
+	challengesGroup.GET("/participants", h.GetAllSubmitChallengeForm(), middlewares.AuthMiddleware(jwtService, userService))
+	challengesGroup.GET("/participants/:id", h.GetSubmitChallengeFormById(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

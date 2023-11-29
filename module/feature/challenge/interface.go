@@ -10,7 +10,9 @@ type RepositoryChallengeInterface interface {
 	FindAll(page, perpage int) ([]*entities.ChallengeModels, error)
 	GetTotalChallengeCount() (int64, error)
 	FindByTitle(page, perpage int, title string) ([]*entities.ChallengeModels, error)
+	FindByStatus(page, perpage int, status string) ([]*entities.ChallengeModels, error)
 	GetTotalChallengeCountByTitle(title string) (int64, error)
+	GetTotalChallengeCountByStatus(status string) (int64, error)
 	CreateChallenge(challenge *entities.ChallengeModels) (*entities.ChallengeModels, error)
 	UpdateChallenge(id uint64, updatedChallenge *entities.ChallengeModels) (*entities.ChallengeModels, error)
 	GetChallengeById(id uint64) (*entities.ChallengeModels, error)
@@ -19,6 +21,7 @@ type RepositoryChallengeInterface interface {
 	GetAllSubmitChallengeForm(page, perpage int) ([]*entities.ChallengeFormModels, error)
 	GetSubmitChallengeFormByStatus(page, perpage int, status string) ([]*entities.ChallengeFormModels, error)
 	GetTotalSubmitChallengeFormCount() (int64, error)
+	GetTotalSubmitChallengeFormCountByStatus(status string) (int64, error)
 	GetSubmitChallengeFormById(id uint64) (*entities.ChallengeFormModels, error)
 	UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (*entities.ChallengeFormModels, error)
 	GetSubmitChallengeFormByUserAndChallenge(userID uint64) ([]*entities.ChallengeFormModels, error)
@@ -30,6 +33,7 @@ type ServiceChallengeInterface interface {
 	GetNextPage(currentPage, totalPages int) int
 	GetPrevPage(currentPage int) int
 	GetChallengeByTitle(page, perPage int, title string) ([]*entities.ChallengeModels, int64, error)
+	GetChallengeByStatus(page, perPage int, status string) ([]*entities.ChallengeModels, int64, error)
 	CreateChallenge(newData *entities.ChallengeModels) (*entities.ChallengeModels, error)
 	UpdateChallenge(id uint64, updatedChallenge *entities.ChallengeModels) (*entities.ChallengeModels, error)
 	GetChallengeById(id uint64) (*entities.ChallengeModels, error)

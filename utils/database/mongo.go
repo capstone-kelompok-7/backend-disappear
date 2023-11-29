@@ -10,13 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var (
-	ctx    context.Context
-	client *mongo.Client
-)
+var client *mongo.Client
 
 func InitMongoDB(config config.Config) *mongo.Client {
-	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	clientOptions := options.Client().ApplyURI(config.MongoURL)
 
 	var err error

@@ -35,7 +35,9 @@ func (s *ChatbotService) CreateQuestion(newData entities.ChatModel) error {
 		Text:      newData.Text,
 		CreatedAt: time.Now(),
 	}
-	s.repo.CreateQuestion(*value)
+	if err := s.repo.CreateQuestion(*value); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -96,7 +98,10 @@ func (s *ChatbotService) CreateAnswer(newData entities.ChatModel, name string) (
 		CreatedAt: time.Now(),
 	}
 
-	s.repo.CreateAnswer(*value)
+	if err := s.repo.CreateAnswer(*value); err != nil {
+		logrus.Error("Can't create answer in the repository: ", err.Error())
+		return "", err
+	}
 	return answer.Content, nil
 }
 
