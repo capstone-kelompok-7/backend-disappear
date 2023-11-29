@@ -22,7 +22,7 @@ func NewUserRepository(db *gorm.DB) users.RepositoryUserInterface {
 
 func (r *UserRepository) GetUsersById(userId uint64) (*entities.UserModels, error) {
 	var user entities.UserModels
-	if err := r.db.Where("id = ? AND deleted_at IS NULL", userId).First(&user).Error; err != nil {
+	if err := r.db.Preload("Address").Where("id = ? AND deleted_at IS NULL", userId).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
 			return nil, errors.New("pengguna tidak ditemukan")
@@ -163,4 +163,12 @@ func (r *UserRepository) GetUserLevel(userID uint64) (string, error) {
 		return "", err
 	}
 	return user.Level, nil
+}
+
+func (r *UserRepository) GetFilterLevel(level string) ([]*entities.UserModels, error) {
+	var user []*entities.UserModels
+	if err := r.db.Where("level = ? AND deleted_at IS NULL", level).Find(&user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }

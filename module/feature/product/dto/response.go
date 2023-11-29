@@ -29,10 +29,16 @@ type ProductImageFormatter struct {
 }
 
 type ReviewFormatter struct {
-	ID          uint64 `json:"id"`
-	UserID      uint64 `json:"user_id"`
-	Rating      uint64 `json:"rating"`
-	Description string `json:"description"`
+	ID          uint64                `json:"id"`
+	UserID      uint64                `json:"user_id"`
+	Rating      uint64                `json:"rating"`
+	Description string                `json:"description"`
+	Photo       []ReviewPhotoResponse `json:"photo"`
+}
+
+type ReviewPhotoResponse struct {
+	ID    uint64 `json:"id"`
+	Photo string `json:"photo"`
 }
 
 func FormatProduct(product *entities.ProductModels) *ProductFormatter {

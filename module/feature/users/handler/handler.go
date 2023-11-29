@@ -65,11 +65,6 @@ func (h *UserHandler) ChangePassword() echo.HandlerFunc {
 
 func (h *UserHandler) GetUsersById() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser := c.Get("CurrentUser").(*entities.UserModels)
-		if currentUser.Role != "admin" {
-			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
-		}
-
 		id := c.Param("id")
 		if id == "" {
 			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai.")
@@ -85,7 +80,7 @@ func (h *UserHandler) GetUsersById() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail pengguna: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil mendapat detail pengguna", user)
+		return response.SendSuccessResponse(c, "Berhasil mendapat detail pengguna", dto.FormatterDetailUser(user))
 	}
 }
 
@@ -105,23 +100,19 @@ func (h *UserHandler) GetAllUsers() echo.HandlerFunc {
 		search := c.QueryParam("search")
 		if search != "" {
 			users, totalItems, err = h.service.GetUsersByName(page, perPage, search)
-			if err != nil {
-				c.Logger().Error("handler: failed to fetch users by name:", err.Error())
-				return response.SendStatusInternalServerResponse(c, "Internal Server Error")
-			}
 		} else {
 			users, totalItems, err = h.service.GetAllUsers(pageConv, perPage)
 		}
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all users:", err.Error())
-			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar pengguna: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar customer: "+err.Error())
 		}
 
 		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
 		nextPage := h.service.GetNextPage(currentPage, totalPages)
 		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.SendPaginationResponse(c, dto.FormatterUsers(users), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar customer")
+		return response.SendPaginationResponse(c, dto.FormatterUsersPagination(users), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar customer")
 	}
 }
 
