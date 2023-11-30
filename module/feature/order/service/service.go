@@ -220,7 +220,7 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 func (s *OrderService) ConfirmPayment(orderID string) error {
 	orders, err := s.repo.GetOrderById(orderID)
 	if err != nil {
-		return err
+		return errors.New("pesanan tidak ditemukan")
 	}
 
 	orders.OrderStatus = "Proses"
@@ -243,6 +243,145 @@ func (s *OrderService) ConfirmPayment(orderID string) error {
 	user.TotalGram += orders.GrandTotalGramPlastic
 	if _, err := s.userService.UpdateUserContribution(user.ID, user.TotalGram); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrderCartRequest) (*entities.OrderModels, error) {
+
+	orderID, err := s.generatorID.GenerateUUID()
+	if err != nil {
+		return nil, errors.New("gagal membuat id pesanan")
+	}
+
+	addresses, err := s.addressService.GetAddressByID(request.AddressID)
+	if err != nil {
+		return nil, errors.New("alamat tidak ditemukan")
+	}
+
+	var vouchers *entities.VoucherModels
+	if request.VoucherID != 0 {
+		vouchers, err = s.voucherService.GetVoucherById(request.VoucherID)
+		if err != nil {
+			return nil, errors.New("kupon tidak ditemukan")
+		}
+	}
+
+	var cartItems []*entities.CartItemModels
+	for _, itemID := range request.CartItems {
+		cartItem, err := s.cartService.GetCartItems(itemID.ID)
+		if err != nil {
+			return nil, errors.New("gagal mendapatkan detail item keranjang")
+		}
+		cartItems = append(cartItems, cartItem)
+	}
+
+	var orderDetails []entities.OrderDetailsModels
+	var totalQuantity, totalGramPlastic, totalExp, totalPrice, totalDiscount uint64
+
+	for _, cartItem := range cartItems {
+		products, err := s.productService.GetProductByID(cartItem.ProductID)
+		if err != nil {
+			return nil, errors.New("produk tidak ditemukan")
+		}
+
+		if products.Stock < cartItem.Quantity {
+			return nil, errors.New("stok tidak mencukupi untuk pesanan ini")
+		}
+
+		orderDetail := entities.OrderDetailsModels{
+			OrderID:          orderID,
+			ProductID:        cartItem.ProductID,
+			Quantity:         cartItem.Quantity,
+			TotalGramPlastic: products.GramPlastic * cartItem.Quantity,
+			TotalExp:         products.Exp * cartItem.Quantity,
+			TotalPrice:       cartItem.Quantity * (products.Price - products.Discount),
+			TotalDiscount:    products.Discount * cartItem.Quantity,
+		}
+
+		totalQuantity += cartItem.Quantity
+		totalGramPlastic += orderDetail.TotalGramPlastic
+		totalExp += orderDetail.TotalExp
+		totalPrice += orderDetail.TotalPrice
+		totalDiscount += orderDetail.TotalDiscount
+
+		orderDetails = append(orderDetails, orderDetail)
+
+		if err := s.cartService.DeleteCartItem(cartItem.ID); err != nil {
+			return nil, errors.New("gagal menghapus produk dari keranjang")
+		}
+
+		if err := s.productService.ReduceStockWhenPurchasing(cartItem.ProductID, cartItem.Quantity); err != nil {
+			return nil, errors.New("gagal mengurangi stok produk")
+		}
+	}
+
+	var discountFromVoucher uint64
+	if request.VoucherID != 0 && totalPrice >= vouchers.MinPurchase {
+		discountFromVoucher = vouchers.Discount
+	}
+
+	var voucherID *uint64
+	if request.VoucherID != 0 {
+		voucherID = &request.VoucherID
+	}
+
+	grandTotalPrice := totalPrice
+	totalAmountPaid := grandTotalPrice + 2000 + 24000 - discountFromVoucher
+
+	newData := &entities.OrderModels{
+		ID:                    orderID,
+		AddressID:             addresses.ID,
+		UserID:                userID,
+		VoucherID:             voucherID,
+		Note:                  request.Note,
+		GrandTotalGramPlastic: totalGramPlastic,
+		GrandTotalExp:         totalExp,
+		GrandTotalQuantity:    totalQuantity,
+		GrandTotalPrice:       grandTotalPrice,
+		ShipmentFee:           24000,
+		AdminFees:             2000,
+		GrandTotalDiscount:    totalDiscount,
+		TotalAmountPaid:       totalAmountPaid,
+		OrderStatus:           "Menunggu Konfirmasi",
+		PaymentStatus:         "Menunggu Konfirmasi",
+		PaymentURL:            "",
+		CreatedAt:             time.Now(),
+		OrderDetails:          orderDetails,
+	}
+
+	createdOrder, err := s.repo.CreateOrder(newData)
+	if err != nil {
+		return nil, err
+	}
+
+	if request.VoucherID != 0 {
+		if err := s.voucherService.DeleteVoucherClaims(userID, vouchers.ID); err != nil {
+			return nil, err
+		}
+	}
+
+	return createdOrder, nil
+}
+
+func (s *OrderService) CancelPayment(orderID string) error {
+	orders, err := s.repo.GetOrderById(orderID)
+	if err != nil {
+		return errors.New("pesanan tidak ditemukan")
+	}
+
+	orders.OrderStatus = "Gagal"
+	orders.PaymentStatus = "Gagal"
+
+	for _, orderDetail := range orders.OrderDetails {
+		if err := s.productService.IncreaseStock(orderDetail.ProductID, orderDetail.Quantity); err != nil {
+			return errors.New("gagal menambah stok produk")
+		}
+	}
+
+	if err := s.repo.ConfirmPayment(orderID, orders.OrderStatus, orders.PaymentStatus); err != nil {
+		return errors.New("gagal membatalkan pesanan")
 	}
 
 	return nil

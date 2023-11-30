@@ -12,7 +12,7 @@ type CreateOrderRequest struct {
 
 type CreateOrderCartRequest struct {
 	AddressID uint64                    `form:"address_id" json:"address_id" validate:"required"`
-	VoucherID uint64                    `form:"voucher_id" json:"voucher_id" validate:"required"`
+	VoucherID uint64                    `form:"voucher_id" json:"voucher_id"`
 	Note      string                    `form:"note" json:"note"`
 	CartItems []entities.CartItemModels `json:"cart_items" validate:"required"`
 }

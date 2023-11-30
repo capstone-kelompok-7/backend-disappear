@@ -25,6 +25,8 @@ type ServiceOrderInterface interface {
 	GetOrderById(orderID string) (*entities.OrderModels, error)
 	CreateOrder(userID uint64, request *dto.CreateOrderRequest) (*entities.OrderModels, error)
 	ConfirmPayment(orderID string) error
+	CreateOrderFromCart(userID uint64, request *dto.CreateOrderCartRequest) (*entities.OrderModels, error)
+	CancelPayment(orderID string) error
 }
 
 type HandlerOrderInterface interface {
@@ -32,4 +34,6 @@ type HandlerOrderInterface interface {
 	CreateOrder() echo.HandlerFunc
 	GetAllOrders() echo.HandlerFunc
 	ConfirmPayment() echo.HandlerFunc
+	CreateOrderFromCart() echo.HandlerFunc
+	CancelPayment() echo.HandlerFunc
 }

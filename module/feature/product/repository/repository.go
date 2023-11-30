@@ -230,3 +230,11 @@ func (r *ProductRepository) GetProductsByCategory(categoryID uint64, page, perPa
 
 	return products, totalItems, nil
 }
+
+func (r *ProductRepository) IncreaseStock(productID, quantity uint64) error {
+	var products entities.ProductModels
+	if err := r.db.Model(&products).Where("id = ?", productID).Update("stock", gorm.Expr("stock + ?", quantity)).Error; err != nil {
+		return err
+	}
+	return nil
+}

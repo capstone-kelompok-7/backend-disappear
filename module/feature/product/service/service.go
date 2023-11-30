@@ -261,3 +261,16 @@ func (s *ProductService) ReduceStockWhenPurchasing(productID, quantity uint64) e
 	}
 	return nil
 }
+
+func (s *ProductService) IncreaseStock(productID, quantity uint64) error {
+	products, err := s.repo.GetProductByID(productID)
+	if err != nil {
+		return errors.New("produk tidak ditemukan")
+	}
+
+	err = s.repo.IncreaseStock(products.ID, quantity)
+	if err != nil {
+		return err
+	}
+	return nil
+}

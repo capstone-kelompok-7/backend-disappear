@@ -105,3 +105,43 @@ func (h *OrderHandler) ConfirmPayment() echo.HandlerFunc {
 		return response.SendStatusOkResponse(c, "Pembayaran berhasil dikonfimasi, silahkan memproses pesanan")
 	}
 }
+
+func (h *OrderHandler) CreateOrderFromCart() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		req := new(dto.CreateOrderCartRequest)
+		if err := c.Bind(req); err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		}
+
+		if err := utils.ValidateStruct(req); err != nil {
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
+		}
+		result, err := h.service.CreateOrderFromCart(currentUser.ID, req)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal membuat pesanan dari keranjang: "+err.Error())
+		}
+		return response.SendStatusCreatedResponse(c, "Berhasil membuat pesanan dari keranjang, silahkan melakukan konfirmasi pembayaran", dto.CreateOrderFormatter(result))
+	}
+}
+
+func (h *OrderHandler) CancelPayment() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		orderID := c.Param("id")
+		if orderID == "" {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		}
+		err := h.service.CancelPayment(orderID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mmelakukan pesanan: "+err.Error())
+		}
+		return response.SendStatusOkResponse(c, "Pembayaran berhasil dibatalkan")
+	}
+}
