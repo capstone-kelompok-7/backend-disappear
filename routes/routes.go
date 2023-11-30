@@ -9,6 +9,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/review"
@@ -140,4 +141,9 @@ func RouteChatbot(e *echo.Echo, h chatbot.HandlerChatbotInterface, jwtService ut
 	chatbotGroup.POST("/question", h.CreateQuestion(), middlewares.AuthMiddleware(jwtService, userService))
 	chatbotGroup.POST("/answer/:name", h.CreateAnswer(), middlewares.AuthMiddleware(jwtService, userService))
 	chatbotGroup.GET("/:id", h.GetChatByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
+}
+
+func RouteDashboard(e *echo.Echo, h dashboard.HandlerDashboardInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	dashboardGroup := e.Group("/api/v1/dashboards")
+	dashboardGroup.GET("/card", h.GetCardDashboard(), middlewares.AuthMiddleware(jwtService, userService))
 }

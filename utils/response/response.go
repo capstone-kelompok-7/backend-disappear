@@ -47,6 +47,13 @@ func SendStatusOkResponse(c echo.Context, message string) error {
 	})
 }
 
+func SendStatusOkWithDataResponse(c echo.Context, message string, data interface{}) error {
+	return c.JSON(http.StatusOK, SuccessResponse{
+		Message: message,
+		Data:    data,
+	})
+}
+
 func SendPaginationResponse(c echo.Context, data interface{}, currentPage, totalPages, totalItems, nextPage, prevPage int, message string) error {
 	pagination := PaginationMeta{
 		CurrentPage: currentPage,
