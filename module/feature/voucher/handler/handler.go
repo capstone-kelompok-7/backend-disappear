@@ -68,10 +68,23 @@ func (h *VoucherHandler) GetAllVouchers() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
+		status := c.QueryParam("status")
+		category := c.QueryParam("category")
+
 		var vouchers []*entities.VoucherModels
 		var totalItems int64
 		var err error
-		vouchers, totalItems, err = h.service.GetAllVoucher(pageConv, perPage)
+
+		if status != "" && category != "" {
+			vouchers, totalItems, err = h.service.GetVoucherByStatusCategory(pageConv, perPage, status, category)
+		} else if status != "" {
+			vouchers, totalItems, err = h.service.GetVoucherByStatus(pageConv, perPage, status)
+		} else if category != "" {
+			vouchers, totalItems, err = h.service.GetVoucherByCategory(pageConv, perPage, category)
+		} else {
+			vouchers, totalItems, err = h.service.GetAllVoucher(pageConv, perPage)
+		}
+
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all vouchers:", err.Error())
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar kupon: "+err.Error())

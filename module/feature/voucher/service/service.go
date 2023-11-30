@@ -235,3 +235,45 @@ func (s *VoucherService) GetUserVouchers(userID uint64) ([]*entities.VoucherClai
 	}
 	return userVouchers, nil
 }
+
+func (s *VoucherService) GetVoucherByStatus(page, perPage int, status string) ([]*entities.VoucherModels, int64, error) {
+	vouchers, err := s.repo.FindByStatus(page, perPage, status)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalVoucherCountByStatus(status)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return vouchers, totalItems, nil
+}
+
+func (s *VoucherService) GetVoucherByCategory(page, perPage int, category string) ([]*entities.VoucherModels, int64, error) {
+	vouchers, err := s.repo.FindByCategory(page, perPage, category)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalVoucherCountByCategory(category)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return vouchers, totalItems, nil
+}
+
+func (s *VoucherService) GetVoucherByStatusCategory(page, perPage int, status, category string) ([]*entities.VoucherModels, int64, error) {
+	vouchers, err := s.repo.FindByStatusCategory(page, perPage, status, category)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalVoucherCountByStatusCategory(status, category)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return vouchers, totalItems, nil
+}
