@@ -61,13 +61,10 @@ type ProductResponse struct {
 type AddressResponse struct {
 	ID           uint64 `json:"id"`
 	UserID       uint64 `json:"user_id"`
-	AcceptedName string `json:"accepted_name"`
-	Street       string `json:"street"`
-	SubDistrict  string `json:"sub_district"`
-	City         string `json:"city"`
-	Province     string `json:"province"`
-	PostalCode   int    `json:"postal_code"`
-	Note         string `json:"note"`
+	AcceptedName string `json:"accepted_name" `
+	Phone        string `json:"phone"`
+	Address      string `json:"address"`
+	IsPrimary    bool   `json:"is_primary"`
 }
 
 type UserResponse struct {
@@ -111,12 +108,9 @@ func FormatOrderDetail(order *entities.OrderModels) OrderResponse {
 			ID:           order.Address.ID,
 			UserID:       order.Address.UserID,
 			AcceptedName: order.Address.AcceptedName,
-			Street:       order.Address.Street,
-			SubDistrict:  order.Address.SubDistrict,
-			City:         order.Address.City,
-			Province:     order.Address.Province,
-			PostalCode:   order.Address.PostalCode,
-			Note:         order.Address.Note,
+			Phone:        order.Address.Phone,
+			Address:      order.Address.Address,
+			IsPrimary:    order.Address.IsPrimary,
 		},
 		User: UserResponse{
 			ID:           order.User.ID,

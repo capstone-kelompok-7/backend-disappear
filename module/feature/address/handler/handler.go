@@ -37,12 +37,8 @@ func (h *AddressHandler) CreateAddress() echo.HandlerFunc {
 		newAddress := &entities.AddressModels{
 			UserID:       currentUser.ID,
 			AcceptedName: addressRequest.AcceptedName,
-			Street:       addressRequest.Street,
-			SubDistrict:  addressRequest.SubDistrict,
-			City:         addressRequest.City,
-			Province:     addressRequest.Province,
-			PostalCode:   addressRequest.PostalCode,
-			Note:         addressRequest.Note,
+			Phone:        addressRequest.Phone,
+			Address:      addressRequest.Address,
 			IsPrimary:    addressRequest.IsPrimary,
 		}
 		createdAddress, err := h.service.CreateAddress(newAddress)

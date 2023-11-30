@@ -22,13 +22,10 @@ type UserDetailResponse struct {
 
 type AddressResponse struct {
 	ID           uint64 `json:"id"`
-	AcceptedName string `json:"accepted_name"`
-	Street       string `json:"street"`
-	SubDistrict  string `json:"sub_district"`
-	City         string `json:"city"`
-	Province     string `json:"province"`
-	PostalCode   int    `json:"postal_code"`
-	Note         string `json:"note"`
+	UserID       uint64 `json:"user_id"`
+	AcceptedName string `json:"accepted_name" `
+	Phone        string `json:"phone"`
+	Address      string `json:"address"`
 	IsPrimary    bool   `json:"is_primary"`
 }
 
@@ -51,12 +48,8 @@ func FormatterDetailUser(user *entities.UserModels) *UserDetailResponse {
 		addressesFormatter := AddressResponse{
 			ID:           address.ID,
 			AcceptedName: address.AcceptedName,
-			Street:       address.Street,
-			SubDistrict:  address.SubDistrict,
-			City:         address.City,
-			Province:     address.Province,
-			PostalCode:   address.PostalCode,
-			Note:         address.Note,
+			Phone:        address.Phone,
+			Address:      address.Address,
 			IsPrimary:    address.IsPrimary,
 		}
 		addresses = append(addresses, addressesFormatter)

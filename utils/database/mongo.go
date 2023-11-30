@@ -26,6 +26,7 @@ func InitMongoDB(config config.Config) *mongo.Client {
 	err = client.Ping(ctx, nil)
 	if err != nil {
 		logrus.Fatal(err.Error())
+		//logrus.Errorf("Error pinging MongoDB: %v", err)
 	}
 
 	logrus.Info("Connected to MongoDB Atlas")
