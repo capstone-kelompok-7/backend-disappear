@@ -148,7 +148,7 @@ func (h *ProductHandler) GetAllProductsReview() echo.HandlerFunc {
 		}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
-		perPage := 10
+		perPage := 8
 
 		var products []*entities.ProductModels
 		var totalItems int64
