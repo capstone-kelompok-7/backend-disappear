@@ -54,6 +54,7 @@ func (r *OrderRepository) FindAll(page, perPage int) ([]*entities.OrderModels, e
 	offset := (page - 1) * perPage
 	err := r.db.Offset(offset).Limit(perPage).
 		Where("deleted_at IS NULL").
+		Order("created_at DESC").
 		Preload("User").
 		Find(&orders).Error
 	if err != nil {

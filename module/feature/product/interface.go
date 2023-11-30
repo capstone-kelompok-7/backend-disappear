@@ -23,6 +23,7 @@ type RepositoryProductInterface interface {
 	DeleteProductImage(productID, imageID uint64) error
 	GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 	ReduceStockWhenPurchasing(productID, stock uint64) error
+	IncreaseStock(productID, quantity uint64) error
 }
 
 type ServiceProductInterface interface {
@@ -42,6 +43,7 @@ type ServiceProductInterface interface {
 	DeleteImageProduct(productId, imageId uint64) error
 	GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 	ReduceStockWhenPurchasing(productID, quantity uint64) error
+	IncreaseStock(productID, quantity uint64) error
 }
 
 type HandlerProductInterface interface {
