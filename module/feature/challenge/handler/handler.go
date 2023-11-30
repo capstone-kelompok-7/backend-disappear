@@ -269,6 +269,10 @@ func (h *ChallengeHandler) CreateSubmitChallengeForm() echo.HandlerFunc {
 
 func (h *ChallengeHandler) GetAllSubmitChallengeForm() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
@@ -335,6 +339,10 @@ func (h *ChallengeHandler) UpdateSubmitChallengeForm() echo.HandlerFunc {
 
 func (h *ChallengeHandler) GetSubmitChallengeFormById() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
 		formID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
 			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")

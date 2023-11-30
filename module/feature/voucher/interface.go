@@ -19,6 +19,12 @@ type RepositoryVoucherInterface interface {
 	DeleteUserVoucherClaims(userID, voucherID uint64) error
 	GetUserVoucherClaims(userID uint64) ([]*entities.VoucherClaimModels, error)
 	GetVoucherByCode(code string) (*entities.VoucherModels, error)
+	FindByStatus(page, perPage int, status string) ([]*entities.VoucherModels, error)
+	GetTotalVoucherCountByStatus(status string) (int64, error)
+	FindByCategory(page, perPage int, category string) ([]*entities.VoucherModels, error)
+	GetTotalVoucherCountByCategory(category string) (int64, error)
+	FindByStatusCategory(page, perPage int, status, category string) ([]*entities.VoucherModels, error)
+	GetTotalVoucherCountByStatusCategory(status, category string) (int64, error)
 }
 
 type ServiceVoucherInterface interface {
@@ -34,6 +40,9 @@ type ServiceVoucherInterface interface {
 	ClaimVoucher(req *entities.VoucherClaimModels) error
 	DeleteVoucherClaims(userID, voucherID uint64) error
 	GetUserVouchers(userID uint64) ([]*entities.VoucherClaimModels, error)
+	GetVoucherByStatus(page, perPage int, status string) ([]*entities.VoucherModels, int64, error)
+	GetVoucherByCategory(page, perPage int, category string) ([]*entities.VoucherModels, int64, error)
+	GetVoucherByStatusCategory(page, perPage int, status, category string) ([]*entities.VoucherModels, int64, error)
 }
 
 type HandlerVoucherInterface interface {

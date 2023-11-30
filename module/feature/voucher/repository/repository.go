@@ -130,3 +130,56 @@ func (r *VoucherRepository) GetVoucherByCode(code string) (*entities.VoucherMode
 	}
 	return &vouchers, nil
 }
+
+func (r *VoucherRepository) FindByStatus(page, perPage int, status string) ([]*entities.VoucherModels, error) {
+	var vouchers []*entities.VoucherModels
+	offset := (page - 1) * perPage
+	err := r.db.Offset(offset).Limit(perPage).Where("status = ?", status).Find(&vouchers).Error
+	if err != nil {
+		return vouchers, err
+	}
+	return vouchers, nil
+}
+
+func (r *VoucherRepository) GetTotalVoucherCountByStatus(status string) (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.VoucherModels{}).Where("status = ?", status).Count(&count).Error
+	return count, err
+}
+
+func (r *VoucherRepository) FindByCategory(page, perPage int, category string) ([]*entities.VoucherModels, error) {
+	var vouchers []*entities.VoucherModels
+	offset := (page - 1) * perPage
+	err := r.db.Offset(offset).Limit(perPage).Where("category = ? AND deleted_at IS NULL", category).Find(&vouchers).Error
+	if err != nil {
+		return vouchers, err
+	}
+	return vouchers, nil
+}
+
+func (r *VoucherRepository) GetTotalVoucherCountByCategory(category string) (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.VoucherModels{}).Where("category = ? AND deleted_at IS NULL", category).Count(&count).Error
+	return count, err
+}
+
+func (r *VoucherRepository) FindByStatusCategory(page, perPage int, status, category string) ([]*entities.VoucherModels, error) {
+	var vouchers []*entities.VoucherModels
+	offset := (page - 1) * perPage
+	err := r.db.Offset(offset).
+		Limit(perPage).
+		Where("status = ? AND category = ? AND deleted_at IS NULL", status, category).
+		Find(&vouchers).Error
+	if err != nil {
+		return vouchers, err
+	}
+	return vouchers, nil
+}
+
+func (r *VoucherRepository) GetTotalVoucherCountByStatusCategory(status, category string) (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.VoucherModels{}).
+		Where("status = ? AND category = ? AND deleted_at IS NULL", status, category).
+		Count(&count).Error
+	return count, err
+}
