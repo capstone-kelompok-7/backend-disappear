@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	hDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/handler"
+	rDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/repository"
+	sDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/service"
 
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	hAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/handler"
@@ -119,6 +122,10 @@ func main() {
 	chatbotService := sChatbot.NewChatbotService(chatbotRepo, client, *initConfig)
 	chatbotHandler := hChatbot.NewChatbotHandler(chatbotService)
 
+	dashboardRepo := rDashboard.NewDashboardRepository(db)
+	dashboardService := sDashboard.NewDashboardService(dashboardRepo)
+	dashboardHandler := hDashboard.NewDashboardHandler(dashboardService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -142,5 +149,6 @@ func main() {
 	routes.RouteCart(e, cartHandler, jwtService, userService)
 	routes.RouteOrder(e, orderHandler, jwtService, userService)
 	routes.RouteChatbot(e, chatbotHandler, jwtService, userService)
+	routes.RouteDashboard(e, dashboardHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }
