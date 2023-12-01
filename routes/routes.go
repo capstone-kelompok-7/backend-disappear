@@ -51,6 +51,7 @@ func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService ut
 	voucherGroup.DELETE("/:id", h.DeleteVoucherById(), middlewares.AuthMiddleware(jwtService, userService))
 	voucherGroup.POST("/claims", h.ClaimVoucher(), middlewares.AuthMiddleware(jwtService, userService))
 	voucherGroup.GET("/users", h.GetVoucherUser(), middlewares.AuthMiddleware(jwtService, userService))
+	voucherGroup.GET("/to-claims", h.GetAllVouchersToClaims(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteProduct(e *echo.Echo, h product.HandlerProductInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

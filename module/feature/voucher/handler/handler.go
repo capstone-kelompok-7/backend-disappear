@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
 	"github.com/labstack/echo/v4"
-	"strconv"
 )
 
 type VoucherHandler struct {
@@ -214,5 +215,21 @@ func (h *VoucherHandler) GetVoucherUser() echo.HandlerFunc {
 		}
 
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan kupon user", formattedResponse)
+	}
+}
+
+func (h *VoucherHandler) GetAllVouchersToClaims() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		limit := 3
+		result, err := h.service.GetAllVoucherToClaims(limit, currentUser.ID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar kupon: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan daftar kupon", dto.FormatterVoucherToClaims(result))
 	}
 }

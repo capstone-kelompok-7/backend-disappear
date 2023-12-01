@@ -1,10 +1,11 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher"
 	"gorm.io/gorm"
-	"time"
 )
 
 type VoucherRepository struct {
@@ -182,4 +183,29 @@ func (r *VoucherRepository) GetTotalVoucherCountByStatusCategory(status, categor
 		Where("status = ? AND category = ? AND deleted_at IS NULL", status, category).
 		Count(&count).Error
 	return count, err
+}
+
+func (r *VoucherRepository) FindAllVoucherToClaims(limit int, userID uint64) ([]*entities.VoucherModels, error) {
+	var claimedVoucherIDs []uint64
+
+	err := r.db.Model(&entities.VoucherClaimModels{}).
+		Where("user_id = ?", userID).
+		Pluck("voucher_id", &claimedVoucherIDs).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	var vouchers []*entities.VoucherModels
+	err = r.db.
+		Order("created_at DESC").
+		Limit(limit).
+		Where("deleted_at IS NULL AND (id NOT IN ? OR id IS NULL) AND end_date > ? AND stock > 0", claimedVoucherIDs, time.Now()).
+		Find(&vouchers).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return vouchers, nil
 }
