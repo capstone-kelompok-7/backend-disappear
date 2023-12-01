@@ -5,6 +5,7 @@ import "time"
 type ReviewModels struct {
 	ID          uint64              `gorm:"column:id;type:int;primaryKey" json:"id"`
 	UserID      uint64              `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
+	User        UserModels          `gorm:"foreignKey:UserID" json:"user"`
 	ProductID   uint64              `gorm:"column:product_id;type:BIGINT UNSIGNED" json:"product_id"`
 	Rating      uint64              `gorm:"column:rating;type:BIGINT UNSIGNED" json:"rating"`
 	Description string              `gorm:"column:description;type:text" json:"description"`

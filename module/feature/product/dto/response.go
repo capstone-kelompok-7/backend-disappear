@@ -16,7 +16,6 @@ type ProductFormatter struct {
 	TotalReview uint64                  `json:"total_review"`
 	Categories  []CategoryFormatter     `json:"categories"`
 	Images      []ProductImageFormatter `json:"image_url"`
-	Reviews     []ReviewFormatter       `json:"reviews"`
 }
 
 type CategoryFormatter struct {
@@ -29,11 +28,13 @@ type ProductImageFormatter struct {
 }
 
 type ReviewFormatter struct {
-	ID          uint64                `json:"id"`
-	UserID      uint64                `json:"user_id"`
-	Rating      uint64                `json:"rating"`
-	Description string                `json:"description"`
-	Photo       []ReviewPhotoResponse `json:"photo"`
+	ID           uint64                `json:"id"`
+	UserID       uint64                `json:"user_id"`
+	Name         string                `json:"name"`
+	PhotoProfile string                `json:"photo_profile"`
+	Rating       uint64                `json:"rating"`
+	Description  string                `json:"description"`
+	Photo        []ReviewPhotoResponse `json:"photo"`
 }
 
 type ReviewPhotoResponse struct {
@@ -74,18 +75,6 @@ func FormatProduct(product *entities.ProductModels) *ProductFormatter {
 		}
 	}
 	productFormatter.Images = images
-
-	var reviews []ReviewFormatter
-	for _, review := range product.ProductReview {
-		reviewFormatter := ReviewFormatter{
-			ID:          review.ID,
-			UserID:      review.UserID,
-			Rating:      review.Rating,
-			Description: review.Description,
-		}
-		reviews = append(reviews, reviewFormatter)
-	}
-	productFormatter.Reviews = reviews
 
 	return productFormatter
 }
@@ -194,10 +183,12 @@ func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter 
 	var reviews []ReviewFormatter
 	for _, review := range product.ProductReview {
 		reviewFormatter := ReviewFormatter{
-			ID:          review.ID,
-			UserID:      review.UserID,
-			Rating:      review.Rating,
-			Description: review.Description,
+			ID:           review.ID,
+			UserID:       review.UserID,
+			Name:         review.User.Name,
+			PhotoProfile: review.User.PhotoProfile,
+			Rating:       review.Rating,
+			Description:  review.Description,
 		}
 		reviews = append(reviews, reviewFormatter)
 	}
