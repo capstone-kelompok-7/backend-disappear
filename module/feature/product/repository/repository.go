@@ -96,7 +96,7 @@ func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, c
 func (r *ProductRepository) GetProductByID(productID uint64) (*entities.ProductModels, error) {
 	var products *entities.ProductModels
 
-	if err := r.db.Preload("Categories").Preload("ProductPhotos").Where("id = ? AND deleted_at IS NULL", productID).First(&products).Error; err != nil {
+	if err := r.db.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview.User").Preload("ProductReview.Photos").Where("id = ? AND deleted_at IS NULL", productID).First(&products).Error; err != nil {
 		return nil, err
 	}
 
