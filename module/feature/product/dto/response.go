@@ -145,6 +145,20 @@ func ProductPhotoCreatedResponse(productPhoto *entities.ProductPhotosModels) Cre
 	response.Image = productPhoto.ImageURL
 	return response
 }
+func ConvertReviewPhotoModelsToResponse(photos []entities.ReviewPhotoModels) []ReviewPhotoResponse {
+	var photoResponses []ReviewPhotoResponse
+
+	for _, photo := range photos {
+		photoResponse := ReviewPhotoResponse{
+			ID:    photo.ID,
+			Photo: photo.ImageURL,
+		}
+
+		photoResponses = append(photoResponses, photoResponse)
+	}
+
+	return photoResponses
+}
 
 func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter {
 	productFormatter := ProductDetailFormatter{
@@ -189,8 +203,10 @@ func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter 
 			PhotoProfile: review.User.PhotoProfile,
 			Rating:       review.Rating,
 			Description:  review.Description,
+			Photo:        ConvertReviewPhotoModelsToResponse(review.Photos),
 		}
 		reviews = append(reviews, reviewFormatter)
+
 	}
 	productFormatter.Reviews = reviews
 
