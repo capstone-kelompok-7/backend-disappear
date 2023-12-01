@@ -73,6 +73,9 @@ func (r *DashboardRepository) CountTotalGram() (int64, error) {
 func (r *DashboardRepository) GetProductWithMaxReviews() ([]*entities.ProductModels, error) {
 	var products []*entities.ProductModels
 	if err := r.db.
+		Preload("ProductReview", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at desc").Limit(5)
+		}).
 		Preload("ProductReview.User").
 		Where("deleted_at IS NULL").
 		Order("total_review desc").
@@ -80,6 +83,6 @@ func (r *DashboardRepository) GetProductWithMaxReviews() ([]*entities.ProductMod
 		Find(&products).Error; err != nil {
 		return nil, err
 	}
-
 	return products, nil
+
 }
