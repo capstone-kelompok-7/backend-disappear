@@ -25,6 +25,7 @@ type RepositoryVoucherInterface interface {
 	GetTotalVoucherCountByCategory(category string) (int64, error)
 	FindByStatusCategory(page, perPage int, status, category string) ([]*entities.VoucherModels, error)
 	GetTotalVoucherCountByStatusCategory(status, category string) (int64, error)
+	FindAllVoucherToClaims(limit int, userID uint64) ([]*entities.VoucherModels, error)
 }
 
 type ServiceVoucherInterface interface {
@@ -43,6 +44,7 @@ type ServiceVoucherInterface interface {
 	GetVoucherByStatus(page, perPage int, status string) ([]*entities.VoucherModels, int64, error)
 	GetVoucherByCategory(page, perPage int, category string) ([]*entities.VoucherModels, int64, error)
 	GetVoucherByStatusCategory(page, perPage int, status, category string) ([]*entities.VoucherModels, int64, error)
+	GetAllVoucherToClaims(limit int, userID uint64) ([]*entities.VoucherModels, error)
 }
 
 type HandlerVoucherInterface interface {
@@ -53,4 +55,5 @@ type HandlerVoucherInterface interface {
 	UpdateVouchers() echo.HandlerFunc
 	ClaimVoucher() echo.HandlerFunc
 	GetVoucherUser() echo.HandlerFunc
+	GetAllVouchersToClaims() echo.HandlerFunc
 }

@@ -2,11 +2,12 @@ package service
 
 import (
 	"errors"
+	"math"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher"
-	"math"
-	"time"
 )
 
 type VoucherService struct {
@@ -276,4 +277,25 @@ func (s *VoucherService) GetVoucherByStatusCategory(page, perPage int, status, c
 	}
 
 	return vouchers, totalItems, nil
+}
+
+func (s *VoucherService) GetAllVoucherToClaims(limit int, userID uint64) ([]*entities.VoucherModels, error) {
+	vouchers, err := s.repo.FindAllVoucherToClaims(limit, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	filteredVouchers := make([]*entities.VoucherModels, 0)
+	for _, voucher := range vouchers {
+		claimed, err := s.repo.IsVoucherAlreadyClaimed(userID, voucher.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		if !claimed {
+			filteredVouchers = append(filteredVouchers, voucher)
+		}
+	}
+
+	return filteredVouchers, nil
 }

@@ -1,9 +1,10 @@
 package dto
 
 import (
-	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	_ "text/template/parse"
 	"time"
+
+	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 )
 
 type VoucherFormatter struct {
@@ -91,4 +92,44 @@ func GetVoucherUserFormatter(voucherClaims []*entities.VoucherClaimModels) ([]Ge
 	}
 
 	return voucherResponses, nil
+}
+
+type VoucherToClaimsFormatter struct {
+	ID          uint64    `json:"id"`
+	Name        string    `json:"name"`
+	Code        string    `json:"code"`
+	Category    string    `json:"category"`
+	Description string    `json:"description"`
+	Discount    uint64    `json:"discount"`
+	StartDate   time.Time `json:"start_date"`
+	EndDate     time.Time `json:"end-date"`
+	MinPurchase uint64    `json:"min_purchase" `
+	Stock       uint64    `json:"stock" `
+}
+
+func FormatVoucherToClaims(voucher *entities.VoucherModels) *VoucherToClaimsFormatter {
+	voucherToClaimsFormatter := &VoucherToClaimsFormatter{}
+	voucherToClaimsFormatter.ID = voucher.ID
+	voucherToClaimsFormatter.Name = voucher.Name
+	voucherToClaimsFormatter.Code = voucher.Code
+	voucherToClaimsFormatter.Category = voucher.Category
+	voucherToClaimsFormatter.Description = voucher.Description
+	voucherToClaimsFormatter.Discount = voucher.Discount
+	voucherToClaimsFormatter.StartDate = voucher.StartDate
+	voucherToClaimsFormatter.EndDate = voucher.EndDate
+	voucherToClaimsFormatter.MinPurchase = voucher.MinPurchase
+	voucherToClaimsFormatter.Stock = voucher.Stock
+
+	return voucherToClaimsFormatter
+}
+
+func FormatterVoucherToClaims(vouchers []*entities.VoucherModels) []*VoucherToClaimsFormatter {
+	var voucherToClaimsFormatters []*VoucherToClaimsFormatter
+
+	for _, voucher := range vouchers {
+		formattedVoucher := FormatVoucherToClaims(voucher)
+		voucherToClaimsFormatters = append(voucherToClaimsFormatters, formattedVoucher)
+	}
+
+	return voucherToClaimsFormatters
 }
