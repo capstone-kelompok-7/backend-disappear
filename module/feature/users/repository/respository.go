@@ -172,3 +172,11 @@ func (r *UserRepository) GetFilterLevel(level string) ([]*entities.UserModels, e
 	}
 	return user, nil
 }
+
+func (r *UserRepository) GetLeaderboardByExp(limit int) ([]*entities.UserModels, error) {
+	var user []*entities.UserModels
+	if err := r.db.Where("role = ?", "customer").Order("exp DESC").Limit(limit).Find(&user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}

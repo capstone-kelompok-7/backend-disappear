@@ -171,3 +171,14 @@ func (h *UserHandler) DeleteAccount() echo.HandlerFunc {
 		return response.SendStatusOkResponse(c, "Berhasil hapus pengguna")
 	}
 }
+
+func (h *UserHandler) GetLeaderboard() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		limit := 5
+		result, err := h.service.GetLeaderboardByExp(limit)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan leaderboard: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan leaderboard", dto.FormatterUserLeaderboard(result))
+	}
+}

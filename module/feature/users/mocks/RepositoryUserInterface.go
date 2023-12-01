@@ -146,6 +146,32 @@ func (_m *RepositoryUserInterface) GetFilterLevel(level string) ([]*entities.Use
 	return r0, r1
 }
 
+// GetLeaderboardByExp provides a mock function with given fields: limit
+func (_m *RepositoryUserInterface) GetLeaderboardByExp(limit int) ([]*entities.UserModels, error) {
+	ret := _m.Called(limit)
+
+	var r0 []*entities.UserModels
+	var r1 error
+	if rf, ok := ret.Get(0).(func(int) ([]*entities.UserModels, error)); ok {
+		return rf(limit)
+	}
+	if rf, ok := ret.Get(0).(func(int) []*entities.UserModels); ok {
+		r0 = rf(limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.UserModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetTotalUserCount provides a mock function with given fields:
 func (_m *RepositoryUserInterface) GetTotalUserCount() (int64, error) {
 	ret := _m.Called()

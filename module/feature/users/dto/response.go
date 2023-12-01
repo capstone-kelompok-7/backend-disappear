@@ -99,3 +99,38 @@ func FormatterUsersPagination(users []*entities.UserModels) []*UserPaginationRes
 
 	return usersFormatters
 }
+
+// UserLeaderboardResponse for get leaderboard
+type UserLeaderboardResponse struct {
+	ID             uint64 `json:"id"`
+	Name           string `json:"name"`
+	PhotoProfile   string `json:"photo_profile"`
+	TotalGram      uint64 `json:"total_gram"`
+	TotalChallenge uint64 `json:"total_challenge"`
+	Level          string `json:"level"`
+	Exp            uint64 `json:"exp"`
+}
+
+func FormatUserLeaderboard(user *entities.UserModels) *UserLeaderboardResponse {
+	userFormatter := &UserLeaderboardResponse{
+		ID:             user.ID,
+		Name:           user.Name,
+		PhotoProfile:   user.PhotoProfile,
+		TotalGram:      user.TotalGram,
+		TotalChallenge: user.TotalChallenge,
+		Level:          user.Level,
+		Exp:            user.Exp,
+	}
+	return userFormatter
+}
+
+func FormatterUserLeaderboard(users []*entities.UserModels) []*UserLeaderboardResponse {
+	usersFormatters := make([]*UserLeaderboardResponse, 0)
+
+	for _, user := range users {
+		formattedUsers := FormatUserLeaderboard(user)
+		usersFormatters = append(usersFormatters, formattedUsers)
+	}
+
+	return usersFormatters
+}
