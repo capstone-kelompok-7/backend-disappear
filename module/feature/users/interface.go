@@ -23,6 +23,7 @@ type RepositoryUserInterface interface {
 	UpdateUserLevel(userID uint64, level string) error
 	GetUserLevel(userID uint64) (string, error)
 	GetFilterLevel(level string) ([]*entities.UserModels, error)
+	GetLeaderboardByExp(limit int) ([]*entities.UserModels, error)
 }
 
 type ServiceUserInterface interface {
@@ -41,6 +42,7 @@ type ServiceUserInterface interface {
 	UpdateUserChallengeFollow(userID uint64, totalChallenge uint64) (*entities.UserModels, error)
 	UpdateUserContribution(userID uint64, gramPlastic uint64) (*entities.UserModels, error)
 	GetUserLevel(userID uint64) (string, error)
+	GetLeaderboardByExp(limit int) ([]*entities.UserModels, error)
 }
 
 type HandlerUserInterface interface {
@@ -50,4 +52,5 @@ type HandlerUserInterface interface {
 	GetUsersById() echo.HandlerFunc
 	EditProfile() echo.HandlerFunc
 	DeleteAccount() echo.HandlerFunc
+	GetLeaderboard() echo.HandlerFunc
 }

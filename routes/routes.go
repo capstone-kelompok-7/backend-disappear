@@ -39,6 +39,7 @@ func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTI
 	usersGroup.GET("/:id", h.GetUsersById(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.POST("/edit-profile", h.EditProfile(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.DELETE("/:id", h.DeleteAccount(), middlewares.AuthMiddleware(jwtService, userService))
+	usersGroup.GET("/leaderboard", h.GetLeaderboard(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

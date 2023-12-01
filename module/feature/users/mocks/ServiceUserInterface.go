@@ -125,6 +125,32 @@ func (_m *ServiceUserInterface) GetAllUsers(page int, perPage int) ([]*entities.
 	return r0, r1, r2
 }
 
+// GetLeaderboardByExp provides a mock function with given fields: limit
+func (_m *ServiceUserInterface) GetLeaderboardByExp(limit int) ([]*entities.UserModels, error) {
+	ret := _m.Called(limit)
+
+	var r0 []*entities.UserModels
+	var r1 error
+	if rf, ok := ret.Get(0).(func(int) ([]*entities.UserModels, error)); ok {
+		return rf(limit)
+	}
+	if rf, ok := ret.Get(0).(func(int) []*entities.UserModels); ok {
+		r0 = rf(limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.UserModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetNextPage provides a mock function with given fields: currentPage, totalPages
 func (_m *ServiceUserInterface) GetNextPage(currentPage int, totalPages int) int {
 	ret := _m.Called(currentPage, totalPages)

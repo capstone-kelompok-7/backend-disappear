@@ -225,3 +225,11 @@ func (s *UserService) UpdateUserChallengeFollow(userID uint64, totalChallenge ui
 
 	return user, nil
 }
+
+func (s *UserService) GetLeaderboardByExp(limit int) ([]*entities.UserModels, error) {
+	user, err := s.repo.GetLeaderboardByExp(limit)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
