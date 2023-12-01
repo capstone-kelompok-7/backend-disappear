@@ -37,15 +37,6 @@ func (h *ChallengeHandler) GetAllChallenges() echo.HandlerFunc {
 		search := c.QueryParam("search")
 		status := c.QueryParam("status")
 
-		validStatusValues := map[string]bool{
-			"belum kadaluwarsa": true,
-			"kadaluwarsa":       true,
-		}
-
-		if status != "" && !validStatusValues[status] {
-			return response.SendBadRequestResponse(c, "Nilai parameter status tidak valid")
-		}
-
 		if search != "" {
 			challenges, totalItems, err = h.service.GetChallengeByTitle(page, perPage, search)
 		} else if status != "" {
@@ -281,11 +272,6 @@ func (h *ChallengeHandler) GetAllSubmitChallengeForm() echo.HandlerFunc {
 		var totalItems int64
 		var err error
 		filterStatus := c.QueryParam("status")
-
-		validStatus := map[string]bool{"valid": true, "menunggu validasi": true, "tidak valid": true}
-		if filterStatus != "" && !validStatus[filterStatus] {
-			return response.SendBadRequestResponse(c, "Nilai parameter status tidak valid")
-		}
 
 		if filterStatus != "" {
 			participants, totalItems, err = h.service.GetSubmitChallengeFormByStatus(pageConv, perPage, filterStatus)

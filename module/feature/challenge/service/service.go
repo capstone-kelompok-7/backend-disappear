@@ -194,7 +194,7 @@ func (s *ChallengeService) CreateSubmitChallengeForm(form *entities.ChallengeFor
 
 	for _, existingSubmit := range existingSubmits {
 		if existingSubmit.ChallengeID == form.ChallengeID {
-			return nil, errors.New("Anda sudah submit challenge ini sebelumnya")
+			return nil, errors.New("anda sudah submit tantangan ini sebelumnya")
 		}
 	}
 
@@ -222,7 +222,7 @@ func (s *ChallengeService) CreateSubmitChallengeForm(form *entities.ChallengeFor
 		return result, nil
 	}
 
-	return nil, errors.New("Tantangan sudah kadaluwarsa, tidak dapat submit")
+	return nil, errors.New("tantangan sudah kadaluwarsa, tidak dapat submit")
 }
 
 func (s *ChallengeService) GetAllSubmitChallengeForm(page, perPage int) ([]*entities.ChallengeFormModels, int64, error) {
@@ -256,13 +256,12 @@ func (s *ChallengeService) GetSubmitChallengeFormByStatus(page, perPage int, sta
 func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.UpdateChallengeFormStatusRequest) (*entities.ChallengeFormModels, error) {
 	form, err := s.repo.GetSubmitChallengeFormById(id)
 	if err != nil {
-		return nil, errors.New("Form tidak ditemukan")
+		return nil, errors.New("formulir tidak ditemukan")
 	}
 
-	userID := form.UserID
-	user, err := s.userService.GetUsersById(userID)
+	user, err := s.userService.GetUsersById(form.UserID)
 	if err != nil {
-		return nil, errors.New("Gagal mendapatkan data user")
+		return nil, errors.New("pengguna tidak ada")
 	}
 
 	var changeTotalChallenge int64
@@ -284,19 +283,19 @@ func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.
 
 	user.TotalChallenge += uint64(changeTotalChallenge)
 
-	_, err = s.userService.UpdateUserChallengeFollow(userID, user.TotalChallenge)
-	if err != nil {
-		return nil, errors.New("Gagal menyimpan perubahan total challenge user ke database")
-	}
-
-	_, err = s.userService.UpdateUserExp(userID, user.Exp)
-	if err != nil {
-		return nil, errors.New("Gagal menyimpan perubahan exp user ke database")
-	}
-
 	result, err := s.repo.UpdateSubmitChallengeForm(id, updatedData)
 	if err != nil {
-		return nil, errors.New("Gagal memperbarui form")
+		return nil, errors.New("gagal memperbarui formulir")
+	}
+
+	_, err = s.userService.UpdateUserExp(user.ID, user.Exp)
+	if err != nil {
+		return nil, errors.New("gagal menyimpan perubahan exp user ke database")
+	}
+
+	_, err = s.userService.UpdateUserChallengeFollow(user.ID, user.TotalChallenge)
+	if err != nil {
+		return nil, errors.New("gagal menyimpan perubahan total tantangan user ke database")
 	}
 
 	return result, nil
@@ -305,7 +304,7 @@ func (s *ChallengeService) UpdateSubmitChallengeForm(id uint64, updatedData dto.
 func (s *ChallengeService) GetSubmitChallengeFormById(id uint64) (*entities.ChallengeFormModels, error) {
 	result, err := s.repo.GetSubmitChallengeFormById(id)
 	if err != nil {
-		return result, errors.New("form tidak ditemukan")
+		return result, errors.New("formulir tidak ditemukan")
 	}
 
 	return result, nil

@@ -623,7 +623,7 @@ func TestChallengeService_CreateSubmitChallengeForm(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Equal(t, "Anda sudah submit challenge ini sebelumnya", err.Error())
+		assert.Equal(t, "anda sudah submit tantangan ini sebelumnya", err.Error())
 
 		expectedErr := errors.New("Anda sudah submit challenge ini sebelumnya")
 		repo.On("GetSubmitChallengeFormByUserAndChallenge", form.UserID).Return(nil, expectedErr).Once()
@@ -654,7 +654,7 @@ func TestChallengeService_CreateSubmitChallengeForm(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.Equal(t, "Tantangan sudah kadaluwarsa, tidak dapat submit", err.Error())
+		assert.Equal(t, "tantangan sudah kadaluwarsa, tidak dapat submit", err.Error())
 		repo.AssertExpectations(t)
 	})
 }
@@ -770,22 +770,218 @@ func TestChallengeService_UpdateSubmitChallengeFormm(t *testing.T) {
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
 	service := NewChallengeService(repo, userService)
 
-	form := &entities.ChallengeFormModels{
-		ID:          1,
-		UserID:      1,
-		ChallengeID: 1,
-		Username:    "user123",
-		Photo:       "user123.jpg",
-		Status:      "menunggu validasi",
-		Exp:         100,
-		CreatedAt:   time.Now().AddDate(0, 0, 7),
+	challenge := &entities.ChallengeModels{
+		ID:  1,
+		Exp: 10,
 	}
 
-	t.Run("Gagal Mendapatkan Formulir", func(t *testing.T) {
-		expectedErr := errors.New("Form tidak ditemukan")
-		repo.On("GetSubmitChallengeFormById", form.ID).Return(nil, expectedErr).Once()
+	user := &entities.UserModels{
+		ID:             2,
+		TotalChallenge: 20,
+		Exp:            100,
+		Level:          "Bronze",
+	}
+	form := &entities.ChallengeFormModels{
+		ID:          1,
+		UserID:      user.ID,
+		ChallengeID: challenge.ID,
+		Status:      "menunggu validasi",
+		Exp:         challenge.Exp,
+	}
 
-		result, err := service.UpdateSubmitChallengeForm(form.ID, dto.UpdateChallengeFormStatusRequest{
+	updatedData := dto.UpdateChallengeFormStatusRequest{
+		Status: "valid",
+	}
+
+	var changeTotalChallenge int64
+
+	switch {
+	case form.Status == "valid" && updatedData.Status == "tidak valid":
+		user.Exp -= form.Exp
+		changeTotalChallenge = -1
+	case form.Status == "tidak valid" && updatedData.Status == "valid":
+		user.Exp += form.Exp
+		changeTotalChallenge = 1
+	case form.Status == "menunggu validasi" && updatedData.Status == "valid":
+		user.Exp += form.Exp
+		changeTotalChallenge = 1
+	case form.Status == "valid" && updatedData.Status == "menunggu validasi":
+		user.Exp -= form.Exp
+		changeTotalChallenge = -1
+	}
+
+	user.TotalChallenge += uint64(changeTotalChallenge)
+
+	t.Run("Success Case - Waiting Validation to Valid", func(t *testing.T) {
+		updatedData := dto.UpdateChallengeFormStatusRequest{
+			Status: "valid",
+		}
+
+		repo.On("GetSubmitChallengeFormById", form.ID).Return(form, nil)
+		repoUser.On("GetUsersById", user.ID).Return(user, nil)
+		user, err := userService.GetUsersById(form.UserID)
+		assert.NoError(t, err)
+
+		expectedExp := user.Exp + form.Exp
+		expectedTotalChallenge := user.TotalChallenge + uint64(changeTotalChallenge)
+
+		repo.On("UpdateSubmitChallengeForm", form.ID, updatedData).Return(form, nil)
+		repoUser.On("UpdateUserExp", user.ID, user.Exp+form.Exp).Return(user, nil)
+		repoUser.On("UpdateUserChallengeFollow", user.ID, user.TotalChallenge+uint64(changeTotalChallenge)).Return(user, nil)
+		result, err := service.UpdateSubmitChallengeForm(form.ID, updatedData)
+		assert.NoError(t, err)
+		_, err = userService.UpdateUserExp(user.ID, user.Exp)
+		assert.NoError(t, err)
+		_, err = userService.UpdateUserChallengeFollow(user.ID, user.TotalChallenge)
+		assert.NoError(t, err)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, expectedExp, user.Exp)
+		assert.Equal(t, expectedTotalChallenge, user.TotalChallenge)
+
+		repo.AssertExpectations(t)
+		repoUser.AssertExpectations(t)
+	})
+
+	t.Run("Success Case Valid to Not Valid", func(t *testing.T) {
+		form2 := &entities.ChallengeFormModels{
+			ID:          3,
+			UserID:      user.ID,
+			ChallengeID: 3,
+			Status:      "valid",
+			Exp:         20,
+		}
+
+		updatedData2 := dto.UpdateChallengeFormStatusRequest{
+			Status: "tidak valid",
+		}
+
+		repo.On("GetSubmitChallengeFormById", form2.ID).Return(form2, nil)
+		repoUser.On("GetUsersById", user.ID).Return(user, nil)
+		user, err := userService.GetUsersById(form.UserID)
+		assert.NoError(t, err)
+
+		expectedExp := user.Exp - form2.Exp
+		expectedTotalChallenge := user.TotalChallenge - uint64(changeTotalChallenge)
+
+		repo.On("UpdateSubmitChallengeForm", form2.ID, updatedData2).Return(form2, nil)
+		repoUser.On("UpdateUserExp", user.ID, expectedExp).Return(user, nil)
+		repoUser.On("UpdateUserChallengeFollow", user.ID, expectedTotalChallenge).Return(user, nil)
+		result, err := service.UpdateSubmitChallengeForm(form2.ID, updatedData2)
+		assert.NoError(t, err)
+		_, err = userService.UpdateUserExp(user.ID, user.Exp)
+		assert.NoError(t, err)
+		_, err = userService.UpdateUserChallengeFollow(user.ID, user.TotalChallenge)
+		assert.NoError(t, err)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, expectedExp, user.Exp)
+		assert.Equal(t, expectedTotalChallenge, user.TotalChallenge)
+
+		repo.AssertExpectations(t)
+		repoUser.AssertExpectations(t)
+	})
+
+	t.Run("Success Case - Not Valid to Valid", func(t *testing.T) {
+
+		form3 := &entities.ChallengeFormModels{
+			ID:          4,
+			UserID:      user.ID,
+			ChallengeID: 4,
+			Status:      "tidak valid",
+			Exp:         20,
+		}
+
+		updatedData3 := dto.UpdateChallengeFormStatusRequest{
+			Status: "valid",
+		}
+
+		repo.On("GetSubmitChallengeFormById", form3.ID).Return(form3, nil)
+		repoUser.On("GetUsersById", user.ID).Return(user, nil)
+		user, err := userService.GetUsersById(form.UserID)
+		assert.NoError(t, err)
+
+		expectedExp := user.Exp + form3.Exp
+		expectedTotalChallenge := user.TotalChallenge + uint64(changeTotalChallenge)
+
+		repo.On("UpdateSubmitChallengeForm", form3.ID, updatedData3).Return(form3, nil)
+		repoUser.On("UpdateUserExp", user.ID, user.Exp+form3.Exp).Return(user, nil)
+		repoUser.On("UpdateUserChallengeFollow", user.ID, user.TotalChallenge+uint64(changeTotalChallenge)).Return(user, nil)
+		result, err := service.UpdateSubmitChallengeForm(form3.ID, updatedData3)
+		assert.NoError(t, err)
+		_, err = userService.UpdateUserExp(user.ID, user.Exp)
+		assert.NoError(t, err)
+		_, err = userService.UpdateUserChallengeFollow(user.ID, user.TotalChallenge)
+		assert.NoError(t, err)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, expectedExp, user.Exp)
+		assert.Equal(t, expectedTotalChallenge, user.TotalChallenge)
+
+		repo.AssertExpectations(t)
+		repoUser.AssertExpectations(t)
+	})
+
+	t.Run("Failed Case - UpdateSubmitChallengeForm", func(t *testing.T) {
+		repo := mocks.NewRepositoryChallengeInterface(t)
+		repoUser := user_mock.NewRepositoryUserInterface(t)
+		userService := user_service.NewUserService(repoUser, utils.NewHash())
+		service := NewChallengeService(repo, userService)
+		repo.On("GetSubmitChallengeFormById", form.ID).Return(form, nil)
+		repoUser.On("GetUsersById", user.ID).Return(user, nil)
+		repo.On("UpdateSubmitChallengeForm", form.ID, updatedData).Return(nil, errors.New("gagal memperbarui formulir"))
+		result, err := service.UpdateSubmitChallengeForm(form.ID, updatedData)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, errors.New("gagal memperbarui formulir"), err)
+
+		repo.AssertExpectations(t)
+		repoUser.AssertExpectations(t)
+	})
+
+	t.Run("Failed Case - UpdateUserExp", func(t *testing.T) {
+		repo.On("GetSubmitChallengeFormById", form.ID).Return(form, nil)
+		repoUser.On("GetUsersById", user.ID).Return(user, nil)
+		repo.On("UpdateSubmitChallengeForm", form.ID, updatedData).Return(form, nil)
+		repoUser.On("UpdateUserExp", user.ID, user.Exp+form.Exp).Return(nil, errors.New("gagal menyimpan perubahan exp user ke database"))
+
+		result, err := service.UpdateSubmitChallengeForm(form.ID, updatedData)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, errors.New("gagal menyimpan perubahan exp user ke database"), err)
+		repo.AssertExpectations(t)
+		repoUser.AssertExpectations(t)
+	})
+
+	t.Run("Failed Case - UpdateUserChallengeFollow", func(t *testing.T) {
+		repo.On("GetSubmitChallengeFormById", form.ID).Return(form, nil)
+		repoUser.On("GetUsersById", user.ID).Return(user, nil)
+		repo.On("UpdateSubmitChallengeForm", form.ID, updatedData).Return(form, nil)
+		repoUser.On("UpdateUserExp", user.ID, user.Exp+form.Exp).Return(user, nil)
+		repoUser.On("UpdateUserChallengeFollow", user.ID, user.TotalChallenge+uint64(changeTotalChallenge)).Return(nil, errors.New("gagal menyimpan perubahan total challenge user ke database"))
+
+		result, err := service.UpdateSubmitChallengeForm(form.ID, updatedData)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, errors.New("gagal menyimpan perubahan total tantangan user ke database"), err)
+		repo.AssertExpectations(t)
+		repoUser.AssertExpectations(t)
+	})
+
+	t.Run("Failed Case - Failed to Retrieve Form", func(t *testing.T) {
+		form6 := &entities.ChallengeFormModels{
+			ID:     10,
+			Status: "menunggu validasi",
+		}
+		expectedErr := errors.New("formulir tidak ditemukan")
+		repo.On("GetSubmitChallengeFormById", form6.ID).Return(nil, expectedErr).Once()
+
+		result, err := service.UpdateSubmitChallengeForm(form6.ID, dto.UpdateChallengeFormStatusRequest{
 			Status: "valid",
 		})
 
@@ -797,18 +993,62 @@ func TestChallengeService_UpdateSubmitChallengeFormm(t *testing.T) {
 		repoUser.AssertExpectations(t)
 	})
 
-	t.Run("Gagal Mendapatkan User", func(t *testing.T) {
-		repo.On("GetSubmitChallengeFormById", form.ID).Return(form, nil).Once()
-		expectedErr := errors.New("Gagal mendapatkan data user")
-		repoUser.On("GetUsersById", form.UserID).Return(nil, expectedErr).Once()
+	t.Run("Failure Case - User Not Found", func(t *testing.T) {
+		form7 := &entities.ChallengeFormModels{
+			ID:     10,
+			Status: "menunggu validasi",
+		}
+		repo.On("GetSubmitChallengeFormById", form7.ID).Return(form7, nil).Once()
+		expectedErr := errors.New("pengguna tidak ada")
+		repoUser.On("GetUsersById", form7.UserID).Return(nil, expectedErr).Once()
 
-		result, err := service.UpdateSubmitChallengeForm(form.ID, dto.UpdateChallengeFormStatusRequest{
+		result, err := service.UpdateSubmitChallengeForm(form7.ID, dto.UpdateChallengeFormStatusRequest{
 			Status: "valid",
 		})
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.Equal(t, expectedErr, err)
+
+		repo.AssertExpectations(t)
+		repoUser.AssertExpectations(t)
+	})
+
+	t.Run("Success Case - Waiting Validation to Valid", func(t *testing.T) {
+		form4 := &entities.ChallengeFormModels{
+			ID:          5,
+			UserID:      user.ID,
+			ChallengeID: 5,
+			Status:      "valid",
+			Exp:         20,
+		}
+
+		updatedData4 := dto.UpdateChallengeFormStatusRequest{
+			Status: "menunggu validasi",
+		}
+
+		repo.On("GetSubmitChallengeFormById", form4.ID).Return(form4, nil)
+		repoUser.On("GetUsersById", user.ID).Return(user, nil)
+		user, err := userService.GetUsersById(form.UserID)
+		assert.NoError(t, err)
+
+		expectedExp := user.Exp - form4.Exp
+		expectedTotalChallenge := user.TotalChallenge - uint64(changeTotalChallenge)
+
+		repo.On("UpdateSubmitChallengeForm", form4.ID, updatedData4).Return(form4, nil)
+		repoUser.On("UpdateUserExp", user.ID, expectedExp).Return(user, nil)
+		repoUser.On("UpdateUserChallengeFollow", user.ID, expectedTotalChallenge).Return(user, nil)
+		result, err := service.UpdateSubmitChallengeForm(form4.ID, updatedData4)
+		assert.NoError(t, err)
+		_, err = userService.UpdateUserExp(user.ID, user.Exp)
+		assert.NoError(t, err)
+		_, err = userService.UpdateUserChallengeFollow(user.ID, user.TotalChallenge)
+		assert.NoError(t, err)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, expectedExp, user.Exp)
+		assert.Equal(t, expectedTotalChallenge, user.TotalChallenge)
 
 		repo.AssertExpectations(t)
 		repoUser.AssertExpectations(t)
@@ -823,14 +1063,7 @@ func TestChallengeService_GetChallengeFormById(t *testing.T) {
 
 	t.Run("Success Case - Found", func(t *testing.T) {
 		expectedForm := &entities.ChallengeFormModels{
-			ID:          1,
-			UserID:      1,
-			ChallengeID: 1,
-			Username:    "user123",
-			Photo:       "user123.jpg",
-			Status:      "menunggu validasi",
-			Exp:         100,
-			CreatedAt:   time.Now().AddDate(0, 0, 7),
+			ID: 1,
 		}
 
 		repo.On("GetSubmitChallengeFormById", uint64(1)).Return(expectedForm, nil).Once()
@@ -851,7 +1084,7 @@ func TestChallengeService_GetChallengeFormById(t *testing.T) {
 
 		assert.Error(t, errNotFound)
 		assert.Nil(t, resultNotFound)
-		assert.Equal(t, errors.New("form tidak ditemukan"), errNotFound)
+		assert.Equal(t, errors.New("formulir tidak ditemukan"), errNotFound)
 
 		repo.AssertExpectations(t)
 	})
