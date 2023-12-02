@@ -14,6 +14,12 @@ type SuccessResponse struct {
 	Data    interface{} `json:"data"`
 }
 
+type SuccessResponses struct {
+	Message      string      `json:"message"`
+	ExtraMessage string      `json:"label"`
+	Data         interface{} `json:"data"`
+}
+
 type PaginationMeta struct {
 	CurrentPage int `json:"current_page"`
 	TotalPage   int `json:"total_page"`
@@ -51,6 +57,14 @@ func SendStatusOkWithDataResponse(c echo.Context, message string, data interface
 	return c.JSON(http.StatusOK, SuccessResponse{
 		Message: message,
 		Data:    data,
+	})
+}
+
+func SendStatusOkWithDataResponses(c echo.Context, message string, extraMessage string, data interface{}) error {
+	return c.JSON(http.StatusOK, SuccessResponses{
+		Message:      message,
+		ExtraMessage: extraMessage,
+		Data:         data,
 	})
 }
 

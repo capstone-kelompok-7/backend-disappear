@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard"
+	"time"
 )
 
 type DashboardService struct {
@@ -65,4 +66,12 @@ func (s *DashboardService) GetProductReviewsWithMaxTotal() ([]*entities.ProductM
 		return nil, err
 	}
 	return productReviews, nil
+}
+
+func (s *DashboardService) GetGramPlasticStat(startOfWeek, endOfWeek time.Time) (uint64, error) {
+	gramTotalCount, err := s.repo.GetGramPlasticStat(startOfWeek, endOfWeek)
+	if err != nil {
+		return 0, errors.New("gagal menghitung total gram plastik")
+	}
+	return gramTotalCount, nil
 }
