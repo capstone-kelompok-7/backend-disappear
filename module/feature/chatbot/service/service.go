@@ -54,16 +54,16 @@ func (s *ChatbotService) GetAnswerFromAi(chat []openai.ChatCompletionMessage, ct
 	return resp, err
 }
 
-func (s *ChatbotService) CreateAnswer(newData entities.ChatModel, name string) (string, error) {
+func (s *ChatbotService) CreateAnswer(newData entities.ChatModel) (string, error) {
 	ctx := context.Background()
 	chat := []openai.ChatCompletionMessage{
 		{
 			Role:    openai.ChatMessageRoleUser,
-			Content: "Kamu Adalah Chatbot Bertema Lingkungan Hijau",
+			Content: "Kamu Adalah Chatbot Bertema Lingkungan",
 		},
 		{
 			Role:    openai.ChatMessageRoleUser,
-			Content: fmt.Sprintf("Hi My Name is %s", name),
+			Content: "Hi Bisa Bantu Saya Menjawab Pertanyaan Tentang Lingkungan",
 		},
 	}
 
