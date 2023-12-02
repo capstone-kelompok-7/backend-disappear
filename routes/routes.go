@@ -153,6 +153,7 @@ func RouteDashboard(e *echo.Echo, h dashboard.HandlerDashboardInterface, jwtServ
 	dashboardGroup.GET("/card", h.GetCardDashboard(), middlewares.AuthMiddleware(jwtService, userService))
 	dashboardGroup.GET("/landing-page", h.GetLandingPage())
 	dashboardGroup.GET("/reviews", h.GetReview())
+	dashboardGroup.GET("/chart", h.GetGramPlasticStat(), middlewares.AuthMiddleware(jwtService, userService))
 
 }
 

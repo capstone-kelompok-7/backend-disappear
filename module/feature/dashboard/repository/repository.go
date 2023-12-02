@@ -86,3 +86,16 @@ func (r *DashboardRepository) GetProductWithMaxReviews() ([]*entities.ProductMod
 	return products, nil
 
 }
+
+func (r *DashboardRepository) GetGramPlasticStat(startOfWeek, endOfWeek time.Time) (uint64, error) {
+	var gramTotalCount uint64
+	if err := r.db.Model(&entities.OrderModels{}).
+		Where("payment_status = 'konfirmasi'").
+		Where("created_at BETWEEN ? AND ?", startOfWeek, endOfWeek).
+		Select("COALESCE(SUM(grand_total_gram_plastic), 0)").
+		Scan(&gramTotalCount).
+		Error; err != nil {
+		return 0, err
+	}
+	return gramTotalCount, nil
+}

@@ -85,3 +85,23 @@ func FormatLandingPageReview(products []*entities.ProductModels) []*LandingPageR
 
 	return response
 }
+
+type GramPlasticStat struct {
+	Week           string `json:"week"`
+	GramTotalCount uint64 `json:"gram_total_count"`
+}
+
+var MonthMap = map[time.Month]string{
+	time.January:   "Januari",
+	time.February:  "Februari",
+	time.March:     "Maret",
+	time.April:     "April",
+	time.May:       "Mei",
+	time.June:      "Juni",
+	time.July:      "Juli",
+	time.August:    "Agustus",
+	time.September: "September",
+	time.October:   "Oktober",
+	time.November:  "November",
+	time.December:  "Desember",
+}
