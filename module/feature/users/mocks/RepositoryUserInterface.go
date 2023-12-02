@@ -220,6 +220,44 @@ func (_m *RepositoryUserInterface) GetTotalUserCountByName(name string) (int64, 
 	return r0, r1
 }
 
+// GetUserChallengeActivity provides a mock function with given fields: userID
+func (_m *RepositoryUserInterface) GetUserChallengeActivity(userID uint64) (int, int, int, error) {
+	ret := _m.Called(userID)
+
+	var r0 int
+	var r1 int
+	var r2 int
+	var r3 error
+	if rf, ok := ret.Get(0).(func(uint64) (int, int, int, error)); ok {
+		return rf(userID)
+	}
+	if rf, ok := ret.Get(0).(func(uint64) int); ok {
+		r0 = rf(userID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint64) int); ok {
+		r1 = rf(userID)
+	} else {
+		r1 = ret.Get(1).(int)
+	}
+
+	if rf, ok := ret.Get(2).(func(uint64) int); ok {
+		r2 = rf(userID)
+	} else {
+		r2 = ret.Get(2).(int)
+	}
+
+	if rf, ok := ret.Get(3).(func(uint64) error); ok {
+		r3 = rf(userID)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
+}
+
 // GetUserLevel provides a mock function with given fields: userID
 func (_m *RepositoryUserInterface) GetUserLevel(userID uint64) (string, error) {
 	ret := _m.Called(userID)
@@ -242,6 +280,44 @@ func (_m *RepositoryUserInterface) GetUserLevel(userID uint64) (string, error) {
 	}
 
 	return r0, r1
+}
+
+// GetUserTransactionActivity provides a mock function with given fields: userID
+func (_m *RepositoryUserInterface) GetUserTransactionActivity(userID uint64) (int, int, int, error) {
+	ret := _m.Called(userID)
+
+	var r0 int
+	var r1 int
+	var r2 int
+	var r3 error
+	if rf, ok := ret.Get(0).(func(uint64) (int, int, int, error)); ok {
+		return rf(userID)
+	}
+	if rf, ok := ret.Get(0).(func(uint64) int); ok {
+		r0 = rf(userID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint64) int); ok {
+		r1 = rf(userID)
+	} else {
+		r1 = ret.Get(1).(int)
+	}
+
+	if rf, ok := ret.Get(2).(func(uint64) int); ok {
+		r2 = rf(userID)
+	} else {
+		r2 = ret.Get(2).(int)
+	}
+
+	if rf, ok := ret.Get(3).(func(uint64) error); ok {
+		r3 = rf(userID)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
 }
 
 // GetUsersByEmail provides a mock function with given fields: email

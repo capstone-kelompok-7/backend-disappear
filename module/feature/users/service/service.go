@@ -233,3 +233,30 @@ func (s *UserService) GetLeaderboardByExp(limit int) ([]*entities.UserModels, er
 	}
 	return user, nil
 }
+
+func (s *UserService) GetUserTransactionActivity(userID uint64) (int, int, int, error) {
+	user, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return 0, 0, 0, errors.New("pengguna tidak ditemukan")
+	}
+
+	successOrder, failedOrder, totalOrder, err := s.repo.GetUserTransactionActivity(user.ID)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return successOrder, failedOrder, totalOrder, nil
+}
+
+func (s *UserService) GetUserChallengeActivity(userID uint64) (int, int, int, error) {
+	user, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return 0, 0, 0, errors.New("pengguna tidak ditemukan")
+	}
+	successChallenge, failedChallenge, totalChallenge, err := s.repo.GetUserChallengeActivity(user.ID)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return successChallenge, failedChallenge, totalChallenge, nil
+}

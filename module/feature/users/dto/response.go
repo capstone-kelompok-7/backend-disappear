@@ -134,3 +134,24 @@ func FormatterUserLeaderboard(users []*entities.UserModels) []*UserLeaderboardRe
 
 	return usersFormatters
 }
+
+// UserActivityResponse for user activities
+type UserActivityResponse struct {
+	NumSuccessfulOrders int `json:"num_successful_orders"`
+	NumFailedOrders     int `json:"num_failed_orders"`
+	TotalOrders         int `json:"total_orders"`
+	NumSuccessfulChall  int `json:"num_successful_challenges"`
+	NumFailedChall      int `json:"num_failed_challenges"`
+	TotalChallenges     int `json:"total_challenges"`
+}
+
+func FormatUserActivityResponse(numSuccessfulOrders, numFailedOrders, totalOrders, numSuccessfulChallenge, numFailedChallenge, totalChallenge int) *UserActivityResponse {
+	return &UserActivityResponse{
+		NumSuccessfulOrders: numSuccessfulOrders,
+		NumFailedOrders:     numFailedOrders,
+		TotalOrders:         totalOrders,
+		NumSuccessfulChall:  numSuccessfulChallenge,
+		NumFailedChall:      numFailedChallenge,
+		TotalChallenges:     totalChallenge,
+	}
+}
