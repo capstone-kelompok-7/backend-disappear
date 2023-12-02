@@ -148,4 +148,6 @@ func RouteChatbot(e *echo.Echo, h chatbot.HandlerChatbotInterface, jwtService ut
 func RouteDashboard(e *echo.Echo, h dashboard.HandlerDashboardInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	dashboardGroup := e.Group("/api/v1/dashboards")
 	dashboardGroup.GET("/card", h.GetCardDashboard(), middlewares.AuthMiddleware(jwtService, userService))
+	dashboardGroup.GET("/landing-page", h.GetLandingPage())
+	dashboardGroup.GET("/reviews", h.GetReview())
 }

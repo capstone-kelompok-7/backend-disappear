@@ -58,3 +58,31 @@ func (r *DashboardRepository) CountIncome() (float64, error) {
 	}
 	return totalAmount, nil
 }
+
+func (r *DashboardRepository) CountTotalGram() (int64, error) {
+	var totalGramPlastic int64
+	if err := r.db.Model(&entities.OrderModels{}).
+		Where("payment_status = ? AND order_status = ?", "konfirmasi", "proses").
+		Select("COALESCE(SUM(grand_total_gram_plastic), 0)").
+		Scan(&totalGramPlastic).Error; err != nil {
+		return 0, err
+	}
+	return totalGramPlastic, nil
+}
+
+func (r *DashboardRepository) GetProductWithMaxReviews() ([]*entities.ProductModels, error) {
+	var products []*entities.ProductModels
+	if err := r.db.
+		Preload("ProductReview", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at desc").Limit(5)
+		}).
+		Preload("ProductReview.User").
+		Where("deleted_at IS NULL").
+		Order("total_review desc").
+		Limit(1).
+		Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return products, nil
+
+}
