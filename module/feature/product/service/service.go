@@ -274,3 +274,34 @@ func (s *ProductService) IncreaseStock(productID, quantity uint64) error {
 	}
 	return nil
 }
+func (s *ProductService) GetProductByAlphabet(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	products, totalItems, err := s.repo.GetProductByAlphabet(page, perPage)
+	if err != nil {
+		return nil, 0, errors.New("gagal filter produk dari abjad")
+	}
+
+	return products, totalItems, nil
+}
+
+func (s *ProductService) GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	products, totalItems, err := s.repo.GetProductByLatest(page, perPage)
+	if err != nil {
+		return nil, 0, errors.New("gagal filter produk dari terbaru")
+	}
+	return products, totalItems, nil
+}
+
+func (s *ProductService) GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	products, totalItems, err := s.repo.GetProductsByHighestPrice(page, perPage)
+	if err != nil {
+		return nil, 0, errors.New("gagal gilter produk dari harga termahal")
+	}
+	return products, totalItems, nil
+}
+func (s *ProductService) GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	products, totalItems, err := s.repo.GetProductsByLowestPrice(page, perPage)
+	if err != nil {
+		return nil, 0, errors.New("gagal filter produk dari harga termurah")
+	}
+	return products, totalItems, nil
+}
