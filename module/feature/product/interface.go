@@ -24,6 +24,10 @@ type RepositoryProductInterface interface {
 	GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 	ReduceStockWhenPurchasing(productID, stock uint64) error
 	IncreaseStock(productID, quantity uint64) error
+	GetProductByAlphabet(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
 }
 
 type ServiceProductInterface interface {
@@ -44,6 +48,10 @@ type ServiceProductInterface interface {
 	GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 	ReduceStockWhenPurchasing(productID, quantity uint64) error
 	IncreaseStock(productID, quantity uint64) error
+	GetProductByAlphabet(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
 }
 
 type HandlerProductInterface interface {

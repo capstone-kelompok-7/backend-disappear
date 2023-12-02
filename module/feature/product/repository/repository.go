@@ -238,3 +238,80 @@ func (r *ProductRepository) IncreaseStock(productID, quantity uint64) error {
 	}
 	return nil
 }
+
+func (r *ProductRepository) GetProductByAlphabet(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.ProductModels{})
+
+	query = query.Order("name asc")
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+
+}
+
+func (r *ProductRepository) GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.ProductModels{})
+
+	query = query.Order("created_at desc")
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+
+}
+func (r *ProductRepository) GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.ProductModels{})
+
+	query = query.Order("price desc")
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func (r *ProductRepository) GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.ProductModels{})
+
+	query = query.Order("price asc")
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}

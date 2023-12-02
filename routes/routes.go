@@ -57,9 +57,9 @@ func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService ut
 
 func RouteProduct(e *echo.Echo, h product.HandlerProductInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	productsGroup := e.Group("api/v1/products")
-	productsGroup.GET("", h.GetAllProducts(), middlewares.AuthMiddleware(jwtService, userService))
+	productsGroup.GET("", h.GetAllProducts())
 	productsGroup.POST("", h.CreateProduct(), middlewares.AuthMiddleware(jwtService, userService))
-	productsGroup.GET("/:id", h.GetProductById(), middlewares.AuthMiddleware(jwtService, userService))
+	productsGroup.GET("/:id", h.GetProductById())
 	productsGroup.POST("/images", h.CreateProductImage(), middlewares.AuthMiddleware(jwtService, userService))
 	productsGroup.GET("/reviews", h.GetAllProductsReview(), middlewares.AuthMiddleware(jwtService, userService))
 	productsGroup.PUT("/:id", h.UpdateProduct(), middlewares.AuthMiddleware(jwtService, userService))

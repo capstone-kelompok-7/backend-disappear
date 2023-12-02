@@ -23,10 +23,6 @@ func NewProductHandler(service product.ServiceProductInterface) product.HandlerP
 
 func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser := c.Get("CurrentUser").(*entities.UserModels)
-		if currentUser.Role != "admin" {
-			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
-		}
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
@@ -43,7 +39,21 @@ func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 			if search != "" {
 				products, totalItems, err = h.service.GetProductsByName(pageConv, perPage, search)
 			} else {
-				products, totalItems, err = h.service.GetAll(pageConv, perPage)
+				filter := c.QueryParam("filter")
+				switch filter {
+				case "":
+					products, totalItems, err = h.service.GetAll(pageConv, perPage)
+				case "abjad":
+					products, totalItems, err = h.service.GetProductByAlphabet(pageConv, perPage)
+				case "terbaru":
+					products, totalItems, err = h.service.GetProductByLatest(pageConv, perPage)
+				case "termahal":
+					products, totalItems, err = h.service.GetProductsByHighestPrice(pageConv, perPage)
+				case "termurah":
+					products, totalItems, err = h.service.GetProductsByLowestPrice(pageConv, perPage)
+				default:
+					return response.SendBadRequestResponse(c, "Filter tidak valid")
+				}
 			}
 		}
 		if err != nil {
