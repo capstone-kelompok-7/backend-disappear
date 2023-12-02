@@ -2,8 +2,10 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/caching"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
@@ -17,15 +19,21 @@ type AuthService struct {
 	userService users.ServiceUserInterface
 	jwt         utils.JWTInterface
 	hash        utils.HashInterface
+	cache       caching.CacheRepository
 }
 
-func NewAuthService(repo auth.RepositoryAuthInterface, jwt utils.JWTInterface, userService users.ServiceUserInterface, hash utils.HashInterface) auth.ServiceAuthInterface {
+func NewAuthService(repo auth.RepositoryAuthInterface, jwt utils.JWTInterface, userService users.ServiceUserInterface, hash utils.HashInterface, cache caching.CacheRepository) auth.ServiceAuthInterface {
 	return &AuthService{
 		repo:        repo,
 		jwt:         jwt,
 		userService: userService,
 		hash:        hash,
+		cache:       cache,
 	}
+}
+
+func generateCacheKey(email, action string) string {
+	return fmt.Sprintf("auth:%s:%s", email, action)
 }
 
 func (s *AuthService) Register(newData *entities.UserModels) (*entities.UserModels, error) {
@@ -68,6 +76,10 @@ func (s *AuthService) Register(newData *entities.UserModels) (*entities.UserMode
 }
 
 func (s *AuthService) Login(email, password string) (*entities.UserModels, string, error) {
+	cachedToken, err := s.cache.Get(email)
+	if err == nil {
+		return nil, string(cachedToken), nil
+	}
 	user, err := s.userService.GetUsersByEmail(email)
 	if err != nil {
 		return nil, "", errors.New("user tidak ditemukan")
@@ -85,10 +97,21 @@ func (s *AuthService) Login(email, password string) (*entities.UserModels, strin
 		return nil, "", err
 	}
 
+	err = s.cache.Set(email, []byte(accessToken))
+	if err != nil {
+		return nil, "", errors.New("gagal menyimpan accessToken ke cache")
+	}
+
 	return user, accessToken, nil
 }
 
 func (s *AuthService) VerifyEmail(email, otp string) error {
+	cacheKey := generateCacheKey(email, "verify_status")
+	isVerified, err := s.cache.Get(cacheKey)
+	if err == nil && string(isVerified) == "true" {
+		return errors.New("email sudah diverifikasi sebelumnya")
+	}
+
 	user, err := s.userService.GetUsersByEmail(email)
 	if err != nil {
 		return err
@@ -103,25 +126,36 @@ func (s *AuthService) VerifyEmail(email, otp string) error {
 	}
 
 	if isValidOTP.ID == 0 {
-		return errors.New("Invalid atau OTP telah kadaluarsa")
+		return errors.New("invalid atau OTP telah kadaluarsa")
 	}
 
 	user.IsVerified = true
 
 	_, errUpdate := s.repo.UpdateUser(user)
 	if errUpdate != nil {
-		return errors.New("Gagal verifikasi email")
+		return errors.New("gagal verifikasi email")
 	}
 
 	errDeleteOTP := s.repo.DeleteOTP(isValidOTP)
 	if errDeleteOTP != nil {
-		return errors.New("Gagal delete OTP")
+		return errors.New("gagal delete OTP")
+	}
+
+	err = s.cache.Set(cacheKey, []byte("true"))
+	if err != nil {
+		return errors.New("gagal menyimpan status verifikasi email ke cache")
 	}
 
 	return nil
 }
 
 func (s *AuthService) ResendOTP(email string) (*entities.OTPModels, error) {
+	cacheKey := generateCacheKey(email, "verify_status")
+	isVerified, err := s.cache.Get(cacheKey)
+	if err == nil && string(isVerified) == "true" {
+		return nil, errors.New("email sudah diverifikasi, tidak dapat mengirim ulang OTP")
+	}
+
 	user, err := s.userService.GetUsersByEmail(email)
 	if err != nil {
 		return nil, errors.New("pengguna tidak ditemukan")
@@ -170,6 +204,12 @@ func (s *AuthService) ResetPassword(email, newPassword, confirmPass string) erro
 }
 
 func (s *AuthService) VerifyOTP(email, otp string) (string, error) {
+	emailVerifyCacheKey := generateCacheKey(email, "verify_status")
+	isVerified, err := s.cache.Get(emailVerifyCacheKey)
+	if err == nil && string(isVerified) == "true" {
+		return "", errors.New("email sudah diverifikasi")
+	}
+
 	user, err := s.userService.GetUsersByEmail(email)
 	if err != nil {
 		return "", err
@@ -178,30 +218,46 @@ func (s *AuthService) VerifyOTP(email, otp string) (string, error) {
 		return "", errors.New("user tidak ditemukan")
 	}
 
+	accessTokenCacheKey := generateCacheKey(email, "access_token")
+	cachedToken, err := s.cache.Get(accessTokenCacheKey)
+	if err == nil {
+		return string(cachedToken), nil
+	}
+
 	isValidOTP, err := s.repo.FindValidOTP(int(user.ID), otp)
 	if err != nil {
 		return "", err
 	}
 
 	if isValidOTP.ID == 0 {
-		return "", errors.New("Invalid atau OTP telah kadaluarsa")
+		return "", errors.New("invalid atau OTP telah kadaluarsa")
 	}
 
 	user.IsVerified = true
 
 	_, errUpdate := s.repo.UpdateUser(user)
 	if errUpdate != nil {
-		return "", errors.New("Gagal verifikasi email")
+		return "", errors.New("gagal verifikasi email")
 	}
 
 	errDeleteOTP := s.repo.DeleteOTP(isValidOTP)
 	if errDeleteOTP != nil {
-		return "", errors.New("Gagal delete OTP")
+		return "", errors.New("gagal delete OTP")
 	}
 
 	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Role, user.Email)
 	if err != nil {
-		return "", errors.New("Gagal generate access token")
+		return "", errors.New("gagal generate access token")
+	}
+
+	err = s.cache.Set(accessTokenCacheKey, []byte(accessToken))
+	if err != nil {
+		return "", errors.New("gagal menyimpan access token ke cache")
+	}
+
+	err = s.cache.Set(emailVerifyCacheKey, []byte("true"))
+	if err != nil {
+		return "", errors.New("gagal menyimpan status verifikasi email ke cache")
 	}
 
 	return accessToken, nil

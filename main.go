@@ -48,6 +48,7 @@ import (
 	hVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/handler"
 	rVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/repository"
 	sVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/service"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/caching/redis"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/payment"
 	"github.com/sashabaranov/go-openai"
 
@@ -66,6 +67,7 @@ func main() {
 	var initConfig = config.InitConfig()
 
 	db := database.InitDatabase(*initConfig)
+	rdb := redis.NewRedisClient(initConfig)
 	database.Migrate(db)
 	jwtService := utils.NewJWT(initConfig.Secret)
 	hash := utils.NewHash()
@@ -77,7 +79,7 @@ func main() {
 	userHandler := hUser.NewUserHandler(userService)
 
 	authRepo := rAuth.NewAuthRepository(db)
-	authService := sAuth.NewAuthService(authRepo, jwtService, userService, hash)
+	authService := sAuth.NewAuthService(authRepo, jwtService, userService, hash, rdb)
 	authHandler := hAuth.NewAuthHandler(authService, userService)
 
 	voucherRepo := rVoucher.NewVoucherRepository(db)
@@ -128,7 +130,7 @@ func main() {
 	chatbotHandler := hChatbot.NewChatbotHandler(chatbotService)
 
 	dashboardRepo := rDashboard.NewDashboardRepository(db)
-	dashboardService := sDashboard.NewDashboardService(dashboardRepo)
+	dashboardService := sDashboard.NewDashboardService(dashboardRepo, rdb)
 	dashboardHandler := hDashboard.NewDashboardHandler(dashboardService)
 
 	homeRepo := rHome.NewHomepageRepository(db)
