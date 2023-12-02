@@ -110,10 +110,15 @@ func (s *OrderService) GetOrderById(orderID string) (*entities.OrderModels, erro
 	return orders, nil
 }
 
-func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderRequest) (*entities.OrderModels, error) {
+func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderRequest) (interface{}, error) {
 	orderID, err := s.generatorID.GenerateUUID()
 	if err != nil {
 		return nil, errors.New("gagal membuat id pesanan")
+	}
+
+	idOrder, err := s.generatorID.GenerateOrderID()
+	if err != nil {
+		return nil, errors.New("gagal membuat id_order")
 	}
 
 	addresses, err := s.addressService.GetAddressByID(request.AddressID)
@@ -127,6 +132,19 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 		if err != nil {
 			return nil, errors.New("kupon tidak ditemukan")
 		}
+	}
+
+	var validPaymentMethods = map[string]bool{
+		"whatsapp":      true,
+		"telegram":      true,
+		"qris":          true,
+		"bank_transfer": true,
+		"gopay":         true,
+		"shopepay":      true,
+	}
+
+	if !validPaymentMethods[request.PaymentMethod] {
+		return nil, errors.New("jenis pembayaran tidak valid")
 	}
 
 	var orderDetails []entities.OrderDetailsModels
@@ -184,6 +202,7 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 
 	newData := &entities.OrderModels{
 		ID:                    orderID,
+		IdOrder:               idOrder,
 		AddressID:             addresses.ID,
 		UserID:                userID,
 		VoucherID:             voucherID,
@@ -198,11 +217,11 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 		TotalAmountPaid:       totalAmountPaid,
 		OrderStatus:           "Menunggu Konfirmasi",
 		PaymentStatus:         "Menunggu Konfirmasi",
-		PaymentURL:            "",
+		PaymentMethod:         request.PaymentMethod,
+		StatusOrderDate:       time.Now(),
 		CreatedAt:             time.Now(),
 		OrderDetails:          orderDetails,
 	}
-
 	createdOrder, err := s.repo.CreateOrder(newData)
 	if err != nil {
 		return nil, err
@@ -214,45 +233,25 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 		}
 	}
 
-	return createdOrder, nil
+	switch request.PaymentMethod {
+	case "whatsapp", "telegram":
+		return s.processManualPayment(orderID)
+	case "qris", "bank_transfer", "gopay", "shopepay":
+		return s.processGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
+	default:
+		return nil, errors.New("jenis pembayaran tidak valid")
+	}
 }
 
-func (s *OrderService) ConfirmPayment(orderID string) error {
-	orders, err := s.repo.GetOrderById(orderID)
-	if err != nil {
-		return errors.New("pesanan tidak ditemukan")
-	}
-
-	orders.OrderStatus = "Proses"
-	orders.PaymentStatus = "Konfirmasi"
-
-	if err := s.repo.ConfirmPayment(orders.ID, orders.OrderStatus, orders.PaymentStatus); err != nil {
-		return err
-	}
-
-	user, err := s.userService.GetUsersById(orders.UserID)
-	if err != nil {
-		return errors.New("pengguna tidak ditemukan")
-	}
-
-	user.Exp += orders.GrandTotalExp
-	if _, err := s.userService.UpdateUserExp(user.ID, user.Exp); err != nil {
-		return err
-	}
-
-	user.TotalGram += orders.GrandTotalGramPlastic
-	if _, err := s.userService.UpdateUserContribution(user.ID, user.TotalGram); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrderCartRequest) (*entities.OrderModels, error) {
-
+func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrderCartRequest) (interface{}, error) {
 	orderID, err := s.generatorID.GenerateUUID()
 	if err != nil {
 		return nil, errors.New("gagal membuat id pesanan")
+	}
+
+	idOrder, err := s.generatorID.GenerateOrderID()
+	if err != nil {
+		return nil, errors.New("gagal membuat id_order")
 	}
 
 	addresses, err := s.addressService.GetAddressByID(request.AddressID)
@@ -266,6 +265,19 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 		if err != nil {
 			return nil, errors.New("kupon tidak ditemukan")
 		}
+	}
+
+	var validPaymentMethods = map[string]bool{
+		"whatsapp":      true,
+		"telegram":      true,
+		"qris":          true,
+		"bank_transfer": true,
+		"gopay":         true,
+		"shopepay":      true,
+	}
+
+	if !validPaymentMethods[request.PaymentMethod] {
+		return nil, errors.New("jenis pembayaran tidak valid")
 	}
 
 	var cartItems []*entities.CartItemModels
@@ -332,6 +344,7 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 
 	newData := &entities.OrderModels{
 		ID:                    orderID,
+		IdOrder:               idOrder,
 		AddressID:             addresses.ID,
 		UserID:                userID,
 		VoucherID:             voucherID,
@@ -346,7 +359,8 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 		TotalAmountPaid:       totalAmountPaid,
 		OrderStatus:           "Menunggu Konfirmasi",
 		PaymentStatus:         "Menunggu Konfirmasi",
-		PaymentURL:            "",
+		PaymentMethod:         request.PaymentMethod,
+		StatusOrderDate:       time.Now(),
 		CreatedAt:             time.Now(),
 		OrderDetails:          orderDetails,
 	}
@@ -362,7 +376,107 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 		}
 	}
 
-	return createdOrder, nil
+	switch request.PaymentMethod {
+	case "whatsapp", "telegram":
+		return s.processManualPayment(orderID)
+	case "qris", "bank_transfer", "gopay", "shopepay":
+		return s.processGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
+	default:
+		return nil, errors.New("jenis pembayaran tidak valid")
+	}
+}
+
+func (s *OrderService) processManualPayment(orderID string) (*entities.OrderModels, error) {
+	result, err := s.repo.GetOrderById(orderID)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s *OrderService) processGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error) {
+	result, err := s.repo.ProcessGatewayPayment(totalAmountPaid, orderID, paymentMethod)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s *OrderService) CallBack(notifPayload map[string]any) error {
+	orderID, exist := notifPayload["order_id"].(string)
+	if !exist {
+		return errors.New("invalid notification payload")
+	}
+	status, err := s.repo.CheckTransaction(orderID)
+	if err != nil {
+		return err
+	}
+	transaction, err := s.repo.GetOrderById(orderID)
+	if err != nil {
+		return errors.New("transaction data not found")
+	}
+	if err := s.repo.ConfirmPayment(transaction.ID, status.OrderStatus, status.PaymentStatus); err != nil {
+		return err
+	}
+
+	user, err := s.userService.GetUsersById(transaction.UserID)
+	if err != nil {
+		return errors.New("pengguna tidak ditemukan")
+	}
+
+	if status.OrderStatus != "Gagal" {
+		user.Exp += transaction.GrandTotalExp
+		if _, err := s.userService.UpdateUserExp(user.ID, user.Exp); err != nil {
+			return err
+		}
+
+		user.TotalGram += transaction.GrandTotalGramPlastic
+		if _, err := s.userService.UpdateUserContribution(user.ID, user.TotalGram); err != nil {
+			return err
+		}
+	} else {
+		orders, err := s.repo.GetOrderById(orderID)
+		if err != nil {
+			return errors.New("failed to retrieve order details")
+		}
+		for _, orderDetail := range orders.OrderDetails {
+			if err := s.productService.IncreaseStock(orderDetail.ProductID, orderDetail.Quantity); err != nil {
+				return errors.New("failed to increase product stock")
+			}
+		}
+	}
+	return nil
+}
+
+func (s *OrderService) ConfirmPayment(orderID string) error {
+	orders, err := s.repo.GetOrderById(orderID)
+	if err != nil {
+		return errors.New("pesanan tidak ditemukan")
+	}
+
+	orders.OrderStatus = "Proses"
+	orders.PaymentStatus = "Konfirmasi"
+
+	if err := s.repo.ConfirmPayment(orders.ID, orders.OrderStatus, orders.PaymentStatus); err != nil {
+		return err
+	}
+
+	user, err := s.userService.GetUsersById(orders.UserID)
+	if err != nil {
+		return errors.New("pengguna tidak ditemukan")
+	}
+
+	user.Exp += orders.GrandTotalExp
+	if _, err := s.userService.UpdateUserExp(user.ID, user.Exp); err != nil {
+		return err
+	}
+
+	user.TotalGram += orders.GrandTotalGramPlastic
+	if _, err := s.userService.UpdateUserContribution(user.ID, user.TotalGram); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *OrderService) CancelPayment(orderID string) error {
@@ -382,6 +496,19 @@ func (s *OrderService) CancelPayment(orderID string) error {
 
 	if err := s.repo.ConfirmPayment(orderID, orders.OrderStatus, orders.PaymentStatus); err != nil {
 		return errors.New("gagal membatalkan pesanan")
+	}
+
+	return nil
+}
+
+func (s *OrderService) UpdateOrderStatus(req *dto.UpdateOrderStatus) error {
+	_, err := s.repo.GetOrderById(req.OrderID)
+	if err != nil {
+		return errors.New("pesanan tidak ditemukan")
+	}
+
+	if err := s.repo.UpdateOrderStatus(req); err != nil {
+		return err
 	}
 
 	return nil

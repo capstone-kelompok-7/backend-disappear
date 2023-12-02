@@ -1,18 +1,25 @@
 package repository
 
 import (
+	"errors"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order/dto"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/payment"
+	"github.com/midtrans/midtrans-go/coreapi"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type OrderRepository struct {
-	db *gorm.DB
+	db         *gorm.DB
+	coreClient coreapi.Client
 }
 
-func NewOrderRepository(db *gorm.DB) order.RepositoryOrderInterface {
+func NewOrderRepository(db *gorm.DB, coreClient coreapi.Client) order.RepositoryOrderInterface {
 	return &OrderRepository{
-		db: db,
+		db:         db,
+		coreClient: coreClient,
 	}
 }
 
@@ -112,5 +119,61 @@ func (r *OrderRepository) ConfirmPayment(orderID, orderStatus, paymentStatus str
 	}).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *OrderRepository) ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error) {
+	var paymentType coreapi.CoreapiPaymentType
+
+	switch paymentMethod {
+	case "qris":
+		paymentType = coreapi.PaymentTypeQris
+	case "bank_transfer":
+		paymentType = coreapi.PaymentTypeBankTransfer
+	case "gopay":
+		paymentType = coreapi.PaymentTypeGopay
+	}
+
+	coreClient := r.coreClient
+	resp, err := payment.CreateCoreAPIPaymentRequest(coreClient, orderID, int64(totalAmountPaid), paymentType)
+	if err != nil {
+		logrus.Error(err)
+		return nil, errors.New("gagal membuat permintaan pembayaran")
+	}
+
+	return resp, nil
+}
+
+func (r *OrderRepository) CheckTransaction(orderID string) (dto.Status, error) {
+	var status dto.Status
+	transactionStatusResp, err := r.coreClient.CheckTransaction(orderID)
+	if err != nil {
+		return dto.Status{}, err
+	} else {
+		if transactionStatusResp != nil {
+			status = payment.TransactionStatus(transactionStatusResp)
+			return status, nil
+		}
+	}
+	return dto.Status{}, err
+}
+
+func (r *OrderRepository) UpdateOrderStatus(req *dto.UpdateOrderStatus) error {
+	orders := entities.OrderModels{}
+	if err := r.db.Where("id = ?", req.OrderID).First(&orders).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("pesanan tidak ditemukan")
+		}
+		return err
+	}
+
+	if err := r.db.Model(&orders).Updates(map[string]interface{}{
+		"status_order_date": req.StatusOrderDate,
+		"order_status":      req.OrderStatus,
+		"extra_info":        req.ExtraInfo,
+	}).Error; err != nil {
+		return err
+	}
+
 	return nil
 }

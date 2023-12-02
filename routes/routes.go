@@ -137,6 +137,8 @@ func RouteOrder(e *echo.Echo, h order.HandlerOrderInterface, jwtService utils.JW
 	orderGroup.POST("/confirm/:id", h.ConfirmPayment(), middlewares.AuthMiddleware(jwtService, userService))
 	orderGroup.POST("/carts", h.CreateOrderFromCart(), middlewares.AuthMiddleware(jwtService, userService))
 	orderGroup.POST("/cancel/:id", h.CancelPayment(), middlewares.AuthMiddleware(jwtService, userService))
+	orderGroup.POST("/callback", h.Callback())
+	orderGroup.PUT("/update-order", h.UpdateOrderStatus(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteChatbot(e *echo.Echo, h chatbot.HandlerChatbotInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

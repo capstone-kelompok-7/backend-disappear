@@ -14,6 +14,9 @@ type RepositoryOrderInterface interface {
 	GetOrderById(orderID string) (*entities.OrderModels, error)
 	CreateOrder(newOrder *entities.OrderModels) (*entities.OrderModels, error)
 	ConfirmPayment(orderID string, orderStatus, paymentStatus string) error
+	ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error)
+	CheckTransaction(orderID string) (dto.Status, error)
+	UpdateOrderStatus(req *dto.UpdateOrderStatus) error
 }
 
 type ServiceOrderInterface interface {
@@ -23,10 +26,12 @@ type ServiceOrderInterface interface {
 	GetPrevPage(currentPage int) int
 	GetOrdersByName(page, perPage int, name string) ([]*entities.OrderModels, int64, error)
 	GetOrderById(orderID string) (*entities.OrderModels, error)
-	CreateOrder(userID uint64, request *dto.CreateOrderRequest) (*entities.OrderModels, error)
+	CreateOrder(userID uint64, request *dto.CreateOrderRequest) (interface{}, error)
 	ConfirmPayment(orderID string) error
-	CreateOrderFromCart(userID uint64, request *dto.CreateOrderCartRequest) (*entities.OrderModels, error)
+	CreateOrderFromCart(userID uint64, request *dto.CreateOrderCartRequest) (interface{}, error)
 	CancelPayment(orderID string) error
+	CallBack(notifPayload map[string]any) error
+	UpdateOrderStatus(req *dto.UpdateOrderStatus) error
 }
 
 type HandlerOrderInterface interface {
@@ -36,4 +41,6 @@ type HandlerOrderInterface interface {
 	ConfirmPayment() echo.HandlerFunc
 	CreateOrderFromCart() echo.HandlerFunc
 	CancelPayment() echo.HandlerFunc
+	Callback() echo.HandlerFunc
+	UpdateOrderStatus() echo.HandlerFunc
 }
