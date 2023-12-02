@@ -39,7 +39,7 @@ func (h *ChatbotHandler) CreateAnswer() echo.HandlerFunc {
 			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		chat, err := h.service.CreateAnswer(*chatRequest, c.Param("name"))
+		chat, err := h.service.CreateAnswer(*chatRequest)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal membuat chat: "+err.Error())
 		}

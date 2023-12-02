@@ -141,7 +141,7 @@ func RouteOrder(e *echo.Echo, h order.HandlerOrderInterface, jwtService utils.JW
 func RouteChatbot(e *echo.Echo, h chatbot.HandlerChatbotInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	chatbotGroup := e.Group("/api/v1/chatbot")
 	chatbotGroup.POST("/question", h.CreateQuestion(), middlewares.AuthMiddleware(jwtService, userService))
-	chatbotGroup.POST("/answer/:name", h.CreateAnswer(), middlewares.AuthMiddleware(jwtService, userService))
+	chatbotGroup.POST("/answer", h.CreateAnswer(), middlewares.AuthMiddleware(jwtService, userService))
 	chatbotGroup.GET("/:id", h.GetChatByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
 }
 

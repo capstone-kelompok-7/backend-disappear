@@ -17,7 +17,7 @@ type RepositoryChatbotInterface interface {
 type ServicChatbotInterface interface {
 	GetChatByIdUser(id string) ([]entities.ChatModel, error)
 	CreateQuestion(chat entities.ChatModel) error
-	CreateAnswer(chat entities.ChatModel, name string) (string, error)
+	CreateAnswer(chat entities.ChatModel) (string, error)
 	GetAnswerFromAi(chat []openai.ChatCompletionMessage, ctx context.Context) (openai.ChatCompletionResponse, error)
 }
 
