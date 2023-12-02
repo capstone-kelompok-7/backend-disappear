@@ -31,6 +31,9 @@ import (
 	hChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/handler"
 	rChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/repository"
 	sChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/service"
+	hHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/handler"
+	rHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/repository"
+	sHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/service"
 	hOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/handler"
 	rOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/repository"
 	sOrder "github.com/capstone-kelompok-7/backend-disappear/module/feature/order/service"
@@ -126,6 +129,10 @@ func main() {
 	dashboardService := sDashboard.NewDashboardService(dashboardRepo)
 	dashboardHandler := hDashboard.NewDashboardHandler(dashboardService)
 
+	homeRepo := rHome.NewHomepageRepository(db)
+	homeService := sHome.NewHomepageService(homeRepo)
+	homeHandler := hHome.NewHomepageHandler(homeService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -150,5 +157,6 @@ func main() {
 	routes.RouteOrder(e, orderHandler, jwtService, userService)
 	routes.RouteChatbot(e, chatbotHandler, jwtService, userService)
 	routes.RouteDashboard(e, dashboardHandler, jwtService, userService)
+	routes.RouteHomepage(e, homeHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }

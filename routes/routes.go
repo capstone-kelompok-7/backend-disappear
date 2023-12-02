@@ -10,6 +10,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/review"
@@ -150,4 +151,11 @@ func RouteDashboard(e *echo.Echo, h dashboard.HandlerDashboardInterface, jwtServ
 	dashboardGroup.GET("/card", h.GetCardDashboard(), middlewares.AuthMiddleware(jwtService, userService))
 	dashboardGroup.GET("/landing-page", h.GetLandingPage())
 	dashboardGroup.GET("/reviews", h.GetReview())
+
+}
+
+func RouteHomepage(e *echo.Echo, h homepage.HandlerHomepageInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	homeGroup := e.Group("/api/v1/homepage")
+	homeGroup.GET("/blog-posts", h.GetBlogPost(), middlewares.AuthMiddleware(jwtService, userService))
+	homeGroup.GET("/content", h.GetHomepageContent(), middlewares.AuthMiddleware(jwtService, userService))
 }
