@@ -2,10 +2,6 @@ package main
 
 import (
 	"fmt"
-	hDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/handler"
-	rDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/repository"
-	sDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/service"
-
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	hAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/handler"
 	rAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/repository"
@@ -31,6 +27,9 @@ import (
 	hChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/handler"
 	rChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/repository"
 	sChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/service"
+	hDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/handler"
+	rDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/repository"
+	sDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/service"
 	hHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/handler"
 	rHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/repository"
 	sHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/service"
@@ -49,6 +48,7 @@ import (
 	hVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/handler"
 	rVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/repository"
 	sVoucher "github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher/service"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/payment"
 	"github.com/sashabaranov/go-openai"
 
 	"net/http"
@@ -69,7 +69,8 @@ func main() {
 	database.Migrate(db)
 	jwtService := utils.NewJWT(initConfig.Secret)
 	hash := utils.NewHash()
-	generatorID := utils.NewGeneratorUUID()
+	generatorID := utils.NewGeneratorUUID(db)
+	coreApi := payment.InitSnapMidtrans(*initConfig)
 
 	userRepo := rUser.NewUserRepository(db)
 	userService := sUser.NewUserService(userRepo, hash)
@@ -115,8 +116,9 @@ func main() {
 	cartService := sCart.NewCartService(cartRepo, productService)
 	cartHandler := hCart.NewCartHandler(cartService)
 
-	orderRepo := rOrder.NewOrderRepository(db)
-	orderService := sOrder.NewOrderService(orderRepo, generatorID, productService, voucherService, addressService, userService, cartService)
+	orderRepo := rOrder.NewOrderRepository(db, coreApi)
+	orderService := sOrder.NewOrderService(orderRepo, generatorID, productService,
+		voucherService, addressService, userService, cartService)
 	orderHandler := hOrder.NewOrderHandler(orderService)
 
 	mgodb := database.InitMongoDB(*initConfig)

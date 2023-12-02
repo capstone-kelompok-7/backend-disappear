@@ -8,6 +8,7 @@ import (
 // OrderResponse OrderResponse Respon Get Order By ID
 type OrderResponse struct {
 	ID                    string                `json:"id"`
+	IdOrder               string                `json:"id_order"`
 	AddressID             uint64                `json:"address_id"`
 	UserID                uint64                `json:"user_id"`
 	VoucherID             uint64                `json:"voucher_id"`
@@ -22,7 +23,9 @@ type OrderResponse struct {
 	TotalAmountPaid       uint64                `json:"total_amount_paid"`
 	OrderStatus           string                `json:"order_status"`
 	PaymentStatus         string                `json:"payment_status"`
-	PaymentURL            string                `json:"payment_url"`
+	PaymentMethod         string                `json:"payment_method"`
+	ExtraInfo             string                `json:"extra_info"`
+	StatusOrderDate       time.Time             `json:"status_order_date"`
 	CreatedAt             time.Time             `json:"created_at"`
 	Address               AddressResponse       `json:"address"`
 	User                  UserResponse          `json:"user"`
@@ -88,6 +91,7 @@ type VoucherResponse struct {
 func FormatOrderDetail(order *entities.OrderModels) OrderResponse {
 	orderResponse := OrderResponse{
 		ID:                    order.ID,
+		IdOrder:               order.IdOrder,
 		AddressID:             order.AddressID,
 		UserID:                order.UserID,
 		VoucherID:             0,
@@ -102,7 +106,9 @@ func FormatOrderDetail(order *entities.OrderModels) OrderResponse {
 		TotalAmountPaid:       order.TotalAmountPaid,
 		OrderStatus:           order.OrderStatus,
 		PaymentStatus:         order.PaymentStatus,
-		PaymentURL:            order.PaymentURL,
+		PaymentMethod:         order.PaymentMethod,
+		StatusOrderDate:       order.StatusOrderDate,
+		ExtraInfo:             order.ExtraInfo,
 		CreatedAt:             order.CreatedAt,
 		Address: AddressResponse{
 			ID:           order.Address.ID,
@@ -182,6 +188,7 @@ func FormatOrderDetail(order *entities.OrderModels) OrderResponse {
 // OrderPaginationResponse Pagination Response
 type OrderPaginationResponse struct {
 	ID              string                      `json:"id"`
+	IdOrder         string                      `json:"id_order"`
 	UserID          uint64                      `json:"user_id"`
 	TotalAmountPaid uint64                      `json:"total_amount_paid"`
 	OrderStatus     string                      `json:"order_status"`
@@ -198,6 +205,7 @@ type UserPaginationOrderResponse struct {
 func FormatOrderPagination(order *entities.OrderModels) *OrderPaginationResponse {
 	orderResponse := &OrderPaginationResponse{
 		ID:              order.ID,
+		IdOrder:         order.IdOrder,
 		UserID:          order.UserID,
 		TotalAmountPaid: order.TotalAmountPaid,
 		OrderStatus:     order.OrderStatus,
@@ -225,6 +233,7 @@ func FormatterOrder(orders []*entities.OrderModels) []*OrderPaginationResponse {
 // OrderCreationResponse Create Response
 type OrderCreationResponse struct {
 	ID                    string                        `json:"id"`
+	IdOrder               string                        `json:"id_order"`
 	AddressID             uint64                        `json:"address_id"`
 	UserID                uint64                        `json:"user_id"`
 	VoucherID             uint64                        `json:"voucher_id"`
@@ -239,7 +248,7 @@ type OrderCreationResponse struct {
 	TotalAmountPaid       uint64                        `json:"total_amount_paid"`
 	OrderStatus           string                        `json:"order_status"`
 	PaymentStatus         string                        `json:"payment_status"`
-	PaymentURL            string                        `json:"payment_url"`
+	PaymentMethod         string                        `json:"payment_method"`
 	CreatedAt             time.Time                     `json:"created_at"`
 	OrderDetails          []OrderDetailCreationResponse `json:"order_details"`
 }
@@ -258,6 +267,7 @@ type OrderDetailCreationResponse struct {
 func CreateOrderFormatter(order *entities.OrderModels) OrderCreationResponse {
 	orderResponse := OrderCreationResponse{
 		ID:                    order.ID,
+		IdOrder:               order.IdOrder,
 		AddressID:             order.AddressID,
 		UserID:                order.UserID,
 		VoucherID:             0,
@@ -272,7 +282,7 @@ func CreateOrderFormatter(order *entities.OrderModels) OrderCreationResponse {
 		TotalAmountPaid:       order.TotalAmountPaid,
 		OrderStatus:           order.OrderStatus,
 		PaymentStatus:         order.PaymentStatus,
-		PaymentURL:            order.PaymentURL,
+		PaymentMethod:         order.PaymentMethod,
 		CreatedAt:             order.CreatedAt,
 	}
 

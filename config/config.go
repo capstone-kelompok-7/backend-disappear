@@ -22,6 +22,8 @@ type Config struct {
 	CCFolder     string
 	MongoURL     string
 	OpenAiApiKey string
+	ClientKey    string
+	ServerKey    string
 }
 
 func InitConfig() *Config {
@@ -80,7 +82,6 @@ func loadConfig() *Config {
 	if value, found := os.LookupEnv("CCAPIKEY"); found {
 		res.CCAPIKey = value
 	}
-
 	if value, found := os.LookupEnv("CCAPISECRET"); found {
 		res.CCAPISecret = value
 	}
@@ -92,6 +93,12 @@ func loadConfig() *Config {
 	}
 	if value, found := os.LookupEnv("OPENAIAPIKEY"); found {
 		res.OpenAiApiKey = value
+	}
+	if value, found := os.LookupEnv("CLIENTKEY"); found {
+		res.ClientKey = value
+	}
+	if value, found := os.LookupEnv("SERVERKEY"); found {
+		res.ServerKey = value
 	}
 	return res
 }

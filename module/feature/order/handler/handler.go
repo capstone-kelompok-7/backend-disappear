@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order/dto"
@@ -48,7 +49,7 @@ func (h *OrderHandler) GetAllOrders() echo.HandlerFunc {
 		nextPage := h.service.GetNextPage(currentPage, totalPages)
 		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.SendPaginationResponse(c, dto.FormatterOrder(orders), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Daftar pesanan")
+		return response.SendPaginationResponse(c, dto.FormatterOrder(orders), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar pesanan")
 	}
 }
 
@@ -84,7 +85,15 @@ func (h *OrderHandler) CreateOrder() echo.HandlerFunc {
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal membuat pesanan: "+err.Error())
 		}
-		return response.SendStatusCreatedResponse(c, "Berhasil membuat pesanan, silahkan melakukan konfirmasi pembayaran", dto.CreateOrderFormatter(result))
+		switch req.PaymentMethod {
+		case "whatsapp", "telegram":
+			orderResult := result.(*entities.OrderModels)
+			return response.SendStatusCreatedResponse(c, "Berhasil membuat pesanan, silahkan melakukan konfirmasi pembayaran", dto.CreateOrderFormatter(orderResult))
+		case "qris", "bank_transfer", "mandiri", "bca", "gopay", "shopepay":
+			return response.SendStatusCreatedResponse(c, "Berhasil membuat pesanan dengan payment gateway", result)
+		default:
+			return response.SendBadRequestResponse(c, "Metode pembayaran tidak valid")
+		}
 	}
 }
 
@@ -124,7 +133,15 @@ func (h *OrderHandler) CreateOrderFromCart() echo.HandlerFunc {
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal membuat pesanan dari keranjang: "+err.Error())
 		}
-		return response.SendStatusCreatedResponse(c, "Berhasil membuat pesanan dari keranjang, silahkan melakukan konfirmasi pembayaran", dto.CreateOrderFormatter(result))
+		switch req.PaymentMethod {
+		case "whatsapp", "telegram":
+			orderResult := result.(*entities.OrderModels)
+			return response.SendStatusCreatedResponse(c, "Berhasil membuat pesanan, silahkan melakukan konfirmasi pembayaran", dto.CreateOrderFormatter(orderResult))
+		case "qris", "bank_transfer", "gopay":
+			return response.SendStatusCreatedResponse(c, "Berhasil membuat pesanan dengan payment gateway", result)
+		default:
+			return response.SendBadRequestResponse(c, "Metode pembayaran tidak valid")
+		}
 	}
 }
 
@@ -143,5 +160,44 @@ func (h *OrderHandler) CancelPayment() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mmelakukan pesanan: "+err.Error())
 		}
 		return response.SendStatusOkResponse(c, "Pembayaran berhasil dibatalkan")
+	}
+}
+
+func (h *OrderHandler) Callback() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var notificationPayload map[string]any
+
+		if err := json.NewDecoder(c.Request().Body).Decode(&notificationPayload); err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		}
+
+		err := h.service.CallBack(notificationPayload)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal callback pesanan: "+err.Error())
+		}
+		return response.SendStatusOkResponse(c, "Berhasil callback")
+	}
+}
+
+func (h *OrderHandler) UpdateOrderStatus() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		req := new(dto.UpdateOrderStatus)
+		if err := c.Bind(req); err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		}
+
+		if err := utils.ValidateStruct(req); err != nil {
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
+		}
+
+		if err := h.service.UpdateOrderStatus(req); err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal memperbarui status pesanan: "+err.Error())
+		}
+		return response.SendStatusOkResponse(c, "Berhasil memperbarui status pesanan")
 	}
 }
