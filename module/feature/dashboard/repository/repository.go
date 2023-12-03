@@ -103,3 +103,17 @@ func (r *DashboardRepository) GetGramPlasticStat(startOfWeek, endOfWeek time.Tim
 	}
 	return gramTotalCount, nil
 }
+
+func (r *DashboardRepository) GetLatestTransactions(limit int) ([]*entities.OrderModels, error) {
+	var transactions []*entities.OrderModels
+	if err := r.db.Order("created_at DESC").
+		Limit(limit).
+		Preload("User").
+		Preload("Address").
+		Preload("Voucher").
+		Preload("OrderDetails").
+		Find(&transactions).Error; err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}
