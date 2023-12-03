@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/caching"
 	"strconv"
 	"time"
@@ -94,4 +95,20 @@ func (s *DashboardService) GetGramPlasticStat(startOfWeek, endOfWeek time.Time) 
 		return 0, err
 	}
 	return gramTotalCount, nil
+}
+
+func (s *DashboardService) GetLatestTransactions(limit int) ([]*dto.LastTransactionResponse, error) {
+	transactions, err := s.repo.GetLatestTransactions(limit)
+	if err != nil {
+		return nil, errors.New("gagal mengambil data transaksi terakhir")
+	}
+	var responseData []*dto.LastTransactionResponse
+	for _, t := range transactions {
+		responseData = append(responseData, &dto.LastTransactionResponse{
+			Username:      t.User.Name,
+			Date:          t.CreatedAt.Format("02-01-2006"),
+			PaymentStatus: t.PaymentStatus,
+		})
+	}
+	return responseData, nil
 }

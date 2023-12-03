@@ -101,3 +101,19 @@ func (h *DashboardHandler) GetGramPlasticStat() echo.HandlerFunc {
 		return response.SendStatusOkWithDataResponses(c, "Statistik gram plastik", fmt.Sprintf("Periode bulan %s", indonesianMonth), result)
 	}
 }
+
+func (h *DashboardHandler) GetLastTransactions() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		limit := 8
+		transactions, err := h.service.GetLatestTransactions(limit)
+		if err != nil {
+			c.Logger().Error("handler: failed to fetch latest transactions:", err.Error())
+			return response.SendBadRequestResponse(c, "Gagal mendapatkan data transaksi terakhir")
+		}
+		return response.SendStatusOkWithDataResponse(c, "Transaksi terakhir", transactions)
+	}
+}
