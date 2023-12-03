@@ -23,7 +23,7 @@ func FormatArticle(article entities.ArticleModels) ArticleFormatter {
 	articleFormatter.Photo = article.Photo
 	articleFormatter.Content = article.Content
 	articleFormatter.Author = article.Author
-	articleFormatter.Date = article.UpdatedAt
+	articleFormatter.Date = article.CreatedAt
 	articleFormatter.Views = article.Views
 
 	return articleFormatter
@@ -52,30 +52,29 @@ type BookmarkedArticleFormatter struct {
 type UserBookmarksResponse struct {
 	ID        uint64                     `json:"id"`
 	UserID    uint64                     `json:"user_id"`
-	ArticleID uint64                     `json:"voucher_id"`
+	ArticleID uint64                     `json:"article_id"`
 	Article   BookmarkedArticleFormatter `json:"article"`
 }
 
-func UserBookmarkFormatter(userBookmark []*entities.UserBookmarkModels) ([]UserBookmarksResponse, error) {
-	var userBookmarks []UserBookmarksResponse
+func UserBookmarkFormatter(userBookmarks []*entities.ArticleBookmarkModels) ([]UserBookmarksResponse, error) {
+	var formattedUserBookmarks []UserBookmarksResponse
 
-	for _, bookmark := range userBookmark {
-		userBookmark := UserBookmarksResponse{
+	for _, bookmark := range userBookmarks {
+		formattedBookmark := UserBookmarksResponse{
 			ID:        bookmark.ID,
-			UserID:    bookmark.UserID,
-			ArticleID: bookmark.ArticleID,
-			Article: BookmarkedArticleFormatter{
-				Title:   bookmark.Article.Title,
-				Photo:   bookmark.Article.Photo,
-				Content: bookmark.Article.Content,
-				Author:  bookmark.Article.Author,
-				Date:    bookmark.Article.UpdatedAt,
-				Views:   bookmark.Article.Views,
+			UserID    : bookmark.UserID,
+			ArticleID : bookmark.ArticleID,
+			Article   : BookmarkedArticleFormatter{
+				Title   : bookmark.Article.Title,
+				Photo   : bookmark.Article.Photo,
+				Content : bookmark.Article.Content,
+				Author  : bookmark.Article.Author,
+				Date    : bookmark.Article.CreatedAt,
+				Views   : bookmark.Article.Views,
 			},
 		}
-		userBookmarks = append(userBookmarks, userBookmark)
-
+		formattedUserBookmarks = append(formattedUserBookmarks, formattedBookmark)
 	}
 
-	return userBookmarks, nil
+	return formattedUserBookmarks, nil
 }

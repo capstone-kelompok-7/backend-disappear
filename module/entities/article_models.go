@@ -16,7 +16,7 @@ type ArticleModels struct {
 	DeletedAt *time.Time   `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 }
 
-type UserBookmarkModels struct {
+type ArticleBookmarkModels struct {
 	ID        uint64         `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id"`
 	UserID    uint64         `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
 	ArticleID uint64         `gorm:"column:article_id;type:BIGINT UNSIGNED" json:"voucher_id"`
@@ -28,6 +28,6 @@ func (ArticleModels) TableName() string {
 	return "articles"
 }
 
-func (UserBookmarkModels) TableName() string {
-	return "user_bookmarks"
+func (ArticleBookmarkModels) TableName() string {
+	return "article_bookmarks"
 }

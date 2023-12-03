@@ -19,9 +19,12 @@ type OrderModels struct {
 	OrderStatus           string               `gorm:"column:order_status;type:VARCHAR(255)" json:"order_status"`
 	PaymentStatus         string               `gorm:"column:payment_status;type:VARCHAR(255)" json:"payment_status"`
 	PaymentURL            string               `gorm:"column:payment_url;type:VARCHAR(255)" json:"payment_url"`
-	CreatedAt             time.Time            `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt             time.Time            `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
-	DeletedAt             *time.Time           `gorm:"column:deleted_at;index" json:"deleted_at"`
+	// CreatedAt             time.Time            `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
+	// UpdatedAt             time.Time            `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
+	// DeletedAt             *time.Time           `gorm:"column:deleted_at;index" json:"deleted_at"`
+	CreatedAt time.Time    `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time    `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt *time.Time   `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Address               AddressModels        `gorm:"foreignKey:AddressID" json:"address"`
 	User                  UserModels           `gorm:"foreignKey:UserID" json:"user"`
 	Voucher               VoucherModels        `gorm:"foreignKey:VoucherID" json:"voucher"`

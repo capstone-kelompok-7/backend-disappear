@@ -74,6 +74,7 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService ut
 	articlesGroup.PUT("/:id", h.UpdateArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.DELETE("/:id", h.DeleteArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.POST("/bookmark", h.BookmarkArticle(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.DELETE("/bookmark/:id", h.DeleteBookmarkedArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("/bookmark", h.GetUsersBookmark(), middlewares.AuthMiddleware(jwtService, userService))
 }
 

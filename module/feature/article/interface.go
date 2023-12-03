@@ -12,33 +12,35 @@ type RepositoryArticleInterface interface {
 	UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error)
 	UpdateArticleViews(article *entities.ArticleModels) error
 	DeleteArticleById(id uint64) error
-	FindAll(page, perpage int) ([]entities.ArticleModels, error)
-	GetTotalArticleCount() (int64, error)
-	FindByTitle(page, perpage int, title string) ([]entities.ArticleModels, error)
-	GetTotalArticleCountByTitle(title string) (int64, error)
+	FindAll() ([]entities.ArticleModels, error)
+	FindByTitle(title string) ([]entities.ArticleModels, error)
 	GetArticleById(id uint64) (*entities.ArticleModels, error)
-	GetArticlesByDateRange(page, perpage int, startDate, endDate time.Time) ([]entities.ArticleModels, error)
-	GetTotalArticleCountByDateRange(startDate, endDate time.Time) (int64, error)
+	GetArticlesByDateRange(startDate, endDate time.Time) ([]entities.ArticleModels, error)
 	IsArticleAlreadyBookmarked(userID uint64, articleID uint64) (bool, error)
-	BookmarkArticle(bookmarkArticle *entities.UserBookmarkModels) error 
+	BookmarkArticle(bookmarkArticle *entities.ArticleBookmarkModels) error 
 	DeleteBookmarkArticle(userID, articleID uint64) error
-	GetBookmarkArticle(userID uint64) ([]*entities.UserBookmarkModels, error) 
+	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
+	GetLatestArticle() ([]entities.ArticleModels, error) 
+	GetArticleByViewsAsc() ([]entities.ArticleModels, error)
+	GetArticleByViewsDesc() ([]entities.ArticleModels, error)
+	GetArticleByTitleAsc() ([]entities.ArticleModels, error)
+	GetArticleByTitleDesc() ([]entities.ArticleModels, error)
 }
 
 type ServiceArticleInterface interface {
 	CreateArticle(articleData *entities.ArticleModels) (*entities.ArticleModels, error)
 	UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error)
 	DeleteArticleById(id uint64) error
-	GetAll(page, perPage int) ([]entities.ArticleModels, int64, error)
-	GetArticlesByTitle(page, perPage int, title string) ([]entities.ArticleModels, int64, error)
+	GetAll() ([]entities.ArticleModels, error)
+	GetArticlesByTitle(title string) ([]entities.ArticleModels, error)
 	GetArticleById(id uint64, incrementVIews bool) (*entities.ArticleModels, error)
-	GetArticlesByDateRange(page, perPage int, filterType string) ([]entities.ArticleModels, int64, error)
-	CalculatePaginationValues(page int, totalItems int, perPage int) (int, int)
-	GetNextPage(currentPage, totalPages int) int
-	GetPrevPage(currentPage int) int
-	BookmarkArticle(bookmark *entities.UserBookmarkModels) error
+	GetArticlesByDateRange(filterType string) ([]entities.ArticleModels, error)
+	BookmarkArticle(bookmark *entities.ArticleBookmarkModels) error
 	DeleteBookmarkArticle(userID, articleID uint64) error
-	GetUserBookmarkArticle(userID uint64) ([]*entities.UserBookmarkModels, error)
+	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
+	GetLatestArticles() ([]entities.ArticleModels, error)
+	GetArticlesByViews(sortType string) ([]entities.ArticleModels, error)
+	GetArticlesBySortedTitle(sortType string) ([]entities.ArticleModels, error)
 }
 
 type HandlerArticleInterface interface {
@@ -48,5 +50,6 @@ type HandlerArticleInterface interface {
 	GetAllArticles() echo.HandlerFunc
 	GetArticleById() echo.HandlerFunc
 	BookmarkArticle() echo.HandlerFunc
+	DeleteBookmarkedArticle() echo.HandlerFunc
 	GetUsersBookmark() echo.HandlerFunc
 }
