@@ -9,6 +9,8 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.3
+	github.com/midtrans/midtrans-go v1.3.7
+	github.com/redis/go-redis/v9 v9.3.0
 	github.com/sashabaranov/go-openai v1.17.9
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
@@ -20,7 +22,6 @@ require (
 )
 
 require (
-	github.com/allegro/bigcache/v3 v3.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/creasty/defaults v1.5.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -38,10 +39,8 @@ require (
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/midtrans/midtrans-go v1.3.7 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/redis/go-redis/v9 v9.3.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

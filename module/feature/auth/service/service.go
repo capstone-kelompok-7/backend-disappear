@@ -6,6 +6,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/caching"
+	"github.com/labstack/gommon/log"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
@@ -99,7 +100,8 @@ func (s *AuthService) Login(email, password string) (*entities.UserModels, strin
 
 	err = s.cache.Set(email, []byte(accessToken))
 	if err != nil {
-		return nil, "", errors.New("gagal menyimpan accessToken ke cache")
+		log.Error("Failed to store accessToken in cache:", err)
+		return nil, "", errors.New("internal server error")
 	}
 
 	return user, accessToken, nil

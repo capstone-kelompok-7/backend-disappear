@@ -13,7 +13,7 @@ type redisCacheRepository struct {
 	rdb *redis.Client
 }
 
-func NewRedisClient(cnf *config.Config) caching.CacheRepository {
+func NewRedisClient(cnf config.Config) caching.CacheRepository {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     cnf.Redis.Addr,
 		Password: cnf.Redis.Pass,
