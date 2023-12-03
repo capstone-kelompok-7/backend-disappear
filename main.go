@@ -67,7 +67,7 @@ func main() {
 	var initConfig = config.InitConfig()
 
 	db := database.InitDatabase(*initConfig)
-	rdb := redis.NewRedisClient(initConfig)
+	rdb := redis.NewRedisClient(*initConfig)
 	database.Migrate(db)
 	jwtService := utils.NewJWT(initConfig.Secret)
 	hash := utils.NewHash()
