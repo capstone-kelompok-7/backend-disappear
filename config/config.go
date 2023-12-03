@@ -24,6 +24,12 @@ type Config struct {
 	OpenAiApiKey string
 	ClientKey    string
 	ServerKey    string
+	Redis        Redis
+}
+
+type Redis struct {
+	Addr string
+	Pass string
 }
 
 func InitConfig() *Config {
@@ -100,5 +106,12 @@ func loadConfig() *Config {
 	if value, found := os.LookupEnv("SERVERKEY"); found {
 		res.ServerKey = value
 	}
+	if value, found := os.LookupEnv("REDIS_ADDR"); found {
+		res.Redis.Addr = value
+	}
+	if value, found := os.LookupEnv("REDIS_PASS"); found {
+		res.Redis.Pass = value
+	}
+
 	return res
 }
