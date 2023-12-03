@@ -180,3 +180,58 @@ func (r *UserRepository) GetLeaderboardByExp(limit int) ([]*entities.UserModels,
 	}
 	return user, nil
 }
+
+func (r *UserRepository) GetUserTransactionActivity(userID uint64) (int, int, int, error) {
+	var success []*entities.OrderModels
+	var failed []*entities.OrderModels
+
+	if err := r.db.Where("user_id = ?", userID).
+		Where("payment_status = ?", "Konfirmasi").
+		Where("deleted_at IS NULL").
+		Order("created_at desc").
+		Find(&success).Error; err != nil {
+		return 0, 0, 0, err
+	}
+
+	if err := r.db.Where("user_id = ?", userID).
+		Where("payment_status = ?", "Gagal").
+		Where("deleted_at IS NULL").
+		Order("created_at desc").
+		Find(&failed).Error; err != nil {
+		return 0, 0, 0, err
+	}
+
+	numSuccess := len(success)
+	numFailed := len(failed)
+	total := numSuccess + numFailed
+
+	return numSuccess, numFailed, total, nil
+}
+
+func (r *UserRepository) GetUserChallengeActivity(userID uint64) (int, int, int, error) {
+	var success []*entities.ChallengeFormModels
+	var failed []*entities.ChallengeFormModels
+
+	if err := r.db.Where("user_id = ?", userID).
+		Where("status = ?", "Valid").
+		Where("deleted_at IS NULL").
+		Order("created_at desc").
+		Find(&success).Error; err != nil {
+		return 0, 0, 0, err
+	}
+
+	if err := r.db.Where("user_id = ?", userID).
+		Where("status = ?", "Tidak Valid").
+		Where("deleted_at IS NULL").
+		Order("created_at desc").
+		Find(&failed).Error; err != nil {
+		return 0, 0, 0, err
+	}
+
+	numSuccess := len(success)
+	numFailed := len(failed)
+	total := numSuccess + numFailed
+
+	return numSuccess, numFailed, total, nil
+
+}

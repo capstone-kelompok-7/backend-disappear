@@ -182,3 +182,37 @@ func (h *UserHandler) GetLeaderboard() echo.HandlerFunc {
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan leaderboard", dto.FormatterUserLeaderboard(result))
 	}
 }
+
+func (h *UserHandler) GetUserTransactionActivity() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		id := c.Param("id")
+		if id == "" {
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai.")
+		}
+
+		userID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
+		}
+
+		numSuccessfulOrders, numFailedOrders, totalOrders, err := h.service.GetUserTransactionActivity(userID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan data aktivitas customer: "+err.Error())
+		}
+
+		numSuccessfulChallenge, numFailedChallenge, totalChallenge, err := h.service.GetUserChallengeActivity(userID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan data aktivitas customer: "+err.Error())
+		}
+
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan data aktivitas customer",
+			dto.FormatUserActivityResponse(
+				numSuccessfulOrders, numFailedOrders, totalOrders,
+				numSuccessfulChallenge, numFailedChallenge, totalChallenge,
+			))
+	}
+}
