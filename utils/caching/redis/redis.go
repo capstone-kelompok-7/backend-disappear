@@ -40,6 +40,6 @@ func (r redisCacheRepository) Get(key string) ([]byte, error) {
 	return []byte(val), nil
 }
 
-func (r redisCacheRepository) Set(key string, entry []byte) error {
-	return r.rdb.Set(context.Background(), key, entry, 15*time.Minute).Err()
+func (r redisCacheRepository) Set(key string, entry []byte, expiration time.Duration) error {
+	return r.rdb.Set(context.Background(), key, entry, expiration).Err()
 }

@@ -98,7 +98,7 @@ func (s *AuthService) Login(email, password string) (*entities.UserModels, strin
 		return nil, "", err
 	}
 
-	err = s.cache.Set(email, []byte(accessToken))
+	err = s.cache.Set(email, []byte(accessToken), 1*time.Second)
 	if err != nil {
 		log.Error("Failed to store accessToken in cache:", err)
 		return nil, "", errors.New("internal server error")
@@ -143,7 +143,7 @@ func (s *AuthService) VerifyEmail(email, otp string) error {
 		return errors.New("gagal delete OTP")
 	}
 
-	err = s.cache.Set(cacheKey, []byte("true"))
+	err = s.cache.Set(cacheKey, []byte("true"), 1*time.Second)
 	if err != nil {
 		return errors.New("gagal menyimpan status verifikasi email ke cache")
 	}
@@ -252,12 +252,12 @@ func (s *AuthService) VerifyOTP(email, otp string) (string, error) {
 		return "", errors.New("gagal generate access token")
 	}
 
-	err = s.cache.Set(accessTokenCacheKey, []byte(accessToken))
+	err = s.cache.Set(accessTokenCacheKey, []byte(accessToken), 1*time.Second)
 	if err != nil {
 		return "", errors.New("gagal menyimpan access token ke cache")
 	}
 
-	err = s.cache.Set(emailVerifyCacheKey, []byte("true"))
+	err = s.cache.Set(emailVerifyCacheKey, []byte("true"), 1*time.Second)
 	if err != nil {
 		return "", errors.New("gagal menyimpan status verifikasi email ke cache")
 	}
