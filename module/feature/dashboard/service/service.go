@@ -90,7 +90,7 @@ func (s *DashboardService) GetGramPlasticStat(startOfWeek, endOfWeek time.Time) 
 	if err != nil {
 		return 0, errors.New("gagal menghitung total gram plastik")
 	}
-	err = s.cache.Set(cacheKey, []byte(strconv.FormatUint(gramTotalCount, 10)))
+	err = s.cache.Set(cacheKey, []byte(strconv.FormatUint(gramTotalCount, 10)), 5*time.Second)
 	if err != nil {
 		return 0, err
 	}
