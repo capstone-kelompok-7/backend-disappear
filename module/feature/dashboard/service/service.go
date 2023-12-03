@@ -46,7 +46,6 @@ func (s *DashboardService) GetCardDashboard() (int64, int64, int64, float64, err
 	}
 
 	return productCount, userCount, orderCount, inComeCount, nil
-
 }
 
 func (s *DashboardService) GetLandingPage() (int64, int64, int64, error) {

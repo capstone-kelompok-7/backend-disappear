@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard"
@@ -28,10 +29,19 @@ func (h *DashboardHandler) GetCardDashboard() echo.HandlerFunc {
 		}
 		productCount, userCount, orderCount, incomeCount, err := h.service.GetCardDashboard()
 		if err != nil {
-			c.Logger().Error("handler: failed to fetch all products:", err.Error())
-			return response.SendBadRequestResponse(c, "Gagal mendapatkan data : "+err.Error())
+			c.Logger().Error("handler: failed to fetch dashboard data:", err.Error())
+			if errors.Is(err, errors.New("gagal menghitung total produk")) {
+				productCount = 0
+			} else if errors.Is(err, errors.New("gagal menghitung total pelanggan")) {
+				userCount = 0
+			} else if errors.Is(err, errors.New("gagal menghitung total pesanan")) {
+				orderCount = 0
+			} else if errors.Is(err, errors.New("gagal menghitung total pendapatan")) {
+				incomeCount = 0
+			} else {
+				return response.SendBadRequestResponse(c, "Gagal mendapatkan data: "+err.Error())
+			}
 		}
-
 		return response.SendStatusOkWithDataResponse(c, "Berhasil mendapatkan data cards dasboard", dto.FormatCardResponse(productCount, userCount, orderCount, incomeCount))
 	}
 }
