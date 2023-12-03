@@ -241,6 +241,32 @@ func (_m *ServiceUserInterface) GetUserLevel(userID uint64) (string, error) {
 	return r0, r1
 }
 
+// GetUserProfile provides a mock function with given fields: userID
+func (_m *ServiceUserInterface) GetUserProfile(userID uint64) (*entities.UserModels, error) {
+	ret := _m.Called(userID)
+
+	var r0 *entities.UserModels
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint64) (*entities.UserModels, error)); ok {
+		return rf(userID)
+	}
+	if rf, ok := ret.Get(0).(func(uint64) *entities.UserModels); ok {
+		r0 = rf(userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entities.UserModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint64) error); ok {
+		r1 = rf(userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUserTransactionActivity provides a mock function with given fields: userID
 func (_m *ServiceUserInterface) GetUserTransactionActivity(userID uint64) (int, int, int, error) {
 	ret := _m.Called(userID)

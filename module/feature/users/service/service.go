@@ -260,3 +260,12 @@ func (s *UserService) GetUserChallengeActivity(userID uint64) (int, int, int, er
 
 	return successChallenge, failedChallenge, totalChallenge, nil
 }
+
+func (s *UserService) GetUserProfile(userID uint64) (*entities.UserModels, error) {
+	result, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+
+}
