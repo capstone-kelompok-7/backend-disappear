@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard"
 	"gorm.io/gorm"
@@ -45,7 +47,7 @@ func (r *DashboardRepository) CountOrder() (int64, error) {
 }
 
 func (r *DashboardRepository) CountIncome() (float64, error) {
-	var totalAmount float64
+	var totalAmount sql.NullFloat64
 
 	firstDay := time.Now().AddDate(0, 0, -time.Now().Day()+1).Format("2006-01-02")
 	lastDay := time.Now().AddDate(0, 1, -time.Now().Day()).Format("2006-01-02")
@@ -53,10 +55,13 @@ func (r *DashboardRepository) CountIncome() (float64, error) {
 		Where("order_status = ? AND payment_status = ? AND created_at BETWEEN ? AND ?",
 			"proses", "konfirmasi", firstDay, lastDay).
 		Select("SUM(total_amount_paid)").
-		Scan(&totalAmount).Error; err != nil {
-		return 0, err
+		Row().Scan(&totalAmount); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0.0, nil
+		}
+		return 0.0, err
 	}
-	return totalAmount, nil
+	return totalAmount.Float64, nil
 }
 
 func (r *DashboardRepository) CountTotalGram() (int64, error) {
@@ -84,7 +89,6 @@ func (r *DashboardRepository) GetProductWithMaxReviews() ([]*entities.ProductMod
 		return nil, err
 	}
 	return products, nil
-
 }
 
 func (r *DashboardRepository) GetGramPlasticStat(startOfWeek, endOfWeek time.Time) (uint64, error) {
