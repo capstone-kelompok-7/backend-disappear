@@ -108,6 +108,7 @@ var MonthMap = map[time.Month]string{
 
 type LastTransactionResponse struct {
 	Username      string `json:"username"`
+	TotalPrice    uint64 `json:"total_price"`
 	Date          string `json:"date"`
 	PaymentStatus string `json:"payment_status"`
 }

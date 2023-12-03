@@ -108,6 +108,7 @@ func (s *DashboardService) GetLatestTransactions(limit int) ([]*dto.LastTransact
 			Username:      t.User.Name,
 			Date:          t.CreatedAt.Format("02-01-2006"),
 			PaymentStatus: t.PaymentStatus,
+			TotalPrice:    t.GrandTotalPrice,
 		})
 	}
 	return responseData, nil
