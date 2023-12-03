@@ -155,3 +155,28 @@ func FormatUserActivityResponse(numSuccessfulOrders, numFailedOrders, totalOrder
 		TotalChallenges:     totalChallenge,
 	}
 }
+
+// UserProfileResponse for get profile
+type UserProfileResponse struct {
+	ID             uint64 `json:"id"`
+	Email          string `json:"email"`
+	Name           string `json:"name"`
+	Phone          string `json:"phone"`
+	PhotoProfile   string `json:"photo_profile"`
+	TotalGram      uint64 `json:"total_gram"`
+	TotalChallenge uint64 `json:"total_challenge"`
+	Level          string `json:"level"`
+}
+
+func FormatUserProfileResponse(user *entities.UserModels) *UserProfileResponse {
+	userFormatter := &UserProfileResponse{
+		ID:             user.ID,
+		Email:          user.Email,
+		Name:           user.Name,
+		PhotoProfile:   user.PhotoProfile,
+		TotalGram:      user.TotalGram,
+		TotalChallenge: user.TotalChallenge,
+		Level:          user.Level,
+	}
+	return userFormatter
+}

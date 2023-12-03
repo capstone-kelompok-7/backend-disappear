@@ -47,6 +47,7 @@ type ServiceUserInterface interface {
 	GetLeaderboardByExp(limit int) ([]*entities.UserModels, error)
 	GetUserTransactionActivity(userID uint64) (int, int, int, error)
 	GetUserChallengeActivity(userID uint64) (int, int, int, error)
+	GetUserProfile(userID uint64) (*entities.UserModels, error)
 }
 
 type HandlerUserInterface interface {
@@ -58,4 +59,5 @@ type HandlerUserInterface interface {
 	DeleteAccount() echo.HandlerFunc
 	GetLeaderboard() echo.HandlerFunc
 	GetUserTransactionActivity() echo.HandlerFunc
+	GetUserProfile() echo.HandlerFunc
 }

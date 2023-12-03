@@ -94,14 +94,14 @@ func (h *UserHandler) GetAllUsers() echo.HandlerFunc {
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
 
-		var users []*entities.UserModels
+		var user []*entities.UserModels
 		var totalItems int64
 		var err error
 		search := c.QueryParam("search")
 		if search != "" {
-			users, totalItems, err = h.service.GetUsersByName(page, perPage, search)
+			user, totalItems, err = h.service.GetUsersByName(page, perPage, search)
 		} else {
-			users, totalItems, err = h.service.GetAllUsers(pageConv, perPage)
+			user, totalItems, err = h.service.GetAllUsers(pageConv, perPage)
 		}
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all users:", err.Error())
@@ -112,7 +112,7 @@ func (h *UserHandler) GetAllUsers() echo.HandlerFunc {
 		nextPage := h.service.GetNextPage(currentPage, totalPages)
 		prevPage := h.service.GetPrevPage(currentPage)
 
-		return response.SendPaginationResponse(c, dto.FormatterUsersPagination(users), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar customer")
+		return response.SendPaginationResponse(c, dto.FormatterUsersPagination(user), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar customer")
 	}
 }
 
@@ -214,5 +214,20 @@ func (h *UserHandler) GetUserTransactionActivity() echo.HandlerFunc {
 				numSuccessfulOrders, numFailedOrders, totalOrders,
 				numSuccessfulChallenge, numFailedChallenge, totalChallenge,
 			))
+	}
+}
+
+func (h *UserHandler) GetUserProfile() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		user, err := h.service.GetUsersById(currentUser.ID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail pengguna: "+err.Error())
+		}
+
+		return response.SendSuccessResponse(c, "Berhasil mendapat detail pengguna", dto.FormatUserProfileResponse(user))
 	}
 }
