@@ -205,3 +205,47 @@ func (h *ArticleHandler) GetArticleById() echo.HandlerFunc {
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail artikel", dto.FormatArticle(*getArticleID))
 	}
 }
+
+func (h *ArticleHandler) BookmarkArticle() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		bookmark := new(dto.UserBookmarkRequest)
+		if err := c.Bind(bookmark); err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang anda masukkan tidak sesuai.")
+		}
+		if err := utils.ValidateStruct(bookmark); err != nil {
+			return response.SendStatusInternalServerResponse(c, "Validasi gagal: "+err.Error())
+		}
+		newBookmark := &entities.UserBookmarkModels{
+			UserID: currentUser.ID,
+			ArticleID: bookmark.ArticleID,
+		}
+		if err := h.service.BookmarkArticle(newBookmark); err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal menyimpan artikel: " + err.Error())
+		}
+		return response.SendStatusOkResponse(c, "Berhasil menyimpan artikel")
+	}
+}
+
+func (h *ArticleHandler) GetUsersBookmark() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		result, err := h.service.GetUserBookmarkArticle(currentUser.ID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan data artikel tersimpan user : "+err.Error())
+		}
+
+		formattedResponse, err := dto.UserBookmarkFormatter(result)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal memformat response : "+ err.Error())
+		}
+
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan data artikel tersimpan user", formattedResponse)
+	}
+}

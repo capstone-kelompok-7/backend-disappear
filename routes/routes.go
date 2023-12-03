@@ -69,10 +69,12 @@ func RouteProduct(e *echo.Echo, h product.HandlerProductInterface, jwtService ut
 func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	articlesGroup := e.Group("api/v1/articles")
 	articlesGroup.POST("", h.CreateArticle(), middlewares.AuthMiddleware(jwtService, userService))
-	articlesGroup.GET("", h.GetAllArticles())
+	articlesGroup.GET("", h.GetAllArticles(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("/:id", h.GetArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.PUT("/:id", h.UpdateArticleById(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.DELETE("/:id", h.DeleteArticleById(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.POST("/bookmark", h.BookmarkArticle(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.GET("/bookmark", h.GetUsersBookmark(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

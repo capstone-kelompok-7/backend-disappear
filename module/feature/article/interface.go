@@ -19,6 +19,10 @@ type RepositoryArticleInterface interface {
 	GetArticleById(id uint64) (*entities.ArticleModels, error)
 	GetArticlesByDateRange(page, perpage int, startDate, endDate time.Time) ([]entities.ArticleModels, error)
 	GetTotalArticleCountByDateRange(startDate, endDate time.Time) (int64, error)
+	IsArticleAlreadyBookmarked(userID uint64, articleID uint64) (bool, error)
+	BookmarkArticle(bookmarkArticle *entities.UserBookmarkModels) error 
+	DeleteBookmarkArticle(userID, articleID uint64) error
+	GetBookmarkArticle(userID uint64) ([]*entities.UserBookmarkModels, error) 
 }
 
 type ServiceArticleInterface interface {
@@ -32,6 +36,9 @@ type ServiceArticleInterface interface {
 	CalculatePaginationValues(page int, totalItems int, perPage int) (int, int)
 	GetNextPage(currentPage, totalPages int) int
 	GetPrevPage(currentPage int) int
+	BookmarkArticle(bookmark *entities.UserBookmarkModels) error
+	DeleteBookmarkArticle(userID, articleID uint64) error
+	GetUserBookmarkArticle(userID uint64) ([]*entities.UserBookmarkModels, error)
 }
 
 type HandlerArticleInterface interface {
@@ -40,4 +47,6 @@ type HandlerArticleInterface interface {
 	DeleteArticleById() echo.HandlerFunc
 	GetAllArticles() echo.HandlerFunc
 	GetArticleById() echo.HandlerFunc
+	BookmarkArticle() echo.HandlerFunc
+	GetUsersBookmark() echo.HandlerFunc
 }

@@ -130,3 +130,35 @@ func (r *ArticleRepository) GetTotalArticleCountByDateRange(startDate, endDate t
 
 	return count, err
 }
+
+func (r *ArticleRepository) IsArticleAlreadyBookmarked(userID uint64, articleID uint64) (bool, error) {
+	var exitingBookmark entities.UserBookmarkModels
+	err := r.db.Where("user_id = ? AND article_id = ?", userID, articleID).First(&exitingBookmark).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *ArticleRepository) BookmarkArticle(bookmarkArticle *entities.UserBookmarkModels) error {
+	if err := r.db.Create(&bookmarkArticle).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ArticleRepository) DeleteBookmarkArticle(userID, articleID uint64) error {
+	if err := r.db.Where("user_id = ? AND article_id = ?", userID, articleID).Delete(&entities.UserBookmarkModels{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ArticleRepository) GetBookmarkArticle(userID uint64) ([]*entities.UserBookmarkModels, error) {
+	var userBookmarks []*entities.UserBookmarkModels
+
+	if err := r.db.Preload("Article").Where("user_id = ?", userID).Find(&userBookmarks).Error; err != nil {
+		return nil, err
+	}
+	return userBookmarks, nil
+}

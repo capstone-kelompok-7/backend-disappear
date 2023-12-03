@@ -184,3 +184,45 @@ func (s *ArticleService) GetPrevPage(currentPage int) int {
 	}
 	return 1
 }
+
+func (s *ArticleService) BookmarkArticle(bookmark *entities.UserBookmarkModels) error {
+	articles, err := s.repo.GetArticleById(bookmark.ID)
+	if err != nil {
+		return errors.New("Artikel tidak ditemukan")
+	}
+
+	bookmarked, err := s.repo.IsArticleAlreadyBookmarked(bookmark.UserID, articles.ID)
+	if err != nil {
+		return err
+	}
+
+	if bookmarked {
+		return errors.New("Artikel telah disimpan")
+	}
+
+	newBookmark := &entities.UserBookmarkModels{
+		UserID: bookmark.UserID,
+		ArticleID: bookmark.ArticleID,
+	}
+	if err := s.repo.BookmarkArticle(newBookmark); err != nil {
+		return err
+	}
+	
+	return nil
+}
+
+func (s *ArticleService) DeleteBookmarkArticle(userID, articleID uint64) error {
+	err := s.repo.DeleteBookmarkArticle(userID, articleID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *ArticleService) GetUserBookmarkArticle(userID uint64) ([]*entities.UserBookmarkModels, error) {
+	userBookmarkArticle, err := s.repo.GetBookmarkArticle(userID)
+	if err != nil {
+		return nil, err
+	}
+	return userBookmarkArticle, nil
+}
