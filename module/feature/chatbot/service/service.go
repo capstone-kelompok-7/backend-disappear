@@ -112,3 +112,43 @@ func (s *ChatbotService) GetChatByIdUser(id string) ([]entities.ChatModel, error
 	}
 	return res, nil
 }
+
+func (s *ChatbotService) GenerateArtikelAi(judul string) (string, error) {
+	ctx := context.Background()
+	chat := []openai.ChatCompletionMessage{
+		{
+			Role:    openai.ChatMessageRoleUser,
+			Content: "Kamu Adalah Chatbot Bertema Lingkungan",
+		},
+		{
+			Role:    openai.ChatMessageRoleUser,
+			Content: "Hi Bisa Bantu Saya Menjawab Pertanyaan Tentang Lingkungan",
+		},
+	}
+
+	if judul != "" {
+		chat = append(chat, openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleUser,
+			Content: fmt.Sprintf("Buatlah Artikel Dengan Judul %s", judul),
+		})
+	}
+
+	resp, err := s.GetAnswerFromAi(chat, ctx)
+	if err != nil {
+		logrus.Error("Can't Get Answer From Ai: ", err.Error())
+	}
+
+	if s.debug {
+		fmt.Printf(
+			"ID: %s. Created: %d. Model: %s. Choices: %v.\n",
+			resp.ID, resp.Created, resp.Model, resp.Choices,
+		)
+	}
+
+	answer := openai.ChatCompletionMessage{
+		Role:    resp.Choices[0].Message.Role,
+		Content: resp.Choices[0].Message.Content,
+	}
+
+	return answer.Content, nil
+}
