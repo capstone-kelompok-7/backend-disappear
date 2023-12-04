@@ -14,9 +14,20 @@ type ArticleModels struct {
 	CreatedAt time.Time    `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time    `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
 	DeletedAt *time.Time   `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
-	Users     []UserModels `gorm:"many2many:user_bookmarks;" json:"users"`
+}
+
+type ArticleBookmarkModels struct {
+	ID        uint64         `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id"`
+	UserID    uint64         `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
+	ArticleID uint64         `gorm:"column:article_id;type:BIGINT UNSIGNED" json:"voucher_id"`
+	User      *UserModels    `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	Article   *ArticleModels `gorm:"foreignKey:ArticleID" json:"article,omitempty"`
 }
 
 func (ArticleModels) TableName() string {
 	return "articles"
+}
+
+func (ArticleBookmarkModels) TableName() string {
+	return "article_bookmarks"
 }

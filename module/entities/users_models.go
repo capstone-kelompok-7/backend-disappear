@@ -19,7 +19,6 @@ type UserModels struct {
 	UpdatedAt      time.Time       `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
 	DeletedAt      *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Address        []AddressModels `gorm:"foreignKey:UserID" json:"addresses"`
-	Articles       []ArticleModels `gorm:"many2many:user_bookmarks;" json:"users"`
 	Reviews        []ReviewModels  `gorm:"foreignKey:UserID" json:"reviews"`
 }
 

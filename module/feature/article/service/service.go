@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"math"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -28,7 +27,7 @@ func (s *ArticleService) CreateArticle(articleData *entities.ArticleModels) (*en
 	}
 	createdArticle, err := s.repo.CreateArticle(value)
 	if err != nil {
-		return nil, errors.New("Gagal Menambahkan Artikel: " + err.Error())
+		return nil, errors.New("gagal menambahkan artikel: " + err.Error())
 	}
 
 	return createdArticle, nil
@@ -46,12 +45,12 @@ func (s *ArticleService) UpdateArticleById(id uint64, updatedArticle *entities.A
 
 	_, err = s.repo.UpdateArticleById(id, updatedArticle)
 	if err != nil {
-		return nil, errors.New("Gagal Mengubah Artikel: " + err.Error())
+		return nil, errors.New("gagal mengubah artikel: " + err.Error())
 	}
 
 	getUpdatedArticle, err := s.repo.GetArticleById(id)
 	if err != nil {
-		return nil, errors.New("Gagal mengambil Artikel: " + err.Error())
+		return nil, errors.New("gagal mengambil artikel: " + err.Error())
 	}
 
 	return getUpdatedArticle, nil
@@ -60,66 +59,56 @@ func (s *ArticleService) UpdateArticleById(id uint64, updatedArticle *entities.A
 func (s *ArticleService) DeleteArticleById(id uint64) error {
 	existingArticle, err := s.repo.GetArticleById(id)
 	if err != nil {
-		return errors.New("Artikel Tidak Ditemukan: " + err.Error())
+		return errors.New("artikel tidak ditemukan: " + err.Error())
 	}
 
 	if existingArticle == nil {
-		return errors.New("Artikel Tidak Ditemukan: " + err.Error())
+		return errors.New("artikel tidak ditemukan: " + err.Error())
 	}
 
 	err = s.repo.DeleteArticleById(id)
 	if err != nil {
-		return errors.New("Gagal Menghapus Artikel: " + err.Error())
+		return errors.New("gagal menghapus artikel: " + err.Error())
 	}
 
 	return nil
 }
 
-func (s *ArticleService) GetAll(page, perPage int) ([]entities.ArticleModels, int64, error) {
-	articles, err := s.repo.FindAll(page, perPage)
+func (s *ArticleService) GetAll() ([]entities.ArticleModels, error) {
+	articles, err := s.repo.FindAll()
 	if err != nil {
-		return nil, 0, errors.New("Artikel Tidak Ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
 	}
 
-	totalItems, err := s.repo.GetTotalArticleCount()
-	if err != nil {
-		return nil, 0, errors.New("Gagal Menghitung Total Artikel: " + err.Error())
-	}
-
-	return articles, totalItems, nil
+	return articles, nil
 }
 
-func (s *ArticleService) GetArticlesByTitle(page, perPage int, title string) ([]entities.ArticleModels, int64, error) {
-	articles, err := s.repo.FindByTitle(page, perPage, title)
+func (s *ArticleService) GetArticlesByTitle(title string) ([]entities.ArticleModels, error) {
+	articles, err := s.repo.FindByTitle(title)
 	if err != nil {
-		return nil, 0, errors.New("Artikel Tidak Ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
 	}
 
-	totalItems, err := s.repo.GetTotalArticleCountByTitle(title)
-	if err != nil {
-		return nil, 0, errors.New("Gagal Menghitung Total Artikel: " + err.Error())
-	}
-
-	return articles, totalItems, nil
+	return articles, nil
 }
 
 func (s *ArticleService) GetArticleById(id uint64, incrementViews bool) (*entities.ArticleModels, error) {
 	result, err := s.repo.GetArticleById(id)
 	if err != nil {
-		return nil, errors.New("Artikel Tidak Ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
 	}
 
 	if incrementViews {
 		result.Views++
 		if err := s.repo.UpdateArticleViews(result); err != nil {
-			return nil, errors.New("Gagal meningkatkan jumlah tayangan artikel: " + err.Error())
+			return nil, errors.New("gagal meningkatkan jumlah tayangan artikel: " + err.Error())
 		}
 	}
 
 	return result, nil
 }
 
-func (s *ArticleService) GetArticlesByDateRange(page, perPage int, filterType string) ([]entities.ArticleModels, int64, error) {
+func (s *ArticleService) GetArticlesByDateRange(filterType string) ([]entities.ArticleModels, error) {
 	now := time.Now()
 	var startDate, endDate time.Time
 
@@ -140,47 +129,113 @@ func (s *ArticleService) GetArticlesByDateRange(page, perPage int, filterType st
 		nextYear := startDate.AddDate(1, 0, 0)
 		endDate = nextYear.Add(-time.Second)
 	default:
-		return nil, 0, errors.New("Tipe filter tidak valid")
+		return nil, errors.New("tipe filter tidak valid")
 	}
 
-	result, err := s.repo.GetArticlesByDateRange(page, perPage, startDate, endDate)
+	result, err := s.repo.GetArticlesByDateRange(startDate, endDate)
 	if err != nil {
-		return nil, 0, errors.New("Artikel Tidak Ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
 	}
 
-	totalItems, err := s.repo.GetTotalArticleCountByDateRange(startDate, endDate)
+	return result, nil
+}
+
+func (s *ArticleService) BookmarkArticle(bookmark *entities.ArticleBookmarkModels) error {
+	articles, err := s.repo.GetArticleById(bookmark.ArticleID)
 	if err != nil {
-		return nil, 0, errors.New("Gagal Menghitung Total Artikel: " + err.Error())
+		return errors.New("artikel tidak ditemukan")
 	}
 
-	return result, totalItems, nil
+	bookmarked, err := s.repo.IsArticleAlreadyBookmarked(bookmark.UserID, articles.ID)
+	if err != nil {
+		return errors.New("gagal mengecek database")
+	}
+
+	if bookmarked {
+		return errors.New("artikel telah disimpan")
+	}
+
+	newBookmark := &entities.ArticleBookmarkModels{
+		UserID:    bookmark.UserID,
+		ArticleID: bookmark.ArticleID,
+	}
+	if err := s.repo.BookmarkArticle(newBookmark); err != nil {
+		return errors.New("gagal menyimpan artikel")
+	}
+
+	return nil
 }
 
-func (s *ArticleService) CalculatePaginationValues(page int, totalItems int, perPage int) (int, int) {
-	pageInt := page
-	if pageInt <= 0 {
-		pageInt = 1
+func (s *ArticleService) DeleteBookmarkArticle(userID, articleID uint64) error {
+	bookmarked, err := s.repo.IsArticleAlreadyBookmarked(userID, articleID)
+	if err != nil {
+		return errors.New("gagal mengecek artikel")
 	}
 
-	total_pages := int(math.Ceil(float64(totalItems) / float64(perPage)))
-
-	if pageInt > total_pages {
-		pageInt = total_pages
+	if !bookmarked {
+		return errors.New("artikel tidak ditemukan")
 	}
 
-	return pageInt, total_pages
+	errDelete := s.repo.DeleteBookmarkArticle(userID, articleID)
+	if errDelete != nil {
+		return errors.New("gagal menghapus artikel tersimpan")
+	}
+	return nil
 }
 
-func (s *ArticleService) GetNextPage(currentPage, totalPages int) int {
-	if currentPage < totalPages {
-		return currentPage + 1
+func (s *ArticleService) GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error) {
+	userBookmarkArticle, err := s.repo.GetUserBookmarkArticle(userID)
+	if err != nil {
+		return nil, errors.New("gagal mendapatkan artikel tersimpan user")
 	}
-	return totalPages
+	return userBookmarkArticle, nil
 }
 
-func (s *ArticleService) GetPrevPage(currentPage int) int {
-	if currentPage > 1 {
-		return currentPage - 1
+func (s *ArticleService) GetLatestArticles() ([]entities.ArticleModels, error) {
+	articles, err := s.repo.GetLatestArticle()
+	if err != nil {
+		return nil, errors.New("gagal mengambil artikel: " + err.Error())
 	}
-	return 1
+
+	return articles, nil
+}
+
+func (s *ArticleService) GetArticlesByViews(sortType string) ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
+	var err error
+	if sortType == "asc" {
+		articles, err = s.repo.GetArticleByViewsAsc()
+		if err != nil {
+			return nil, errors.New("gagal mengambil artikel: " + err.Error())
+		}
+	} else if sortType == "desc" {
+		articles, err = s.repo.GetArticleByViewsDesc()
+		if err != nil {
+			return nil, errors.New("gagal mengambil artikel: " + err.Error())
+		}
+	}
+
+	return articles, nil
+}
+
+func (s *ArticleService) GetArticlesBySortedTitle(sortType string) ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
+	var err error
+	if sortType == "asc" {
+		articles, err = s.repo.GetArticleByTitleAsc()
+		if err != nil {
+			return nil, errors.New("gagal mengambil artikel: " + err.Error())
+		}
+
+		return articles, nil
+	} else if sortType == "desc" {
+		articles, err = s.repo.GetArticleByTitleDesc()
+		if err != nil {
+			return nil, errors.New("gagal mengambil artikel: " + err.Error())
+		}
+
+		return articles, nil
+	}
+
+	return nil, nil
 }

@@ -47,25 +47,21 @@ func (r *ArticleRepository) UpdateArticleViews(article *entities.ArticleModels) 
 }
 
 func (r *ArticleRepository) DeleteArticleById(id uint64) error {
-	var article entities.ArticleModels
-	if err := r.db.First(&article, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil
-		}
+	article := &entities.ArticleModels{}
+	if err := r.db.First(article, id).Error; err != nil {
 		return err
 	}
 
-	if err := r.db.Delete(&article).Error; err != nil {
+	if err := r.db.Model(article).Update("deleted_at", time.Now()).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *ArticleRepository) FindAll(page, perpage int) ([]entities.ArticleModels, error) {
+func (r *ArticleRepository) FindAll() ([]entities.ArticleModels, error) {
 	var articles []entities.ArticleModels
-	offset := (page - 1) * perpage
-	err := r.db.Offset(offset).Limit(perpage).Find(&articles).Error
+	err := r.db.Where("deleted_at IS NULL").Find(&articles).Error
 	if err != nil {
 		return nil, err
 	}
@@ -73,35 +69,14 @@ func (r *ArticleRepository) FindAll(page, perpage int) ([]entities.ArticleModels
 	return articles, nil
 }
 
-func (r *ArticleRepository) GetTotalArticleCount() (int64, error) {
-	var count int64
-	err := r.db.Model(&entities.ArticleModels{}).Count(&count).Error
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
-}
-
-func (r *ArticleRepository) FindByTitle(page, perpage int, title string) ([]entities.ArticleModels, error) {
+func (r *ArticleRepository) FindByTitle(title string) ([]entities.ArticleModels, error) {
 	var articles []entities.ArticleModels
-	offset := (page - 1) * perpage
-	err := r.db.Offset(offset).Limit(perpage).Where("title LIKE?", "%"+title+"%").Find(&articles).Error
+	err := r.db.Where("deleted_at IS NULL AND title LIKE?", "%"+title+"%").Find(&articles).Error
 	if err != nil {
 		return nil, err
 	}
 
 	return articles, nil
-}
-
-func (r *ArticleRepository) GetTotalArticleCountByTitle(title string) (int64, error) {
-	var count int64
-	err := r.db.Model(&entities.ArticleModels{}).Where("title LIKE?", "%"+title+"%").Count(&count).Error
-	if err != nil {
-		return 0, err
-	}
-
-	return count, err
 }
 
 func (r *ArticleRepository) GetArticleById(id uint64) (*entities.ArticleModels, error) {
@@ -112,21 +87,92 @@ func (r *ArticleRepository) GetArticleById(id uint64) (*entities.ArticleModels, 
 	return &article, nil
 }
 
-func (r *ArticleRepository) GetArticlesByDateRange(page, perpage int, startDate, endDate time.Time) ([]entities.ArticleModels, error) {
+func (r *ArticleRepository) GetArticlesByDateRange(startDate, endDate time.Time) ([]entities.ArticleModels, error) {
 	var articles []entities.ArticleModels
-	offset := (page - 1) * perpage
-	if err := r.db.Offset(offset).Limit(perpage).Where("updated_at BETWEEN ? AND ?", startDate, endDate).Find(&articles).Error; err != nil {
+	if err := r.db.Where("created_at BETWEEN ? AND ? AND deleted_at IS NULL", startDate, endDate).Find(&articles).Error; err != nil {
 		return nil, err
 	}
 	return articles, nil
 }
 
-func (r *ArticleRepository) GetTotalArticleCountByDateRange(startDate, endDate time.Time) (int64, error) {
-	var count int64
-	err := r.db.Model(&entities.ArticleModels{}).Where("updated_at BETWEEN ? AND ?", startDate, endDate).Count(&count).Error
+func (r *ArticleRepository) IsArticleAlreadyBookmarked(userID uint64, articleID uint64) (bool, error) {
+	var exitingBookmark entities.ArticleBookmarkModels
+	err := r.db.Where("user_id = ? AND article_id = ?", userID, articleID).First(&exitingBookmark).Error
 	if err != nil {
-		return 0, err
+		return false, nil
+	}
+	return true, nil
+}
+
+func (r *ArticleRepository) BookmarkArticle(bookmarkArticle *entities.ArticleBookmarkModels) error {
+	if err := r.db.Create(&bookmarkArticle).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ArticleRepository) DeleteBookmarkArticle(userID, articleID uint64) error {
+	if err := r.db.Where("user_id = ? AND article_id = ?", userID, articleID).Delete(&entities.ArticleBookmarkModels{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ArticleRepository) GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error) {
+	var userBookmarks []*entities.ArticleBookmarkModels
+
+	if err := r.db.Preload("Article").Where("user_id =?", userID).Find(&userBookmarks).Error; err != nil {
+		return nil, err
+	}
+	return userBookmarks, nil
+}
+
+func (r *ArticleRepository) GetLatestArticle() ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
+
+	if err := r.db.Limit(5).Order("created_at desc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
+		return nil, err
 	}
 
-	return count, err
+	return articles, nil
+}
+
+func (r *ArticleRepository) GetArticleByViewsAsc() ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
+
+	if err := r.db.Order("views asc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}
+
+func (r *ArticleRepository) GetArticleByViewsDesc() ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
+
+	if err := r.db.Order("views desc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}
+
+func (r *ArticleRepository) GetArticleByTitleAsc() ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
+
+	if err := r.db.Order("title asc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}
+
+func (r *ArticleRepository) GetArticleByTitleDesc() ([]entities.ArticleModels, error) {
+	var articles []entities.ArticleModels
+
+	if err := r.db.Order("title desc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
+		return nil, err
+	}
+
+	return articles, nil
 }
