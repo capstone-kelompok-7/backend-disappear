@@ -14,3 +14,6 @@ type ChatRequest struct {
 	Text      string `json:"text" form:"text"`
 	CreatedAt time.Time
 }
+type GenerateArtikelAiRequest struct {
+	Text string `json:"text" form:"text"`
+}
