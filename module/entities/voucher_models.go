@@ -14,9 +14,12 @@ type VoucherModels struct {
 	MinPurchase uint64     `gorm:"column:min_purchase;type:BIGINT UNSIGNED" json:"min_purchase" `
 	Stock       uint64     `gorm:"column:stock;type:BIGINT UNSIGNED" json:"stock" `
 	Status      string     `gorm:"column:status;type:VARCHAR(255)" json:"status" `
-	CreatedAt   time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	UpdatedAt   time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt   *time.Time `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
+	// CreatedAt   time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	// UpdatedAt   time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	// DeletedAt   *time.Time `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
+	CreatedAt time.Time    `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time    `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt *time.Time   `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 }
 
 func (VoucherModels) TableName() string {

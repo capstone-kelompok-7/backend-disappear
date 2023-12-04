@@ -15,9 +15,12 @@ type UserModels struct {
 	Level          string          `gorm:"column:level;type:VARCHAR(255)" json:"level"`
 	Exp            uint64          `gorm:"column:exp;type:BIGINT UNSIGNED" json:"exp"`
 	IsVerified     bool            `gorm:"column:is_verified;default:false" json:"is_verified"`
-	CreatedAt      time.Time       `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	UpdatedAt      time.Time       `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt      *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
+	// CreatedAt      time.Time       `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	// UpdatedAt      time.Time       `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	// DeletedAt      *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
+	CreatedAt time.Time    `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time    `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt *time.Time   `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Address        []AddressModels `gorm:"foreignKey:UserID" json:"addresses"`
 	Reviews        []ReviewModels  `gorm:"foreignKey:UserID" json:"reviews"`
 }
@@ -29,9 +32,12 @@ type AddressModels struct {
 	Phone        string     `gorm:"column:phone;type:VARCHAR(255)" json:"phone"`
 	Address      string     `gorm:"column:address;type:VARCHAR(255)" json:"address"`
 	IsPrimary    bool       `gorm:"column:is_primary;type:BOOLEAN" json:"is_primary"`
-	CreatedAt    time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	UpdatedAt    time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
+	// CreatedAt    time.Time  `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	// UpdatedAt    time.Time  `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	// DeletedAt    *time.Time `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
+	CreatedAt time.Time    `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time    `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt *time.Time   `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 }
 
 type OTPModels struct {
