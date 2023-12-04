@@ -19,10 +19,12 @@ type ServicChatbotInterface interface {
 	CreateQuestion(chat entities.ChatModel) error
 	CreateAnswer(chat entities.ChatModel) (string, error)
 	GetAnswerFromAi(chat []openai.ChatCompletionMessage, ctx context.Context) (openai.ChatCompletionResponse, error)
+	GenerateArtikelAi(judul string) (string, error)
 }
 
 type HandlerChatbotInterface interface {
 	GetChatByIdUser() echo.HandlerFunc
 	CreateQuestion() echo.HandlerFunc
 	CreateAnswer() echo.HandlerFunc
+	GenerateArtikelAi() echo.HandlerFunc
 }

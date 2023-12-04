@@ -151,6 +151,7 @@ func RouteChatbot(e *echo.Echo, h chatbot.HandlerChatbotInterface, jwtService ut
 	chatbotGroup.POST("/question", h.CreateQuestion(), middlewares.AuthMiddleware(jwtService, userService))
 	chatbotGroup.POST("/answer", h.CreateAnswer(), middlewares.AuthMiddleware(jwtService, userService))
 	chatbotGroup.GET("/:id", h.GetChatByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
+	chatbotGroup.POST("/generate", h.GenerateArtikelAi(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteDashboard(e *echo.Echo, h dashboard.HandlerDashboardInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
