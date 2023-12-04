@@ -91,19 +91,24 @@ func FormatterProduct(products []*entities.ProductModels) []*ProductFormatter {
 }
 
 type ProductDetailFormatter struct {
-	ID          uint64                  `json:"id"`
-	Name        string                  `json:"name"`
-	Description string                  `json:"description"`
-	GramPlastic uint64                  `json:"gram_plastic"`
-	Stock       uint64                  `json:"stock"`
-	Discount    uint64                  `json:"discount"`
-	Exp         uint64                  `json:"exp"`
-	Price       uint64                  `json:"price"`
-	Rating      float64                 `json:"rating"`
-	TotalReview uint64                  `json:"total_review"`
-	Categories  []CategoryFormatter     `json:"categories"`
-	Images      []ProductImageFormatter `json:"image_url"`
-	Reviews     []ReviewFormatter       `json:"reviews"`
+	ID                 uint64                  `json:"id"`
+	Name               string                  `json:"name"`
+	Description        string                  `json:"description"`
+	GramPlastic        uint64                  `json:"gram_plastic"`
+	Stock              uint64                  `json:"stock"`
+	Discount           uint64                  `json:"discount"`
+	Exp                uint64                  `json:"exp"`
+	Price              uint64                  `json:"price"`
+	CurrentRatingFive  uint64                  `json:"current_rating_five"`
+	CurrentRatingFour  uint64                  `json:"current_rating_four"`
+	CurrentRatingThree uint64                  `json:"current_rating_three"`
+	CurrentRatingTwo   uint64                  `json:"current_rating_two"`
+	CurrentRatingOne   uint64                  `json:"current_rating_one"`
+	Rating             float64                 `json:"rating"`
+	TotalReview        uint64                  `json:"total_review"`
+	Categories         []CategoryFormatter     `json:"categories"`
+	Images             []ProductImageFormatter `json:"image_url"`
+	Reviews            []ReviewFormatter       `json:"reviews"`
 }
 
 type CreateProductFormatter struct {
@@ -173,6 +178,28 @@ func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter 
 		Rating:      product.Rating,
 		TotalReview: product.TotalReview,
 	}
+
+	var currentRatingFive, currentRatingFour, currentRatingThree, currentRatingTwo, currentRatingOne uint64
+	for _, review := range product.ProductReview {
+		switch review.Rating {
+		case 5:
+			currentRatingFive++
+		case 4:
+			currentRatingFour++
+		case 3:
+			currentRatingThree++
+		case 2:
+			currentRatingTwo++
+		case 1:
+			currentRatingOne++
+		}
+	}
+
+	productFormatter.CurrentRatingFive = currentRatingFive
+	productFormatter.CurrentRatingFour = currentRatingFour
+	productFormatter.CurrentRatingThree = currentRatingThree
+	productFormatter.CurrentRatingTwo = currentRatingTwo
+	productFormatter.CurrentRatingOne = currentRatingOne
 
 	var categories []CategoryFormatter
 	for _, category := range product.Categories {
