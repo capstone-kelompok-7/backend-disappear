@@ -19,6 +19,7 @@ type RepositoryOrderInterface interface {
 	UpdateOrderStatus(req *dto.UpdateOrderStatus) error
 	GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error)
 	GetAllOrdersWithFilter(userID uint64, orderStatus string) ([]*entities.OrderModels, error)
+	AcceptOrder(orderID, orderStatus string) error
 }
 
 type ServiceOrderInterface interface {
@@ -36,6 +37,7 @@ type ServiceOrderInterface interface {
 	UpdateOrderStatus(req *dto.UpdateOrderStatus) error
 	GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error)
 	GetAllOrdersWithFilter(userID uint64, orderStatus string) ([]*entities.OrderModels, error)
+	AcceptOrder(orderID string) error
 }
 
 type HandlerOrderInterface interface {
@@ -48,4 +50,5 @@ type HandlerOrderInterface interface {
 	Callback() echo.HandlerFunc
 	UpdateOrderStatus() echo.HandlerFunc
 	GetAllOrderByUserID() echo.HandlerFunc
+	AcceptOrder() echo.HandlerFunc
 }

@@ -537,3 +537,17 @@ func (s *OrderService) GetAllOrdersWithFilter(userID uint64, orderStatus string)
 	}
 	return result, nil
 }
+
+func (s *OrderService) AcceptOrder(orderID string) error {
+	orders, err := s.repo.GetOrderById(orderID)
+	if err != nil {
+		return errors.New("pesanan tidak ditemukan")
+	}
+	orders.OrderStatus = "Selesai"
+
+	if err := s.repo.AcceptOrder(orders.ID, orders.OrderStatus); err != nil {
+		return err
+	}
+
+	return nil
+}

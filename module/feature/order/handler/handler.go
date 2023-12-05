@@ -222,3 +222,21 @@ func (h *OrderHandler) GetAllOrderByUserID() echo.HandlerFunc {
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan data order customer", dto.FormatterGetAllOrderUser(result))
 	}
 }
+
+func (h *OrderHandler) AcceptOrder() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		orderID := c.Param("id")
+		if orderID == "" {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		}
+		err := h.service.AcceptOrder(orderID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mengkonfirmasi pesanan: "+err.Error())
+		}
+		return response.SendStatusOkResponse(c, "Berhasil mengkonfirmasi pesanan")
+	}
+}
