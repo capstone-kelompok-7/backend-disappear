@@ -180,3 +180,80 @@ func FormatUserProfileResponse(user *entities.UserModels) *UserProfileResponse {
 	}
 	return userFormatter
 }
+
+type UserPersonalizationResponse struct {
+	ID         uint64 `json:"id"`
+	UserID     uint64 `json:"user_id"`
+	IsuID      uint64 `json:"isu_id"`
+	CategoryID uint64 `json:"category_id"`
+}
+
+func FormatUserPersonalizationResponse(user *entities.PersonalizationModels) *UserPersonalizationResponse {
+	userFormatter := &UserPersonalizationResponse{
+		ID:         user.ID,
+		UserID:     user.UserID,
+		IsuID:      user.IsuID,
+		CategoryID: user.CategoryID,
+	}
+	return userFormatter
+}
+
+func FormatterUserPersonalization(users []*entities.PersonalizationModels) []*UserPersonalizationResponse {
+	usersFormatters := make([]*UserPersonalizationResponse, 0)
+
+	for _, user := range users {
+		formattedUser := FormatUserPersonalizationResponse(user)
+		usersFormatters = append(usersFormatters, formattedUser)
+	}
+
+	return usersFormatters
+}
+
+// func FormatterUserPersonalization(users []*entities.PersonalizationModels) []*UserPersonalizationResponse {
+// 	usersFormatters := make([]*UserPersonalizationResponse, 0)
+
+// 	for _, user := range users {
+// 		found := false
+// 		for _, formattedUser := range usersFormatters {
+// 			if formattedUser.UserID == user.UserID {
+// 				formattedUser.IsuID = user.IsuID
+// 				formattedUser.ProductID = user.ProductID
+// 				found = true
+// 				break
+// 			}
+// 		}
+
+// 		if !found {
+// 			formattedUser := FormatUserPersonalizationResponse(user)
+// 			usersFormatters = append(usersFormatters, formattedUser)
+// 		}
+// 	}
+
+// 	return usersFormatters
+// }
+
+type EnvironmentIssuesResponse struct {
+	ID    uint64 `json:"id"`
+	Name  string `json:"name"`
+	Photo string `json:"photo"`
+}
+
+func FormatEnvironmentIssuesResponse(environmentIssue *entities.EnvironmentIssuesModels) *EnvironmentIssuesResponse {
+	environmentIssues := &EnvironmentIssuesResponse{
+		ID:    environmentIssue.ID,
+		Name:  environmentIssue.Name,
+		Photo: environmentIssue.Photo,
+	}
+	return environmentIssues
+}
+
+func FormatterEnvironmentIssues(environmentIssues []*entities.EnvironmentIssuesModels) []*EnvironmentIssuesResponse {
+	environmentIssuesFormatters := make([]*EnvironmentIssuesResponse, 0)
+
+	for _, environmentIssue := range environmentIssues {
+		formattedEnvironmentIssues := FormatEnvironmentIssuesResponse(environmentIssue)
+		environmentIssuesFormatters = append(environmentIssuesFormatters, formattedEnvironmentIssues)
+	}
+
+	return environmentIssuesFormatters
+}

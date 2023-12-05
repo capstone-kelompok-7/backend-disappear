@@ -235,3 +235,53 @@ func (r *UserRepository) GetUserChallengeActivity(userID uint64) (int, int, int,
 	return numSuccess, numFailed, total, nil
 
 }
+
+func (r *UserRepository) FindAllPersonalization() ([]*entities.PersonalizationModels, error) {
+	var personalizations []*entities.PersonalizationModels
+
+	err := r.db.Preload("Isu").Preload("Category").Preload("User").Find(&personalizations).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return personalizations, nil
+}
+
+func (r *UserRepository) FindAllEnvironmentsIsues() ([]*entities.EnvironmentIssuesModels, error) {
+	var environmentIssues []*entities.EnvironmentIssuesModels
+	err := r.db.Find(&environmentIssues).Error
+	if err != nil {
+		return nil, err
+	}
+	return environmentIssues, nil
+}
+
+func (r *UserRepository) CreateUserPersonalization(userID uint64, req *dto.UserPersonalizationRequest) ([]*entities.PersonalizationModels, error) {
+	var userPersonalizedData []*entities.PersonalizationModels
+
+	for _, isuID := range req.IsuID {
+		for _, categoryID := range req.CategoryID {
+			newUserPersonalized := &entities.PersonalizationModels{
+				UserID:     userID,
+				IsuID:      isuID,
+				CategoryID: categoryID,
+			}
+
+			if err := r.db.Create(newUserPersonalized).Error; err != nil {
+				return nil, err
+			}
+
+			userPersonalizedData = append(userPersonalizedData, newUserPersonalized)
+		}
+	}
+
+	return userPersonalizedData, nil
+}
+
+func (r *UserRepository) GetUserPersonalization(userID uint64) ([]*entities.PersonalizationModels, error) {
+	var personalizations []*entities.PersonalizationModels
+	if err := r.db.Where("user_id = ?", userID).Find(&personalizations).Error; err != nil {
+		return nil, err
+	}
+	return personalizations, nil
+}

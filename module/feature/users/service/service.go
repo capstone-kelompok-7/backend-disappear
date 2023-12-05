@@ -269,3 +269,34 @@ func (s *UserService) GetUserProfile(userID uint64) (*entities.UserModels, error
 	return result, nil
 
 }
+
+func (s *UserService) GetAllUserPersonalization() ([]*entities.PersonalizationModels, error) {
+	userPersonalizations, err := s.repo.FindAllPersonalization()
+	if err != nil {
+		return nil, err
+	}
+
+	return userPersonalizations, nil
+}
+
+func (s *UserService) GetAllEnvironmentsIsues() ([]*entities.EnvironmentIssuesModels, error) {
+	environmentIssues, err := s.repo.FindAllEnvironmentsIsues()
+	if err != nil {
+		return nil, err
+	}
+
+	return environmentIssues, nil
+}
+
+func (s *UserService) CreateUserPersonalization(userID uint64, req *dto.UserPersonalizationRequest) ([]*entities.PersonalizationModels, error) {
+	results, err := s.repo.CreateUserPersonalization(userID, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (s *UserService) GetUserPersonalization(userID uint64) ([]*entities.PersonalizationModels, error) {
+	return s.repo.GetUserPersonalization(userID)
+}

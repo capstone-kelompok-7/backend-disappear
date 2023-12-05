@@ -26,6 +26,10 @@ type RepositoryUserInterface interface {
 	GetLeaderboardByExp(limit int) ([]*entities.UserModels, error)
 	GetUserTransactionActivity(userID uint64) (int, int, int, error)
 	GetUserChallengeActivity(userID uint64) (int, int, int, error)
+	FindAllPersonalization() ([]*entities.PersonalizationModels, error)
+	FindAllEnvironmentsIsues() ([]*entities.EnvironmentIssuesModels, error)
+	CreateUserPersonalization(userID uint64, req *dto.UserPersonalizationRequest) ([]*entities.PersonalizationModels, error)
+	GetUserPersonalization(userID uint64) ([]*entities.PersonalizationModels, error)
 }
 
 type ServiceUserInterface interface {
@@ -48,6 +52,10 @@ type ServiceUserInterface interface {
 	GetUserTransactionActivity(userID uint64) (int, int, int, error)
 	GetUserChallengeActivity(userID uint64) (int, int, int, error)
 	GetUserProfile(userID uint64) (*entities.UserModels, error)
+	GetAllUserPersonalization() ([]*entities.PersonalizationModels, error)
+	GetAllEnvironmentsIsues() ([]*entities.EnvironmentIssuesModels, error)
+	CreateUserPersonalization(userID uint64, req *dto.UserPersonalizationRequest) ([]*entities.PersonalizationModels, error)
+	GetUserPersonalization(userID uint64) ([]*entities.PersonalizationModels, error)
 }
 
 type HandlerUserInterface interface {
@@ -60,4 +68,8 @@ type HandlerUserInterface interface {
 	GetLeaderboard() echo.HandlerFunc
 	GetUserTransactionActivity() echo.HandlerFunc
 	GetUserProfile() echo.HandlerFunc
+
+	GetAllUserPersonalization() echo.HandlerFunc
+	GetAllEnvironmentsIsues() echo.HandlerFunc
+	CreateUserPersonalization() echo.HandlerFunc
 }
