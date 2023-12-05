@@ -513,3 +513,27 @@ func (s *OrderService) UpdateOrderStatus(req *dto.UpdateOrderStatus) error {
 
 	return nil
 }
+
+func (s *OrderService) GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error) {
+	user, err := s.userService.GetUsersById(userID)
+	if err != nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+	result, err := s.repo.GetAllOrdersByUserID(user.ID)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s *OrderService) GetAllOrdersWithFilter(userID uint64, orderStatus string) ([]*entities.OrderModels, error) {
+	user, err := s.userService.GetUsersById(userID)
+	if err != nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+	result, err := s.repo.GetAllOrdersWithFilter(user.ID, orderStatus)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}

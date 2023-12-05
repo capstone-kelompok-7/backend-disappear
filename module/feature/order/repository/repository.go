@@ -177,3 +177,33 @@ func (r *OrderRepository) UpdateOrderStatus(req *dto.UpdateOrderStatus) error {
 
 	return nil
 }
+
+func (r *OrderRepository) GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error) {
+	var orders []*entities.OrderModels
+
+	if err := r.db.
+		Preload("OrderDetails").
+		Preload("OrderDetails.Product").
+		Preload("OrderDetails.Product.ProductPhotos").
+		Where("user_id = ? AND deleted_at IS NULL", userID).
+		Find(&orders).Error; err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func (r *OrderRepository) GetAllOrdersWithFilter(userID uint64, orderStatus string) ([]*entities.OrderModels, error) {
+	var orders []*entities.OrderModels
+
+	if err := r.db.
+		Preload("OrderDetails").
+		Preload("OrderDetails.Product").
+		Preload("OrderDetails.Product.ProductPhotos").
+		Where("user_id = ? AND order_status = ? AND deleted_at IS NULL", userID, orderStatus).
+		Find(&orders).Error; err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}

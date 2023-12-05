@@ -201,3 +201,24 @@ func (h *OrderHandler) UpdateOrderStatus() echo.HandlerFunc {
 		return response.SendStatusOkResponse(c, "Berhasil memperbarui status pesanan")
 	}
 }
+
+func (h *OrderHandler) GetAllOrderByUserID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		orderStatus := c.QueryParam("order_status")
+
+		var result []*entities.OrderModels
+		var err error
+
+		if orderStatus == "" {
+			result, err = h.service.GetAllOrdersByUserID(currentUser.ID)
+		} else {
+			result, err = h.service.GetAllOrdersWithFilter(currentUser.ID, orderStatus)
+		}
+
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan data order customer: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan data order customer", dto.FormatterGetAllOrderUser(result))
+	}
+}
