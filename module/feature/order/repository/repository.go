@@ -207,3 +207,13 @@ func (r *OrderRepository) GetAllOrdersWithFilter(userID uint64, orderStatus stri
 
 	return orders, nil
 }
+
+func (r *OrderRepository) AcceptOrder(orderID, orderStatus string) error {
+	if err := r.db.Model(&entities.OrderModels{}).
+		Where("id = ?", orderID).
+		Update("order_status", orderStatus).
+		Error; err != nil {
+		return err
+	}
+	return nil
+}
