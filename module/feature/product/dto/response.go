@@ -106,6 +106,7 @@ type ProductDetailFormatter struct {
 	CurrentRatingOne   uint64                  `json:"current_rating_one"`
 	Rating             float64                 `json:"rating"`
 	TotalReview        uint64                  `json:"total_review"`
+	TotalSold          uint64                  `json:"total_sold"`
 	Categories         []CategoryFormatter     `json:"categories"`
 	Images             []ProductImageFormatter `json:"image_url"`
 	Reviews            []ReviewFormatter       `json:"reviews"`
@@ -150,6 +151,7 @@ func ProductPhotoCreatedResponse(productPhoto *entities.ProductPhotosModels) Cre
 	response.Image = productPhoto.ImageURL
 	return response
 }
+
 func ConvertReviewPhotoModelsToResponse(photos []entities.ReviewPhotoModels) []ReviewPhotoResponse {
 	var photoResponses []ReviewPhotoResponse
 
@@ -165,7 +167,7 @@ func ConvertReviewPhotoModelsToResponse(photos []entities.ReviewPhotoModels) []R
 	return photoResponses
 }
 
-func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter {
+func FormatProductDetail(product entities.ProductModels, totalSold uint64) ProductDetailFormatter {
 	productFormatter := ProductDetailFormatter{
 		ID:          product.ID,
 		Name:        product.Name,
@@ -177,6 +179,7 @@ func FormatProductDetail(product entities.ProductModels) ProductDetailFormatter 
 		Exp:         product.Exp,
 		Rating:      product.Rating,
 		TotalReview: product.TotalReview,
+		TotalSold:   totalSold,
 	}
 
 	var currentRatingFive, currentRatingFour, currentRatingThree, currentRatingTwo, currentRatingOne uint64

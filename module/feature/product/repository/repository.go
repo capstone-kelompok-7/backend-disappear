@@ -245,7 +245,7 @@ func (r *ProductRepository) GetProductByAlphabet(page, perPage int) ([]*entities
 
 	query := r.db.Model(&entities.ProductModels{})
 
-	query = query.Order("name asc")
+	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Order("name asc").Where("deleted_at IS NULL")
 
 	if err := query.Count(&totalItems).Error; err != nil {
 		return nil, 0, err
@@ -265,7 +265,7 @@ func (r *ProductRepository) GetProductByLatest(page, perPage int) ([]*entities.P
 
 	query := r.db.Model(&entities.ProductModels{})
 
-	query = query.Order("created_at desc")
+	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Order("created_at desc").Where("deleted_at IS NULL")
 
 	if err := query.Count(&totalItems).Error; err != nil {
 		return nil, 0, err
@@ -284,7 +284,7 @@ func (r *ProductRepository) GetProductsByHighestPrice(page, perPage int) ([]*ent
 
 	query := r.db.Model(&entities.ProductModels{})
 
-	query = query.Order("price desc")
+	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Order("price desc").Where("deleted_at IS NULL")
 
 	if err := query.Count(&totalItems).Error; err != nil {
 		return nil, 0, err
@@ -303,7 +303,43 @@ func (r *ProductRepository) GetProductsByLowestPrice(page, perPage int) ([]*enti
 
 	query := r.db.Model(&entities.ProductModels{})
 
-	query = query.Order("price asc")
+	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Order("price asc").Where("deleted_at IS NULL")
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func (r *ProductRepository) GetTotalProductSold() (uint64, error) {
+	var totalSold uint64
+
+	query := `
+        SELECT 
+            COALESCE(SUM(quantity), 0) as total_sold 
+        FROM 
+            order_details
+    `
+
+	if err := r.db.Raw(query).Row().Scan(&totalSold); err != nil {
+		return 0, err
+	}
+
+	return totalSold, nil
+}
+
+func (r *ProductRepository) GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.ProductModels{})
+
+	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Where("discount > ? AND deleted_at IS NULL", 0)
 
 	if err := query.Count(&totalItems).Error; err != nil {
 		return nil, 0, err
