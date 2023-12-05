@@ -305,3 +305,19 @@ func (s *ProductService) GetProductsByLowestPrice(page, perPage int) ([]*entitie
 	}
 	return products, totalItems, nil
 }
+
+func (s *ProductService) GetTotalProductSold() (uint64, error) {
+	totalSold, err := s.repo.GetTotalProductSold()
+	if err != nil {
+		return 0, err
+	}
+	return totalSold, nil
+}
+
+func (s *ProductService) GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error) {
+	products, totalItems, err := s.repo.GetDiscountedProducts(page, perPage)
+	if err != nil {
+		return nil, 0, errors.New("gagal filter produk dari promo")
+	}
+	return products, totalItems, nil
+}

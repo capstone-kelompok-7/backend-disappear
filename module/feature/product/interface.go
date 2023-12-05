@@ -28,6 +28,8 @@ type RepositoryProductInterface interface {
 	GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetTotalProductSold() (uint64, error)
+	GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error)
 }
 
 type ServiceProductInterface interface {
@@ -52,6 +54,8 @@ type ServiceProductInterface interface {
 	GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetTotalProductSold() (uint64, error)
+	GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error)
 }
 
 type HandlerProductInterface interface {

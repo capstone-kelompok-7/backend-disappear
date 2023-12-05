@@ -51,6 +51,8 @@ func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 					products, totalItems, err = h.service.GetProductsByHighestPrice(pageConv, perPage)
 				case "termurah":
 					products, totalItems, err = h.service.GetProductsByLowestPrice(pageConv, perPage)
+				case "promo":
+					products, totalItems, err = h.service.GetDiscountedProducts(pageConv, perPage)
 				default:
 					return response.SendBadRequestResponse(c, "Filter tidak valid")
 				}
@@ -106,7 +108,11 @@ func (h *ProductHandler) GetProductById() echo.HandlerFunc {
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail produk: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail produk", dto.FormatProductDetail(*getProductID))
+		getTotalSold, err := h.service.GetTotalProductSold()
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail produk: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail produk", dto.FormatProductDetail(*getProductID, getTotalSold))
 	}
 }
 
