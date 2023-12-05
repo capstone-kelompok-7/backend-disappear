@@ -306,3 +306,91 @@ func CreateOrderFormatter(order *entities.OrderModels) OrderCreationResponse {
 	orderResponse.OrderDetails = orderDetails
 	return orderResponse
 }
+
+// GetAllOrderUserResponse Respon to Get Order By UserID
+type GetAllOrderUserResponse struct {
+	ID              string                `json:"id"`
+	IdOrder         string                `json:"id_order"`
+	UserID          uint64                `json:"user_id"`
+	Note            string                `json:"note"`
+	TotalAmountPaid uint64                `json:"total_amount_paid"`
+	OrderStatus     string                `json:"order_status"`
+	PaymentStatus   string                `json:"payment_status"`
+	PaymentMethod   string                `json:"payment_method"`
+	ExtraInfo       string                `json:"extra_info"`
+	StatusOrderDate time.Time             `json:"status_order_date"`
+	CreatedAt       time.Time             `json:"created_at"`
+	OrderDetails    []OrderDetailResponse `json:"order_details"`
+}
+
+func FormatGetAllOrderUser(order *entities.OrderModels) *GetAllOrderUserResponse {
+	orderResponse := &GetAllOrderUserResponse{
+		ID:              order.ID,
+		IdOrder:         order.IdOrder,
+		UserID:          order.UserID,
+		Note:            order.Note,
+		TotalAmountPaid: order.TotalAmountPaid,
+		OrderStatus:     order.OrderStatus,
+		PaymentStatus:   order.PaymentStatus,
+		PaymentMethod:   order.PaymentMethod,
+		StatusOrderDate: order.StatusOrderDate,
+		ExtraInfo:       order.ExtraInfo,
+		CreatedAt:       order.CreatedAt,
+	}
+
+	var orderDetails []OrderDetailResponse
+	for _, detail := range order.OrderDetails {
+		var productPhotos []ProductPhotoResponse
+		for _, photo := range detail.Product.ProductPhotos {
+			productPhotos = append(productPhotos, ProductPhotoResponse{
+				ID:        photo.ID,
+				ProductID: photo.ProductID,
+				URL:       photo.ImageURL,
+			})
+		}
+
+		orderDetail := OrderDetailResponse{
+			ID:               detail.ID,
+			OrderID:          detail.OrderID,
+			ProductID:        detail.ProductID,
+			Quantity:         detail.Quantity,
+			TotalGramPlastic: detail.TotalGramPlastic,
+			TotalExp:         detail.TotalExp,
+			TotalPrice:       detail.TotalPrice,
+			TotalDiscount:    detail.TotalDiscount,
+			Product: ProductResponse{
+				ID:            detail.Product.ID,
+				Name:          detail.Product.Name,
+				Price:         detail.Product.Price,
+				Discount:      detail.Product.Discount,
+				GramPlastic:   detail.Product.GramPlastic,
+				ProductExp:    detail.Product.Exp,
+				ProductPhotos: productPhotos,
+			},
+		}
+		if len(detail.Product.ProductPhotos) > 0 {
+			productPhoto := ProductPhotoResponse{
+				ID:        detail.Product.ProductPhotos[0].ID,
+				ProductID: detail.Product.ProductPhotos[0].ProductID,
+				URL:       detail.Product.ProductPhotos[0].ImageURL,
+			}
+			orderDetail.Product.ProductPhotos = []ProductPhotoResponse{productPhoto}
+		}
+		orderDetails = append(orderDetails, orderDetail)
+	}
+
+	orderResponse.OrderDetails = orderDetails
+
+	return orderResponse
+}
+
+func FormatterGetAllOrderUser(orders []*entities.OrderModels) []*GetAllOrderUserResponse {
+	var orderFormatters []*GetAllOrderUserResponse
+
+	for _, order := range orders {
+		formattedOrder := FormatGetAllOrderUser(order)
+		orderFormatters = append(orderFormatters, formattedOrder)
+	}
+
+	return orderFormatters
+}

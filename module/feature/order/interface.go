@@ -17,6 +17,8 @@ type RepositoryOrderInterface interface {
 	ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error)
 	CheckTransaction(orderID string) (dto.Status, error)
 	UpdateOrderStatus(req *dto.UpdateOrderStatus) error
+	GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error)
+	GetAllOrdersWithFilter(userID uint64, orderStatus string) ([]*entities.OrderModels, error)
 }
 
 type ServiceOrderInterface interface {
@@ -32,6 +34,8 @@ type ServiceOrderInterface interface {
 	CancelPayment(orderID string) error
 	CallBack(notifPayload map[string]any) error
 	UpdateOrderStatus(req *dto.UpdateOrderStatus) error
+	GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error)
+	GetAllOrdersWithFilter(userID uint64, orderStatus string) ([]*entities.OrderModels, error)
 }
 
 type HandlerOrderInterface interface {
@@ -43,4 +47,5 @@ type HandlerOrderInterface interface {
 	CancelPayment() echo.HandlerFunc
 	Callback() echo.HandlerFunc
 	UpdateOrderStatus() echo.HandlerFunc
+	GetAllOrderByUserID() echo.HandlerFunc
 }
