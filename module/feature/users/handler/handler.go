@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"mime/multipart"
+	"strconv"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users/dto"
@@ -8,8 +11,6 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/upload"
 	"github.com/labstack/echo/v4"
-	"mime/multipart"
-	"strconv"
 )
 
 type UserHandler struct {
@@ -229,5 +230,51 @@ func (h *UserHandler) GetUserProfile() echo.HandlerFunc {
 		}
 
 		return response.SendSuccessResponse(c, "Berhasil mendapat detail pengguna", dto.FormatUserProfileResponse(user))
+	}
+}
+
+func (h *UserHandler) GetAllUserPersonalization() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userPersonalizations, err := h.service.GetAllUserPersonalization()
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan data personalisasi pengguna: "+err.Error())
+		}
+
+		formattedUserPersonalizations := dto.FormatterUserPersonalization(userPersonalizations)
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan data personalisasi pengguna", formattedUserPersonalizations)
+	}
+}
+
+func (h *UserHandler) GetAllEnvironmentsIsues() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		environmentIssues, err := h.service.GetAllEnvironmentsIsues()
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan personalisasi isu lingkungan: "+err.Error())
+		}
+
+		formattedEnvironmentIssues := dto.FormatterEnvironmentIssues(environmentIssues)
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan personalisasi isu lingkungan", formattedEnvironmentIssues)
+	}
+}
+
+func (h *UserHandler) CreateUserPersonalization() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		requestData := new(dto.UserPersonalizationRequest)
+		if err := c.Bind(requestData); err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		}
+
+		createdPersonalizations, err := h.service.CreateUserPersonalization(currentUser.ID, requestData)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal membuat personalisasi: "+err.Error())
+		}
+
+		responseData := dto.FormatterUserPersonalization(createdPersonalizations)
+		return response.SendStatusCreatedResponse(c, "Personalisasi berhasil dibuat", responseData)
 	}
 }

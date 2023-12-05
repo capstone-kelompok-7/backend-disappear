@@ -11,3 +11,8 @@ type EditProfileRequest struct {
 	Phone        string `form:"phone" json:"phone"`
 	PhotoProfile string `form:"photo" json:"photo_profile"`
 }
+
+type UserPersonalizationRequest struct {
+	IsuID      []uint64 `json:"isu_id"`
+	CategoryID []uint64 `json:"category_id"`
+}
