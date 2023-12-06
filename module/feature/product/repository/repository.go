@@ -5,6 +5,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
@@ -350,4 +351,52 @@ func (r *ProductRepository) GetDiscountedProducts(page, perPage int) ([]*entitie
 	}
 
 	return products, totalItems, nil
+}
+
+func (r *ProductRepository) FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ProductModels, error) {
+	var matchingProduct []*entities.ProductModels
+	var nonMatchingProduct []*entities.ProductModels
+
+	userPreferences, err := r.getUserPreferences(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	searchPattern := "%" + strings.Join(userPreferences, "%") + "%"
+	offset := (page - 1) * perPage
+
+	err = r.db.Where("deleted_at IS NULL").Where("description LIKE ?", searchPattern).Offset(offset).Limit(perPage).Find(&matchingProduct).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.db.Where("deleted_at IS NULL").Where("description NOT LIKE ?", searchPattern).Offset(offset).Limit(perPage).Find(&nonMatchingProduct).Error
+	if err != nil {
+		return nil, err
+	}
+
+	products := append(matchingProduct, nonMatchingProduct...)
+
+	return products, nil
+}
+
+func (r *ProductRepository) getUserPreferences(userID uint64) ([]string, error) {
+	var userPreferences []string
+
+	err := r.db.Model(&entities.UserModels{}).Select("preferred_topics").Where("id = ?", userID).Pluck("preferred_topics", &userPreferences).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return userPreferences, nil
+}
+
+func (r *ProductRepository) GetTopRatedProducts() ([]*entities.ProductModels, error) {
+	var products []*entities.ProductModels
+
+	if err := r.db.Order("rating desc").Where("deleted_at IS NULL").Limit(5).Find(&products).Error; err != nil {
+		return nil, err
+	}
+
+	return products, nil
 }

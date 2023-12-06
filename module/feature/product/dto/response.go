@@ -263,3 +263,44 @@ func FormatReviewProductFormatter(products []*entities.ProductModels) []*ReviewP
 	}
 	return productFormatters
 }
+
+type OtherProductFormatter struct {
+	ID     uint64                  `json:"id"`
+	Name   string                  `json:"name"`
+	Price  uint64                  `json:"price"`
+	Rating float64                 `json:"rating"`
+	Images []ProductImageFormatter `json:"image_url"`
+}
+
+func FormatOtherProduct(product *entities.ProductModels) *OtherProductFormatter {
+	productFormatter := &OtherProductFormatter{
+		ID:     product.ID,
+		Name:   product.Name,
+		Price:  product.Price,
+		Rating: product.Rating,
+	}
+	var images []ProductImageFormatter
+	for _, photo := range product.ProductPhotos {
+		if photo.DeletedAt == nil {
+			image := ProductImageFormatter{
+				ID:  photo.ID,
+				URL: photo.ImageURL,
+			}
+			images = append(images, image)
+		}
+	}
+	productFormatter.Images = images
+
+	return productFormatter
+}
+
+func FormatterOtherProduct(products []*entities.ProductModels) []*OtherProductFormatter {
+	var productFormatter []*OtherProductFormatter
+
+	for _, product := range products {
+		formatProduct := FormatOtherProduct(product)
+		productFormatter = append(productFormatter, formatProduct)
+	}
+
+	return productFormatter
+}

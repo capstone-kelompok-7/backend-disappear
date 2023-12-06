@@ -30,6 +30,8 @@ type RepositoryProductInterface interface {
 	GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetTotalProductSold() (uint64, error)
 	GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error)
+	FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ProductModels, error)
+	GetTopRatedProducts() ([]*entities.ProductModels, error)
 }
 
 type ServiceProductInterface interface {
@@ -56,6 +58,8 @@ type ServiceProductInterface interface {
 	GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetTotalProductSold() (uint64, error)
 	GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductPreferences(userID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetTopRatedProducts() ([]*entities.ProductModels, error)
 }
 
 type HandlerProductInterface interface {
@@ -67,4 +71,6 @@ type HandlerProductInterface interface {
 	UpdateProduct() echo.HandlerFunc
 	DeleteProduct() echo.HandlerFunc
 	DeleteProductImageById() echo.HandlerFunc
+	GetAllProductsPreferences() echo.HandlerFunc
+	GetTopRatedProducts() echo.HandlerFunc
 }
