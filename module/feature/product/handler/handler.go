@@ -260,3 +260,60 @@ func (h *ProductHandler) DeleteProductImageById() echo.HandlerFunc {
 		return response.SendStatusOkResponse(c, "Berhasil menghapus foto produk")
 	}
 }
+
+func (h *ProductHandler) GetAllProductsPreferences() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		page, _ := strconv.Atoi(c.QueryParam("page"))
+		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
+		perPage := 8
+
+		var products []*entities.ProductModels
+		var totalItems int64
+		var err error
+
+		search := c.QueryParam("search")
+		if search != "" {
+			products, totalItems, err = h.service.GetProductsByName(pageConv, perPage, search)
+		} else {
+			filter := c.QueryParam("filter")
+			switch filter {
+			case "":
+				products, totalItems, err = h.service.GetProductPreferences(currentUser.ID, pageConv, perPage)
+			case "abjad":
+				products, totalItems, err = h.service.GetProductByAlphabet(pageConv, perPage)
+			case "terbaru":
+				products, totalItems, err = h.service.GetProductByLatest(pageConv, perPage)
+			case "termahal":
+				products, totalItems, err = h.service.GetProductsByHighestPrice(pageConv, perPage)
+			case "termurah":
+				products, totalItems, err = h.service.GetProductsByLowestPrice(pageConv, perPage)
+			case "promo":
+				products, totalItems, err = h.service.GetDiscountedProducts(pageConv, perPage)
+			default:
+				return response.SendBadRequestResponse(c, "Filter tidak valid")
+			}
+		}
+
+		if err != nil {
+			c.Logger().Error("handler: failed to fetch all products:", err.Error())
+			return response.SendBadRequestResponse(c, "Gagal mendapatkan daftar produk: "+err.Error())
+		}
+
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
+
+		return response.SendPaginationResponse(c, dto.FormatterProduct(products), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar produk")
+	}
+}
+
+func (h *ProductHandler) GetTopRatedProducts() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		result, err := h.service.GetTopRatedProducts()
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail produk: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail produk", dto.FormatterOtherProduct(result))
+	}
+}

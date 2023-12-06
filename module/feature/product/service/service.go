@@ -321,3 +321,23 @@ func (s *ProductService) GetDiscountedProducts(page, perPage int) ([]*entities.P
 	}
 	return products, totalItems, nil
 }
+
+func (s *ProductService) GetProductPreferences(userID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
+	result, err := s.repo.FindAllByUserPreference(userID, page, perPage)
+	if err != nil {
+		return nil, 0, err
+	}
+	totalItems, err := s.repo.GetTotalProductCount()
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, totalItems, nil
+}
+
+func (s *ProductService) GetTopRatedProducts() ([]*entities.ProductModels, error) {
+	result, err := s.repo.GetTopRatedProducts()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
