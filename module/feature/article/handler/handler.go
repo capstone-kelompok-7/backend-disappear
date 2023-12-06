@@ -314,3 +314,33 @@ func (h *ArticleHandler) GetArticlePreferences() echo.HandlerFunc {
 		return response.SendPaginationResponse(c, dto.FormatterArticle(articles), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan artikel berdasarkan filter")
 	}
 }
+
+func (h *ArticleHandler) GetOtherArticle() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		result, err := h.service.GetOtherArticle()
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel lainnya: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan artikel lainnya:", dto.FormatterArticle(result))
+
+	}
+}
+
+func (h *ArticleHandler) GetLatestArticle() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		result, err := h.service.GetLatestArticles()
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel terbaru: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan artikel terbaru:", dto.FormatterArticle(result))
+
+	}
+}

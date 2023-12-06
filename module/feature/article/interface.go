@@ -30,6 +30,7 @@ type RepositoryArticleInterface interface {
 	GetTotalArticleCount() (int64, error)
 	GetArticleAlphabet(page, perPage int) ([]*entities.ArticleModels, error)
 	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, error)
+	GetOtherArticle() ([]*entities.ArticleModels, error)
 }
 
 type ServiceArticleInterface interface {
@@ -53,6 +54,7 @@ type ServiceArticleInterface interface {
 	CalculatePaginationValues(page int, totalItems int, perPage int) (int, int)
 	GetArticlesAlphabet(page, perPage int) ([]*entities.ArticleModels, int64, error)
 	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, int64, error)
+	GetOtherArticle() ([]*entities.ArticleModels, error)
 }
 
 type HandlerArticleInterface interface {
@@ -65,4 +67,6 @@ type HandlerArticleInterface interface {
 	DeleteBookmarkedArticle() echo.HandlerFunc
 	GetUsersBookmark() echo.HandlerFunc
 	GetArticlePreferences() echo.HandlerFunc
+	GetOtherArticle() echo.HandlerFunc
+	GetLatestArticle() echo.HandlerFunc
 }

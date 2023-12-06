@@ -253,3 +253,13 @@ func (r *ArticleRepository) GetArticleMostViews(page, perPage int) ([]*entities.
 
 	return articles, nil
 }
+
+func (r *ArticleRepository) GetOtherArticle() ([]*entities.ArticleModels, error) {
+	var articles []*entities.ArticleModels
+
+	if err := r.db.Order("views desc").Where("deleted_at IS NULL").Limit(5).Find(&articles).Error; err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}

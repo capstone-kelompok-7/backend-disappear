@@ -318,3 +318,12 @@ func (s *ArticleService) GetArticleMostViews(page, perPage int) ([]*entities.Art
 
 	return articles, totalItems, nil
 }
+
+func (s *ArticleService) GetOtherArticle() ([]*entities.ArticleModels, error) {
+	articles, err := s.repo.GetOtherArticle()
+	if err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}

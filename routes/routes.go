@@ -82,6 +82,8 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService ut
 	articlesGroup.DELETE("/bookmark/:id", h.DeleteBookmarkedArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("/bookmark", h.GetUsersBookmark(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("/preferences", h.GetArticlePreferences(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.GET("/other-article", h.GetOtherArticle(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.GET("/latest-article", h.GetLatestArticle(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
