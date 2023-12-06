@@ -43,9 +43,8 @@ func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTI
 	usersGroup.GET("/leaderboard", h.GetLeaderboard(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.GET("/get-activities/:id", h.GetUserTransactionActivity(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.GET("/get-profile", h.GetUserProfile(), middlewares.AuthMiddleware(jwtService, userService))
-	usersGroup.GET("/environment-issues", h.GetAllEnvironmentsIsues())
-	usersGroup.GET("/personalizations", h.GetAllUserPersonalization())
-	usersGroup.POST("/personalizations", h.CreateUserPersonalization(), middlewares.AuthMiddleware(jwtService, userService))
+	usersGroup.GET("/environment-issues", h.GetAllEnvironmentsIssues(), middlewares.AuthMiddleware(jwtService, userService))
+	usersGroup.POST("/preferences", h.AddUserPreferenceHandler(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
@@ -82,6 +81,7 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService ut
 	articlesGroup.POST("/bookmark", h.BookmarkArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.DELETE("/bookmark/:id", h.DeleteBookmarkedArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("/bookmark", h.GetUsersBookmark(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.GET("/preferences", h.GetArticlePreferences(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

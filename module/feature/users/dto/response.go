@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
+	"strings"
 )
 
 // UserDetailResponse for detail users
@@ -158,17 +159,19 @@ func FormatUserActivityResponse(numSuccessfulOrders, numFailedOrders, totalOrder
 
 // UserProfileResponse for get profile
 type UserProfileResponse struct {
-	ID             uint64 `json:"id"`
-	Email          string `json:"email"`
-	Name           string `json:"name"`
-	Phone          string `json:"phone"`
-	PhotoProfile   string `json:"photo_profile"`
-	TotalGram      uint64 `json:"total_gram"`
-	TotalChallenge uint64 `json:"total_challenge"`
-	Level          string `json:"level"`
+	ID             uint64   `json:"id"`
+	Email          string   `json:"email"`
+	Name           string   `json:"name"`
+	Phone          string   `json:"phone"`
+	PhotoProfile   string   `json:"photo_profile"`
+	TotalGram      uint64   `json:"total_gram"`
+	TotalChallenge uint64   `json:"total_challenge"`
+	Level          string   `json:"level"`
+	Preference     []string `json:"preference"`
 }
 
 func FormatUserProfileResponse(user *entities.UserModels) *UserProfileResponse {
+	preferences := strings.Split(user.PreferredTopics, ",")
 	userFormatter := &UserProfileResponse{
 		ID:             user.ID,
 		Email:          user.Email,
@@ -177,6 +180,7 @@ func FormatUserProfileResponse(user *entities.UserModels) *UserProfileResponse {
 		TotalGram:      user.TotalGram,
 		TotalChallenge: user.TotalChallenge,
 		Level:          user.Level,
+		Preference:     preferences,
 	}
 	return userFormatter
 }
@@ -187,50 +191,6 @@ type UserPersonalizationResponse struct {
 	IsuID      uint64 `json:"isu_id"`
 	CategoryID uint64 `json:"category_id"`
 }
-
-func FormatUserPersonalizationResponse(user *entities.PersonalizationModels) *UserPersonalizationResponse {
-	userFormatter := &UserPersonalizationResponse{
-		ID:         user.ID,
-		UserID:     user.UserID,
-		IsuID:      user.IsuID,
-		CategoryID: user.CategoryID,
-	}
-	return userFormatter
-}
-
-func FormatterUserPersonalization(users []*entities.PersonalizationModels) []*UserPersonalizationResponse {
-	usersFormatters := make([]*UserPersonalizationResponse, 0)
-
-	for _, user := range users {
-		formattedUser := FormatUserPersonalizationResponse(user)
-		usersFormatters = append(usersFormatters, formattedUser)
-	}
-
-	return usersFormatters
-}
-
-// func FormatterUserPersonalization(users []*entities.PersonalizationModels) []*UserPersonalizationResponse {
-// 	usersFormatters := make([]*UserPersonalizationResponse, 0)
-
-// 	for _, user := range users {
-// 		found := false
-// 		for _, formattedUser := range usersFormatters {
-// 			if formattedUser.UserID == user.UserID {
-// 				formattedUser.IsuID = user.IsuID
-// 				formattedUser.ProductID = user.ProductID
-// 				found = true
-// 				break
-// 			}
-// 		}
-
-// 		if !found {
-// 			formattedUser := FormatUserPersonalizationResponse(user)
-// 			usersFormatters = append(usersFormatters, formattedUser)
-// 		}
-// 	}
-
-// 	return usersFormatters
-// }
 
 type EnvironmentIssuesResponse struct {
 	ID    uint64 `json:"id"`

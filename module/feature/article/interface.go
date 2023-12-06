@@ -12,35 +12,47 @@ type RepositoryArticleInterface interface {
 	UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error)
 	UpdateArticleViews(article *entities.ArticleModels) error
 	DeleteArticleById(id uint64) error
-	FindAll() ([]entities.ArticleModels, error)
-	FindByTitle(title string) ([]entities.ArticleModels, error)
+	FindAll() ([]*entities.ArticleModels, error)
+	FindByTitle(title string) ([]*entities.ArticleModels, error)
 	GetArticleById(id uint64) (*entities.ArticleModels, error)
-	GetArticlesByDateRange(startDate, endDate time.Time) ([]entities.ArticleModels, error)
+	GetArticlesByDateRange(startDate, endDate time.Time) ([]*entities.ArticleModels, error)
 	IsArticleAlreadyBookmarked(userID uint64, articleID uint64) (bool, error)
-	BookmarkArticle(bookmarkArticle *entities.ArticleBookmarkModels) error 
+	BookmarkArticle(bookmarkArticle *entities.ArticleBookmarkModels) error
 	DeleteBookmarkArticle(userID, articleID uint64) error
 	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
-	GetLatestArticle() ([]entities.ArticleModels, error) 
-	GetArticleByViewsAsc() ([]entities.ArticleModels, error)
-	GetArticleByViewsDesc() ([]entities.ArticleModels, error)
-	GetArticleByTitleAsc() ([]entities.ArticleModels, error)
-	GetArticleByTitleDesc() ([]entities.ArticleModels, error)
+	GetLatestArticle() ([]*entities.ArticleModels, error)
+	GetArticleByViewsAsc() ([]*entities.ArticleModels, error)
+	GetArticleByViewsDesc() ([]*entities.ArticleModels, error)
+	GetArticleByTitleDesc() ([]*entities.ArticleModels, error)
+	GetArticleByTitleAsc() ([]*entities.ArticleModels, error)
+	GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, error)
+	FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ArticleModels, error)
+	GetTotalArticleCount() (int64, error)
+	GetArticleAlphabet(page, perPage int) ([]*entities.ArticleModels, error)
+	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, error)
 }
 
 type ServiceArticleInterface interface {
 	CreateArticle(articleData *entities.ArticleModels) (*entities.ArticleModels, error)
 	UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error)
 	DeleteArticleById(id uint64) error
-	GetAll() ([]entities.ArticleModels, error)
-	GetArticlesByTitle(title string) ([]entities.ArticleModels, error)
+	GetAll() ([]*entities.ArticleModels, error)
+	GetArticlesByTitle(title string) ([]*entities.ArticleModels, error)
 	GetArticleById(id uint64, incrementVIews bool) (*entities.ArticleModels, error)
-	GetArticlesByDateRange(filterType string) ([]entities.ArticleModels, error)
+	GetArticlesByDateRange(filterType string) ([]*entities.ArticleModels, error)
 	BookmarkArticle(bookmark *entities.ArticleBookmarkModels) error
 	DeleteBookmarkArticle(userID, articleID uint64) error
 	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
-	GetLatestArticles() ([]entities.ArticleModels, error)
-	GetArticlesByViews(sortType string) ([]entities.ArticleModels, error)
-	GetArticlesBySortedTitle(sortType string) ([]entities.ArticleModels, error)
+	GetLatestArticles() ([]*entities.ArticleModels, error)
+	GetArticlesByViews(sortType string) ([]*entities.ArticleModels, error)
+	GetArticlesBySortedTitle(sortType string) ([]*entities.ArticleModels, error)
+	GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, int64, error)
+	GetArticlePreferences(userID uint64, page, perPage int) ([]*entities.ArticleModels, int64, error)
+	GetNextPage(currentPage int, totalPages int) int
+	GetPrevPage(currentPage int) int
+	CalculatePaginationValues(page int, totalItems int, perPage int) (int, int)
+	GetArticlesAlphabet(page, perPage int) ([]*entities.ArticleModels, int64, error)
+	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, int64, error)
 }
 
 type HandlerArticleInterface interface {
@@ -52,4 +64,5 @@ type HandlerArticleInterface interface {
 	BookmarkArticle() echo.HandlerFunc
 	DeleteBookmarkedArticle() echo.HandlerFunc
 	GetUsersBookmark() echo.HandlerFunc
+	GetArticlePreferences() echo.HandlerFunc
 }

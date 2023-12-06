@@ -16,8 +16,8 @@ type ArticleFormatter struct {
 	Views   uint64    `json:"views"`
 }
 
-func FormatArticle(article entities.ArticleModels) ArticleFormatter {
-	articleFormatter := ArticleFormatter{}
+func FormatArticle(article *entities.ArticleModels) *ArticleFormatter {
+	articleFormatter := &ArticleFormatter{}
 	articleFormatter.ID = article.ID
 	articleFormatter.Title = article.Title
 	articleFormatter.Photo = article.Photo
@@ -29,8 +29,8 @@ func FormatArticle(article entities.ArticleModels) ArticleFormatter {
 	return articleFormatter
 }
 
-func FormatterArticle(articles []entities.ArticleModels) []ArticleFormatter {
-	var articleFormatter []ArticleFormatter
+func FormatterArticle(articles []*entities.ArticleModels) []*ArticleFormatter {
+	var articleFormatter []*ArticleFormatter
 
 	for _, article := range articles {
 		formatArticle := FormatArticle(article)
@@ -62,15 +62,15 @@ func UserBookmarkFormatter(userBookmarks []*entities.ArticleBookmarkModels) ([]U
 	for _, bookmark := range userBookmarks {
 		formattedBookmark := UserBookmarksResponse{
 			ID:        bookmark.ID,
-			UserID    : bookmark.UserID,
-			ArticleID : bookmark.ArticleID,
-			Article   : BookmarkedArticleFormatter{
-				Title   : bookmark.Article.Title,
-				Photo   : bookmark.Article.Photo,
-				Content : bookmark.Article.Content,
-				Author  : bookmark.Article.Author,
-				Date    : bookmark.Article.CreatedAt,
-				Views   : bookmark.Article.Views,
+			UserID:    bookmark.UserID,
+			ArticleID: bookmark.ArticleID,
+			Article: BookmarkedArticleFormatter{
+				Title:   bookmark.Article.Title,
+				Photo:   bookmark.Article.Photo,
+				Content: bookmark.Article.Content,
+				Author:  bookmark.Article.Author,
+				Date:    bookmark.Article.CreatedAt,
+				Views:   bookmark.Article.Views,
 			},
 		}
 		formattedUserBookmarks = append(formattedUserBookmarks, formattedBookmark)
