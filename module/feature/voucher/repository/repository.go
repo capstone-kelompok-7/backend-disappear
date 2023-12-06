@@ -197,12 +197,23 @@ func (r *VoucherRepository) FindAllVoucherToClaims(limit int, userID uint64) ([]
 	}
 
 	var vouchers []*entities.VoucherModels
-	err = r.db.
-		Order("created_at DESC").
-		Limit(limit).
-		Where("deleted_at IS NULL AND (id NOT IN ? OR id IS NULL) AND end_date > ? AND stock > 0", claimedVoucherIDs, time.Now()).
-		Find(&vouchers).
-		Error
+
+	if len(claimedVoucherIDs) > 0 {
+		err = r.db.
+			Order("created_at DESC").
+			Limit(limit).
+			Where("deleted_at IS NULL AND (id NOT IN ? OR id IS NULL) AND end_date > ? AND stock > 0", claimedVoucherIDs, time.Now()).
+			Find(&vouchers).
+			Error
+	} else {
+		err = r.db.
+			Order("created_at DESC").
+			Limit(limit).
+			Where("deleted_at IS NULL AND end_date > ? AND stock > 0", time.Now()).
+			Find(&vouchers).
+			Error
+	}
+
 	if err != nil {
 		return nil, err
 	}

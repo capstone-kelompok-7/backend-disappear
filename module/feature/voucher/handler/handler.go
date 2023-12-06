@@ -225,7 +225,7 @@ func (h *VoucherHandler) GetAllVouchersToClaims() echo.HandlerFunc {
 			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
 
-		limit := 3
+		limit := 7
 		result, err := h.service.GetAllVoucherToClaims(limit, currentUser.ID)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar kupon: "+err.Error())
