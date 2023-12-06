@@ -233,21 +233,9 @@ func (h *UserHandler) GetUserProfile() echo.HandlerFunc {
 	}
 }
 
-func (h *UserHandler) GetAllUserPersonalization() echo.HandlerFunc {
+func (h *UserHandler) GetAllEnvironmentsIssues() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userPersonalizations, err := h.service.GetAllUserPersonalization()
-		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan data personalisasi pengguna: "+err.Error())
-		}
-
-		formattedUserPersonalizations := dto.FormatterUserPersonalization(userPersonalizations)
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan data personalisasi pengguna", formattedUserPersonalizations)
-	}
-}
-
-func (h *UserHandler) GetAllEnvironmentsIsues() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		environmentIssues, err := h.service.GetAllEnvironmentsIsues()
+		environmentIssues, err := h.service.GetAllEnvironmentsIssues()
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan personalisasi isu lingkungan: "+err.Error())
 		}
@@ -257,24 +245,25 @@ func (h *UserHandler) GetAllEnvironmentsIsues() echo.HandlerFunc {
 	}
 }
 
-func (h *UserHandler) CreateUserPersonalization() echo.HandlerFunc {
+func (h *UserHandler) AddUserPreferenceHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
 			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
-
-		requestData := new(dto.UserPersonalizationRequest)
-		if err := c.Bind(requestData); err != nil {
-			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		var request *dto.UserPreferenceRequest
+		if err := c.Bind(&request); err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
+		}
+		if err := utils.ValidateStruct(request); err != nil {
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 
-		createdPersonalizations, err := h.service.CreateUserPersonalization(currentUser.ID, requestData)
+		result, err := h.service.AddUserPreference(currentUser.ID, request)
 		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal membuat personalisasi: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menambah preferensi pengguna: "+err.Error())
 		}
 
-		responseData := dto.FormatterUserPersonalization(createdPersonalizations)
-		return response.SendStatusCreatedResponse(c, "Personalisasi berhasil dibuat", responseData)
+		return response.SendStatusCreatedResponse(c, "Berhasil mendapat detail pengguna", dto.FormatUserProfileResponse(result))
 	}
 }

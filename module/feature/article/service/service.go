@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"math"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -74,7 +75,7 @@ func (s *ArticleService) DeleteArticleById(id uint64) error {
 	return nil
 }
 
-func (s *ArticleService) GetAll() ([]entities.ArticleModels, error) {
+func (s *ArticleService) GetAll() ([]*entities.ArticleModels, error) {
 	articles, err := s.repo.FindAll()
 	if err != nil {
 		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
@@ -83,7 +84,7 @@ func (s *ArticleService) GetAll() ([]entities.ArticleModels, error) {
 	return articles, nil
 }
 
-func (s *ArticleService) GetArticlesByTitle(title string) ([]entities.ArticleModels, error) {
+func (s *ArticleService) GetArticlesByTitle(title string) ([]*entities.ArticleModels, error) {
 	articles, err := s.repo.FindByTitle(title)
 	if err != nil {
 		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
@@ -108,7 +109,7 @@ func (s *ArticleService) GetArticleById(id uint64, incrementViews bool) (*entiti
 	return result, nil
 }
 
-func (s *ArticleService) GetArticlesByDateRange(filterType string) ([]entities.ArticleModels, error) {
+func (s *ArticleService) GetArticlesByDateRange(filterType string) ([]*entities.ArticleModels, error) {
 	now := time.Now()
 	var startDate, endDate time.Time
 
@@ -191,7 +192,7 @@ func (s *ArticleService) GetUserBookmarkArticle(userID uint64) ([]*entities.Arti
 	return userBookmarkArticle, nil
 }
 
-func (s *ArticleService) GetLatestArticles() ([]entities.ArticleModels, error) {
+func (s *ArticleService) GetLatestArticles() ([]*entities.ArticleModels, error) {
 	articles, err := s.repo.GetLatestArticle()
 	if err != nil {
 		return nil, errors.New("gagal mengambil artikel: " + err.Error())
@@ -200,8 +201,8 @@ func (s *ArticleService) GetLatestArticles() ([]entities.ArticleModels, error) {
 	return articles, nil
 }
 
-func (s *ArticleService) GetArticlesByViews(sortType string) ([]entities.ArticleModels, error) {
-	var articles []entities.ArticleModels
+func (s *ArticleService) GetArticlesByViews(sortType string) ([]*entities.ArticleModels, error) {
+	var articles []*entities.ArticleModels
 	var err error
 	if sortType == "asc" {
 		articles, err = s.repo.GetArticleByViewsAsc()
@@ -218,15 +219,14 @@ func (s *ArticleService) GetArticlesByViews(sortType string) ([]entities.Article
 	return articles, nil
 }
 
-func (s *ArticleService) GetArticlesBySortedTitle(sortType string) ([]entities.ArticleModels, error) {
-	var articles []entities.ArticleModels
+func (s *ArticleService) GetArticlesBySortedTitle(sortType string) ([]*entities.ArticleModels, error) {
+	var articles []*entities.ArticleModels
 	var err error
 	if sortType == "asc" {
 		articles, err = s.repo.GetArticleByTitleAsc()
 		if err != nil {
 			return nil, errors.New("gagal mengambil artikel: " + err.Error())
 		}
-
 		return articles, nil
 	} else if sortType == "desc" {
 		articles, err = s.repo.GetArticleByTitleDesc()
@@ -238,4 +238,92 @@ func (s *ArticleService) GetArticlesBySortedTitle(sortType string) ([]entities.A
 	}
 
 	return nil, nil
+}
+
+func (s *ArticleService) GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, int64, error) {
+	result, err := s.repo.GetOldestArticle(page, perPage)
+	if err != nil {
+		return nil, 0, err
+	}
+	totalItems, err := s.repo.GetTotalArticleCount()
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, totalItems, nil
+}
+
+func (s *ArticleService) GetArticlePreferences(userID uint64, page, perPage int) ([]*entities.ArticleModels, int64, error) {
+	result, err := s.repo.FindAllByUserPreference(userID, page, perPage)
+	if err != nil {
+		return nil, 0, err
+	}
+	totalItems, err := s.repo.GetTotalArticleCount()
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, totalItems, nil
+}
+
+func (s *ArticleService) CalculatePaginationValues(page int, totalItems int, perPage int) (int, int) {
+	if page <= 0 {
+		page = 1
+	}
+
+	totalPages := int(math.Ceil(float64(totalItems) / float64(perPage)))
+	if page > totalPages {
+		page = totalPages
+	}
+
+	return page, totalPages
+}
+
+func (s *ArticleService) GetNextPage(currentPage int, totalPages int) int {
+	if currentPage < totalPages {
+		return currentPage + 1
+	}
+
+	return totalPages
+}
+
+func (s *ArticleService) GetPrevPage(currentPage int) int {
+	if currentPage > 1 {
+		return currentPage - 1
+	}
+
+	return 1
+}
+
+func (s *ArticleService) GetArticlesAlphabet(page, perPage int) ([]*entities.ArticleModels, int64, error) {
+	articles, err := s.repo.GetArticleAlphabet(page, perPage)
+	if err != nil {
+		return nil, 0, errors.New("gagal mengambil artikel: " + err.Error())
+	}
+	totalItems, err := s.repo.GetTotalArticleCount()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return articles, totalItems, nil
+}
+
+func (s *ArticleService) GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, int64, error) {
+	articles, err := s.repo.GetArticleMostViews(page, perPage)
+	if err != nil {
+		return nil, 0, errors.New("gagal mengambil artikel: " + err.Error())
+	}
+	totalItems, err := s.repo.GetTotalArticleCount()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return articles, totalItems, nil
+}
+
+func (s *ArticleService) GetOtherArticle() ([]*entities.ArticleModels, error) {
+	articles, err := s.repo.GetOtherArticle()
+	if err != nil {
+		return nil, err
+	}
+
+	return articles, nil
 }

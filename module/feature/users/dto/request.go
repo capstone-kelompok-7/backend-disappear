@@ -16,3 +16,7 @@ type UserPersonalizationRequest struct {
 	IsuID      []uint64 `json:"isu_id"`
 	CategoryID []uint64 `json:"category_id"`
 }
+
+type UserPreferenceRequest struct {
+	PreferredTopics []string `json:"preferred_topics" validate:"required"`
+}

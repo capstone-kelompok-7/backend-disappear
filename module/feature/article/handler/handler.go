@@ -19,7 +19,9 @@ type ArticleHandler struct {
 }
 
 func NewArticleHandler(service article.ServiceArticleInterface) article.HandlerArticleInterface {
-	return &ArticleHandler{service: service}
+	return &ArticleHandler{
+		service: service,
+	}
 }
 
 func (h *ArticleHandler) CreateArticle() echo.HandlerFunc {
@@ -67,7 +69,7 @@ func (h *ArticleHandler) CreateArticle() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal menambahkan artikel: "+err.Error())
 		}
 
-		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan artikel", dto.FormatArticle(*createdArticle))
+		return response.SendStatusCreatedResponse(c, "Berhasil menambahkan artikel", dto.FormatArticle(createdArticle))
 	}
 }
 
@@ -148,7 +150,8 @@ func (h *ArticleHandler) DeleteArticleById() echo.HandlerFunc {
 
 func (h *ArticleHandler) GetAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var articles []entities.ArticleModels
+		var articles []*entities.ArticleModels
+
 		var err error
 		search := c.QueryParam("search")
 		dateFilterType := c.QueryParam("date_filter_type")
@@ -164,12 +167,12 @@ func (h *ArticleHandler) GetAllArticles() echo.HandlerFunc {
 			if err != nil {
 				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan filter artikel: "+err.Error())
 			}
-		} else if viewsSorting != ""{
+		} else if viewsSorting != "" {
 			articles, err = h.service.GetArticlesByViews(viewsSorting)
 			if err != nil {
 				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel berdasarkan views: "+err.Error())
 			}
-		} else if titleSorting != ""{
+		} else if titleSorting != "" {
 			articles, err = h.service.GetArticlesBySortedTitle(titleSorting)
 			if err != nil {
 				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel berdasarkan judul: "+err.Error())
@@ -185,7 +188,6 @@ func (h *ArticleHandler) GetAllArticles() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar artikel: "+err.Error())
 		}
 
-		
 		return response.SendStatusOkWithDataResponse(c, "Berhasil mendapatkan daftar artikel", dto.FormatterArticle(articles))
 	}
 }
@@ -206,7 +208,7 @@ func (h *ArticleHandler) GetArticleById() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail artikel: "+err.Error())
 		}
 
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail artikel", dto.FormatArticle(*getArticleID))
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail artikel", dto.FormatArticle(getArticleID))
 	}
 }
 
@@ -224,11 +226,11 @@ func (h *ArticleHandler) BookmarkArticle() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Validasi gagal: "+err.Error())
 		}
 		newBookmark := &entities.ArticleBookmarkModels{
-			UserID: currentUser.ID,
+			UserID:    currentUser.ID,
 			ArticleID: bookmark.ArticleID,
 		}
 		if err := h.service.BookmarkArticle(newBookmark); err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal menyimpan artikel: " + err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menyimpan artikel: "+err.Error())
 		}
 		return response.SendStatusOkResponse(c, "Berhasil menyimpan artikel")
 	}
@@ -268,9 +270,77 @@ func (h *ArticleHandler) GetUsersBookmark() echo.HandlerFunc {
 
 		formattedResponse, err := dto.UserBookmarkFormatter(result)
 		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal memformat response : "+ err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal memformat response : "+err.Error())
 		}
 
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan data artikel tersimpan user", formattedResponse)
+	}
+}
+
+func (h *ArticleHandler) GetArticlePreferences() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		page, _ := strconv.Atoi(c.QueryParam("page"))
+		perPage := 8
+
+		var articles []*entities.ArticleModels
+		var totalItems int64
+		var err error
+
+		filter := c.QueryParam("filter")
+
+		switch filter {
+		case "abjad":
+			articles, totalItems, err = h.service.GetArticlesAlphabet(page, perPage)
+		case "terlama":
+			articles, totalItems, err = h.service.GetOldestArticle(page, perPage)
+		case "terbanyak":
+			articles, totalItems, err = h.service.GetArticleMostViews(page, perPage)
+		default:
+			articles, totalItems, err = h.service.GetArticlePreferences(currentUser.ID, page, perPage)
+		}
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel berdasarkan preferensi pengguna: "+err.Error())
+		}
+
+		currentPage, totalPages := h.service.CalculatePaginationValues(page, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
+
+		return response.SendPaginationResponse(c, dto.FormatterArticle(articles), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan artikel berdasarkan filter")
+	}
+}
+
+func (h *ArticleHandler) GetOtherArticle() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		result, err := h.service.GetOtherArticle()
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel lainnya: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan artikel lainnya:", dto.FormatterArticle(result))
+
+	}
+}
+
+func (h *ArticleHandler) GetLatestArticle() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+		result, err := h.service.GetLatestArticles()
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel terbaru: "+err.Error())
+		}
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan artikel terbaru:", dto.FormatterArticle(result))
+
 	}
 }

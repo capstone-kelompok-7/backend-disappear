@@ -270,17 +270,8 @@ func (s *UserService) GetUserProfile(userID uint64) (*entities.UserModels, error
 
 }
 
-func (s *UserService) GetAllUserPersonalization() ([]*entities.PersonalizationModels, error) {
-	userPersonalizations, err := s.repo.FindAllPersonalization()
-	if err != nil {
-		return nil, err
-	}
-
-	return userPersonalizations, nil
-}
-
-func (s *UserService) GetAllEnvironmentsIsues() ([]*entities.EnvironmentIssuesModels, error) {
-	environmentIssues, err := s.repo.FindAllEnvironmentsIsues()
+func (s *UserService) GetAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error) {
+	environmentIssues, err := s.repo.FindAllEnvironmentsIssues()
 	if err != nil {
 		return nil, err
 	}
@@ -288,15 +279,16 @@ func (s *UserService) GetAllEnvironmentsIsues() ([]*entities.EnvironmentIssuesMo
 	return environmentIssues, nil
 }
 
-func (s *UserService) CreateUserPersonalization(userID uint64, req *dto.UserPersonalizationRequest) ([]*entities.PersonalizationModels, error) {
-	results, err := s.repo.CreateUserPersonalization(userID, req)
+func (s *UserService) AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error) {
+	user, err := s.repo.GetUsersById(userID)
+	if err != nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+
+	result, err := s.repo.AddUserPreference(user.ID, request)
 	if err != nil {
 		return nil, err
 	}
 
-	return results, nil
-}
-
-func (s *UserService) GetUserPersonalization(userID uint64) ([]*entities.PersonalizationModels, error) {
-	return s.repo.GetUserPersonalization(userID)
+	return result, nil
 }
