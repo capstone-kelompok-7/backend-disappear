@@ -25,6 +25,7 @@ type Config struct {
 	ClientKey    string
 	ServerKey    string
 	Redis        Redis
+	ResiKey      string
 }
 
 type Redis struct {
@@ -111,6 +112,9 @@ func loadConfig() *Config {
 	}
 	if value, found := os.LookupEnv("REDIS_PASS"); found {
 		res.Redis.Pass = value
+	}
+	if value, found := os.LookupEnv("RESIKEY"); found {
+		res.ResiKey = value
 	}
 
 	return res

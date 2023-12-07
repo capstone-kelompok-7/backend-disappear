@@ -240,3 +240,16 @@ func (h *OrderHandler) AcceptOrder() echo.HandlerFunc {
 		return response.SendStatusOkResponse(c, "Berhasil mengkonfirmasi pesanan")
 	}
 }
+
+func (h *OrderHandler) Tracking() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		courier := c.QueryParam("courier")
+		awb := c.QueryParam("awb")
+		result, err := h.service.Tracking(courier, awb)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan resi: "+err.Error())
+		}
+
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan resi", result)
+	}
+}

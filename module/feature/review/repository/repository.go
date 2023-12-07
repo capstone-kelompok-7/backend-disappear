@@ -53,21 +53,15 @@ func (r *ReviewRepository) CountAverageRating(productID uint64) (float64, error)
 	return averageRating, nil
 }
 
-func (r *ReviewRepository) GetDetailReviewProduct(productID uint64, page, perPage int) ([]*entities.ReviewDetail, error) {
-	var reviews []*entities.ReviewDetail
-	offset := (page - 1) * perPage
+func (r *ReviewRepository) GetReviewsProductByID(productID uint64) (*entities.ProductModels, error) {
+	var product *entities.ProductModels
 
-	query := `
-	SELECT users.name, users.photo_profile, reviews.rating, reviews.date, reviews.description
-	FROM reviews
-	INNER JOIN users ON reviews.user_id = users.id
-	WHERE reviews.product_id = ?
-	LIMIT ? OFFSET ?`
-
-	err := r.db.Raw(query, productID, perPage, offset).Scan(&reviews).Error
-	if err != nil {
+	if err := r.db.
+		Preload("ProductReview").Preload("ProductReview.User").Preload("ProductReview.Photos").
+		Where("id = ? AND deleted_at IS NULL", productID).
+		First(&product).Error; err != nil {
 		return nil, err
 	}
 
-	return reviews, nil
+	return product, nil
 }

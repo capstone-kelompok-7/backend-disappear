@@ -115,14 +115,10 @@ func (h *ReviewHandler) GetDetailReviewProduct() echo.HandlerFunc {
 			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai.")
 		}
 
-		page, _ := strconv.Atoi(c.QueryParam("page"))
-		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
-		perPage := 8
-
-		result, err := h.service.GetDetailReviewProduct(id, pageConv, perPage)
+		result, err := h.service.GetReviewsProductByID(id)
 		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail ulasan produk: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan ulasan produk: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail ulasan produk", result)
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan ulasan produk", dto.FormatProductDetail(result))
 	}
 }
