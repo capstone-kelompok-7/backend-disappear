@@ -551,3 +551,11 @@ func (s *OrderService) AcceptOrder(orderID string) error {
 
 	return nil
 }
+
+func (s *OrderService) Tracking(courier, awb string) (map[string]interface{}, error) {
+	result, err := s.repo.Tracking(courier, awb)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}

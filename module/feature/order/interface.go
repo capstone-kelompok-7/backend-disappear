@@ -20,6 +20,7 @@ type RepositoryOrderInterface interface {
 	GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error)
 	GetAllOrdersWithFilter(userID uint64, orderStatus string) ([]*entities.OrderModels, error)
 	AcceptOrder(orderID, orderStatus string) error
+	Tracking(courier, awb string) (map[string]interface{}, error)
 }
 
 type ServiceOrderInterface interface {
@@ -38,6 +39,7 @@ type ServiceOrderInterface interface {
 	GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error)
 	GetAllOrdersWithFilter(userID uint64, orderStatus string) ([]*entities.OrderModels, error)
 	AcceptOrder(orderID string) error
+	Tracking(courier, awb string) (map[string]interface{}, error)
 }
 
 type HandlerOrderInterface interface {
@@ -51,4 +53,5 @@ type HandlerOrderInterface interface {
 	UpdateOrderStatus() echo.HandlerFunc
 	GetAllOrderByUserID() echo.HandlerFunc
 	AcceptOrder() echo.HandlerFunc
+	Tracking() echo.HandlerFunc
 }

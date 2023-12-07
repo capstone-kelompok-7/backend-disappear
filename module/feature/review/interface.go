@@ -10,7 +10,7 @@ type RepositoryReviewInterface interface {
 	CreateReviewImages(newData *entities.ReviewPhotoModels) (*entities.ReviewPhotoModels, error)
 	GetReviewsById(reviewID uint64) (*entities.ReviewModels, error)
 	CountAverageRating(productID uint64) (float64, error)
-	GetDetailReviewProduct(productID uint64, page, perPage int) ([]*entities.ReviewDetail, error)
+	GetReviewsProductByID(productID uint64) (*entities.ProductModels, error)
 }
 
 type ServiceReviewInterface interface {
@@ -18,7 +18,7 @@ type ServiceReviewInterface interface {
 	CreateReviewImages(reviewData *entities.ReviewPhotoModels) (*entities.ReviewPhotoModels, error)
 	GetReviewById(reviewID uint64) (*entities.ReviewModels, error)
 	CountAverageRating(productID uint64) (float64, error)
-	GetDetailReviewProduct(productID uint64, page, perPage int) ([]*entities.ReviewDetail, error)
+	GetReviewsProductByID(productID uint64) (*entities.ProductModels, error)
 }
 
 type HandlerReviewInterface interface {

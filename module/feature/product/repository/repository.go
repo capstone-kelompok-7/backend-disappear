@@ -97,7 +97,12 @@ func (r *ProductRepository) CreateProduct(productData *entities.ProductModels, c
 func (r *ProductRepository) GetProductByID(productID uint64) (*entities.ProductModels, error) {
 	var products *entities.ProductModels
 
-	if err := r.db.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview.User").Preload("ProductReview.Photos").Where("id = ? AND deleted_at IS NULL", productID).First(&products).Error; err != nil {
+	if err := r.db.Preload("Categories").Preload("ProductPhotos").
+		Preload("ProductReview", func(db *gorm.DB) *gorm.DB {
+			return db.Limit(2)
+		}).Preload("ProductReview.User").Preload("ProductReview.Photos").
+		Where("id = ? AND deleted_at IS NULL", productID).
+		First(&products).Error; err != nil {
 		return nil, err
 	}
 
@@ -136,6 +141,7 @@ func (r *ProductRepository) GetProductReviews(page, perPage int) ([]*entities.Pr
 	}
 	return products, nil
 }
+
 func (r *ProductRepository) UpdateProduct(product *entities.ProductModels) (*entities.ProductModels, error) {
 	tx := r.db.Begin()
 
@@ -279,6 +285,7 @@ func (r *ProductRepository) GetProductByLatest(page, perPage int) ([]*entities.P
 	return products, totalItems, nil
 
 }
+
 func (r *ProductRepository) GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
 	var products []*entities.ProductModels
 	var totalItems int64

@@ -95,10 +95,10 @@ func (s *ReviewService) CountAverageRating(productID uint64) (float64, error) {
 	return result, nil
 }
 
-func (s *ReviewService) GetDetailReviewProduct(productID uint64, page, perPage int) ([]*entities.ReviewDetail, error) {
-	reviews, err := s.repo.GetDetailReviewProduct(productID, page, perPage)
+func (s *ReviewService) GetReviewsProductByID(productID uint64) (*entities.ProductModels, error) {
+	products, err := s.repo.GetReviewsProductByID(productID)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("produk tidak ditemukan")
 	}
-	return reviews, nil
+	return products, nil
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order/dto"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/binderbyte"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/payment"
 	"github.com/midtrans/midtrans-go/coreapi"
 	"github.com/sirupsen/logrus"
@@ -216,4 +217,12 @@ func (r *OrderRepository) AcceptOrder(orderID, orderStatus string) error {
 		return err
 	}
 	return nil
+}
+
+func (r *OrderRepository) Tracking(courier, awb string) (map[string]interface{}, error) {
+	result, err := binderbyte.TrackingPackages(courier, awb)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
