@@ -37,10 +37,12 @@ func (h *ChallengeHandler) GetAllChallenges() echo.HandlerFunc {
 		search := c.QueryParam("search")
 		status := c.QueryParam("status")
 
-		if search != "" {
+		if search != "" && status != "" {
+			challenges, totalItems, err = h.service.GetChallengesBySearchAndStatus(page, perPage, search, status)
+		} else if search != "" {
 			challenges, totalItems, err = h.service.GetChallengeByTitle(page, perPage, search)
 		} else if status != "" {
-			challenges, totalItems, err = h.service.GetChallengeByStatus(pageConv, perPage, status)
+			challenges, totalItems, err = h.service.GetChallengeByStatus(page, perPage, status)
 		} else {
 			challenges, totalItems, err = h.service.GetAllChallenges(pageConv, perPage)
 		}
@@ -272,9 +274,14 @@ func (h *ChallengeHandler) GetAllSubmitChallengeForm() echo.HandlerFunc {
 		var totalItems int64
 		var err error
 		filterStatus := c.QueryParam("status")
+		filterDate := c.QueryParam("date")
 
-		if filterStatus != "" {
-			participants, totalItems, err = h.service.GetSubmitChallengeFormByStatus(pageConv, perPage, filterStatus)
+		if filterStatus != "" && filterDate != "" {
+			participants, totalItems, err = h.service.GetSubmitChallengeFormByStatusAndDate(page, perPage, filterStatus, filterDate)
+		} else if filterStatus != "" {
+			participants, totalItems, err = h.service.GetSubmitChallengeFormByStatus(page, perPage, filterStatus)
+		} else if filterDate != "" {
+			participants, totalItems, err = h.service.GetSubmitChallengeFormByDateRange(page, perPage, filterDate)
 		} else {
 			participants, totalItems, err = h.service.GetAllSubmitChallengeForm(pageConv, perPage)
 		}

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -368,4 +369,59 @@ func isValidFilter(filter string) bool {
 		"promo":    true,
 	}
 	return !validFilters[filter]
+}
+
+func getRatingBounds(ratingParam string) (float64, float64, error) {
+	ratingParam = strings.ToLower(ratingParam)
+	var lowerBound, upperBound float64
+
+	switch ratingParam {
+	case "sangat buruk":
+		lowerBound = 0.1
+		upperBound = 1.9
+	case "buruk":
+		lowerBound = 2
+		upperBound = 2.9
+	case "sedang":
+		lowerBound = 3
+		upperBound = 3.9
+	case "baik":
+		lowerBound = 4
+		upperBound = 4.9
+	case "sangat baik":
+		lowerBound = 5
+		upperBound = 5.0
+	default:
+		return 0, 0, errors.New("tipe filter tidak valid")
+	}
+
+	return lowerBound, upperBound, nil
+}
+
+func (s *ProductService) GetRatedProductsInRange(page, perPage int, ratingParam string) ([]*entities.ProductModels, int64, error) {
+	lowerBound, upperBound, err := getRatingBounds(ratingParam)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	products, totalItems, err := s.repo.GetRatedProductsInRange(page, perPage, lowerBound, upperBound)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func (s *ProductService) SearchByNameAndFilterByRating(page, perPage int, name, ratingParam string) ([]*entities.ProductModels, int64, error) {
+	lowerBound, upperBound, err := getRatingBounds(ratingParam)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	products, totalItems, err := s.repo.SearchByNameAndFilterByRating(page, perPage, name, ratingParam, lowerBound, upperBound)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
 }

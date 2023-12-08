@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -308,4 +309,79 @@ func (s *ChallengeService) GetSubmitChallengeFormById(id uint64) (*entities.Chal
 	}
 
 	return result, nil
+}
+
+func getDatesFromFilterType(filterType string) (time.Time, time.Time, error) {
+	filterType = strings.ToLower(filterType)
+	now := time.Now()
+	var startDate, endDate time.Time
+
+	switch filterType {
+	case "hari ini":
+		startDate = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		endDate = startDate.Add(24 * time.Hour)
+	case "minggu ini":
+		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
+		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
+		endDate = startDate.AddDate(0, 0, 7)
+	case "bulan ini":
+		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+		nextMonth := startDate.AddDate(0, 1, 0)
+		endDate = nextMonth.Add(-time.Second)
+	case "tahun ini":
+		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
+		nextYear := startDate.AddDate(1, 0, 0)
+		endDate = nextYear.Add(-time.Second)
+	default:
+		return time.Time{}, time.Time{}, errors.New("tipe filter tidak valid")
+	}
+
+	return startDate, endDate, nil
+}
+
+func (s *ChallengeService) GetSubmitChallengeFormByDateRange(page, perPage int, filterType string) ([]*entities.ChallengeFormModels, int64, error) {
+	startDate, endDate, err := getDatesFromFilterType(filterType)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	result, err := s.repo.GetSubmitChallengeFormByDateRange(page, perPage, startDate, endDate)
+	if err != nil {
+		return nil, 0, errors.New("gagal mendapatkan form pengumpulan: " + err.Error())
+	}
+
+	totalItems, err := s.repo.GetTotalSubmitChallengeFormCountByDateRange(startDate, endDate)
+	if err != nil {
+		return nil, 0, errors.New("gagal mendapatkan total form pengumpulan: " + err.Error())
+	}
+
+	return result, totalItems, nil
+}
+
+func (s *ChallengeService) GetSubmitChallengeFormByStatusAndDate(page, perPage int, filterStatus string, filterType string) ([]*entities.ChallengeFormModels, int64, error) {
+	startDate, endDate, err := getDatesFromFilterType(filterType)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	participants, err := s.repo.GetSubmitChallengeFormByStatusAndDate(page, perPage, filterStatus, startDate, endDate)
+	if err != nil {
+		return nil, 0, errors.New("gagal mendapatkan form pengumpulan: " + err.Error())
+	}
+
+	totalItems, err := s.repo.GetTotalSubmitChallengeFormCountByStatusAndDate(filterStatus, startDate, endDate)
+	if err != nil {
+		return nil, 0, errors.New("gagal mendapatkan total form pengumpulan: " + err.Error())
+	}
+
+	return participants, totalItems, nil
+}
+
+func (s *ChallengeService) GetChallengesBySearchAndStatus(page, perPage int, search, status string) ([]*entities.ChallengeModels, int64, error) {
+	challenges, totalItems, err := s.repo.GetChallengesBySearchAndStatus(page, perPage, search, status)
+	if err != nil {
+		return nil, 0, errors.New("gagal mendapatkan tantangan: " + err.Error())
+	}
+
+	return challenges, totalItems, nil
 }

@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"mime/multipart"
+	"strconv"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/upload"
-	"mime/multipart"
-	"strconv"
 
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
 	"github.com/labstack/echo/v4"
@@ -156,8 +157,14 @@ func (h *ProductHandler) GetAllProductsReview() echo.HandlerFunc {
 		var totalItems int64
 		var err error
 		search := c.QueryParam("search")
-		if search != "" {
-			products, totalItems, err = h.service.GetProductsByName(page, perPage, search)
+		filterRated := c.QueryParam("rating")
+
+		if search != "" && filterRated != "" {
+			products, totalItems, err = h.service.SearchByNameAndFilterByRating(pageConv, perPage, search, filterRated)
+		} else if filterRated != "" {
+			products, totalItems, err = h.service.GetRatedProductsInRange(pageConv, perPage, filterRated)
+		} else if search != "" {
+			products, totalItems, err = h.service.GetProductsByName(pageConv, perPage, search)
 		} else {
 			products, totalItems, err = h.service.GetProductReviews(pageConv, perPage)
 		}

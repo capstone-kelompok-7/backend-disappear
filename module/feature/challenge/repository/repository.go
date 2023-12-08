@@ -51,6 +51,18 @@ func (r *ChallengeRepository) GetTotalChallengeCountByTitle(title string) (int64
 	return count, err
 }
 
+// func (r *CarouselRepository) GetTotalCarouselCountByName(name string) (int64, error) {
+// 	var count int64
+// 	query := r.db.Model(&entities.CarouselModels{}).Where("deleted_at IS NULL")
+
+// 	if name != "" {
+// 		query = query.Where("name LIKE ?", "%"+name+"%")
+// 	}
+
+// 	err := query.Count(&count).Error
+// 	return count, err
+// }
+
 func (r *ChallengeRepository) FindByStatus(page, perpage int, status string) ([]*entities.ChallengeModels, error) {
 	var challenge []*entities.ChallengeModels
 	offset := (page - 1) * perpage
@@ -172,4 +184,72 @@ func (r *ChallengeRepository) GetSubmitChallengeFormByUserAndChallenge(userID ui
 		return nil, err
 	}
 	return submissions, nil
+}
+
+func (r *ChallengeRepository) GetSubmitChallengeFormByDateRange(page, perpage int, startDate, endDate time.Time) ([]*entities.ChallengeFormModels, error) {
+	var participant []*entities.ChallengeFormModels
+	offset := (page - 1) * perpage
+	if err := r.db.Where("created_at BETWEEN ? AND ? AND deleted_at IS NULL", startDate, endDate).Offset(offset).Limit(perpage).Find(&participant).Error; err != nil {
+		return nil, err
+	}
+	return participant, nil
+}
+
+func (r *ChallengeRepository) GetTotalSubmitChallengeFormCountByDateRange(startDate, endDate time.Time) (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.ChallengeFormModels{}).Where("created_at BETWEEN ? AND ? AND deleted_at IS NULL", startDate, endDate).Count(&count).Error
+	return count, err
+}
+
+func (r *ChallengeRepository) GetSubmitChallengeFormByStatusAndDate(page, perPage int, filterStatus string, startDate, endDate time.Time) ([]*entities.ChallengeFormModels, error) {
+	var participants []*entities.ChallengeFormModels
+	offset := (page - 1) * perPage
+
+	err := r.db.Where("status = ? AND created_at BETWEEN ? AND ? AND deleted_at IS NULL", filterStatus, startDate, endDate).
+		Offset(offset).
+		Limit(perPage).
+		Find(&participants).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return participants, nil
+}
+
+func (r *ChallengeRepository) GetTotalSubmitChallengeFormCountByStatusAndDate(filterStatus string, startDate, endDate time.Time) (int64, error) {
+	var count int64
+	err := r.db.Model(&entities.ChallengeFormModels{}).
+		Where("status = ? AND created_at BETWEEN ? AND ? AND deleted_at IS NULL", filterStatus, startDate, endDate).
+		Count(&count).
+		Error
+
+	return count, err
+}
+
+func (r *ChallengeRepository) GetChallengesBySearchAndStatus(page, perPage int, search, status string) ([]*entities.ChallengeModels, int64, error) {
+	var challenges []*entities.ChallengeModels
+	offset := (page - 1) * perPage
+
+	db := r.db.Model(&entities.ChallengeModels{}).Where("deleted_at IS NULL")
+
+	if search != "" {
+		db = db.Where("title LIKE ? ", "%"+search+"%")
+	}
+
+	if status != "" {
+		db = db.Where("status = ? ", status)
+	}
+
+	err := db.Offset(offset).Limit(perPage).Find(&challenges).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var totalItems int64
+	if err := db.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return challenges, totalItems, nil
 }

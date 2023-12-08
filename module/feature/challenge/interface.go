@@ -1,6 +1,8 @@
 package challenge
 
 import (
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/dto"
 	"github.com/labstack/echo/v4"
@@ -25,6 +27,11 @@ type RepositoryChallengeInterface interface {
 	GetSubmitChallengeFormById(id uint64) (*entities.ChallengeFormModels, error)
 	UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (*entities.ChallengeFormModels, error)
 	GetSubmitChallengeFormByUserAndChallenge(userID uint64) ([]*entities.ChallengeFormModels, error)
+	GetSubmitChallengeFormByDateRange(page, perpage int, startDate, endDate time.Time) ([]*entities.ChallengeFormModels, error)
+	GetTotalSubmitChallengeFormCountByDateRange(startDate, endDate time.Time) (int64, error)
+	GetSubmitChallengeFormByStatusAndDate(page, perPage int, filterStatus string, startDate, endDate time.Time) ([]*entities.ChallengeFormModels, error)
+	GetTotalSubmitChallengeFormCountByStatusAndDate(filterStatus string, startDate, endDate time.Time) (int64, error)
+	GetChallengesBySearchAndStatus(page, perPage int, search, status string) ([]*entities.ChallengeModels, int64, error)
 }
 
 type ServiceChallengeInterface interface {
@@ -43,6 +50,9 @@ type ServiceChallengeInterface interface {
 	GetSubmitChallengeFormByStatus(page, perPage int, status string) ([]*entities.ChallengeFormModels, int64, error)
 	GetSubmitChallengeFormById(id uint64) (*entities.ChallengeFormModels, error)
 	UpdateSubmitChallengeForm(id uint64, updatedStatus dto.UpdateChallengeFormStatusRequest) (*entities.ChallengeFormModels, error)
+	GetSubmitChallengeFormByDateRange(page, perPage int, filterType string) ([]*entities.ChallengeFormModels, int64, error)
+	GetSubmitChallengeFormByStatusAndDate(page, perPage int, filterStatus string, filterType string) ([]*entities.ChallengeFormModels, int64, error)
+	GetChallengesBySearchAndStatus(page, perPage int, search, status string) ([]*entities.ChallengeModels, int64, error)
 }
 
 type HandlerChallengeInterface interface {

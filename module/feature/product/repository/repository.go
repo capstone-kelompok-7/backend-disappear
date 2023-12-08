@@ -2,11 +2,12 @@ package repository
 
 import (
 	"errors"
+	"strings"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"gorm.io/gorm"
-	"strings"
-	"time"
 )
 
 type ProductRepository struct {
@@ -414,6 +415,57 @@ func (r *ProductRepository) GetProductByFilter(page, perPage int, sortBy string)
 	}
 
 	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func (r *ProductRepository) GetRatedProductsInRange(page, perPage int, lowerBound, upperBound float64) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	offset := (page - 1) * perPage
+
+	db := r.db.Model(&entities.ProductModels{}).Where("deleted_at IS NULL")
+
+	err := db.Where("rating BETWEEN ? AND ?", lowerBound, upperBound).
+		Order("rating").Offset(offset).Limit(perPage).Find(&products).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var totalItems int64
+	if err := db.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func (r *ProductRepository) SearchByNameAndFilterByRating(page, perPage int, name, ratingParam string, lowerBound, upperBound float64) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	offset := (page - 1) * perPage
+	query := r.db.Model(&entities.ProductModels{}).
+		Offset(offset).
+		Limit(perPage).
+		Preload("Categories").
+		Preload("ProductPhotos").
+		Where("deleted_at IS NULL")
+
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+
+	if ratingParam != "" {
+		query = query.Where("rating BETWEEN ? AND ?", lowerBound, upperBound)
+	}
+
+	err := query.Find(&products).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var totalItems int64
+	if err := query.Count(&totalItems).Error; err != nil {
 		return nil, 0, err
 	}
 

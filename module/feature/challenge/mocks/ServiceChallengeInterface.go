@@ -262,6 +262,39 @@ func (_m *ServiceChallengeInterface) GetChallengeByTitle(page int, perPage int, 
 	return r0, r1, r2
 }
 
+// GetChallengesBySearchAndStatus provides a mock function with given fields: page, perPage, search, status
+func (_m *ServiceChallengeInterface) GetChallengesBySearchAndStatus(page int, perPage int, search string, status string) ([]*entities.ChallengeModels, int64, error) {
+	ret := _m.Called(page, perPage, search, status)
+
+	var r0 []*entities.ChallengeModels
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(int, int, string, string) ([]*entities.ChallengeModels, int64, error)); ok {
+		return rf(page, perPage, search, status)
+	}
+	if rf, ok := ret.Get(0).(func(int, int, string, string) []*entities.ChallengeModels); ok {
+		r0 = rf(page, perPage, search, status)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.ChallengeModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int, int, string, string) int64); ok {
+		r1 = rf(page, perPage, search, status)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(int, int, string, string) error); ok {
+		r2 = rf(page, perPage, search, status)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // GetNextPage provides a mock function with given fields: currentPage, totalPages
 func (_m *ServiceChallengeInterface) GetNextPage(currentPage int, totalPages int) int {
 	ret := _m.Called(currentPage, totalPages)
@@ -288,6 +321,39 @@ func (_m *ServiceChallengeInterface) GetPrevPage(currentPage int) int {
 	}
 
 	return r0
+}
+
+// GetSubmitChallengeFormByDateRange provides a mock function with given fields: page, perPage, filterType
+func (_m *ServiceChallengeInterface) GetSubmitChallengeFormByDateRange(page int, perPage int, filterType string) ([]*entities.ChallengeFormModels, int64, error) {
+	ret := _m.Called(page, perPage, filterType)
+
+	var r0 []*entities.ChallengeFormModels
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(int, int, string) ([]*entities.ChallengeFormModels, int64, error)); ok {
+		return rf(page, perPage, filterType)
+	}
+	if rf, ok := ret.Get(0).(func(int, int, string) []*entities.ChallengeFormModels); ok {
+		r0 = rf(page, perPage, filterType)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.ChallengeFormModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int, int, string) int64); ok {
+		r1 = rf(page, perPage, filterType)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(int, int, string) error); ok {
+		r2 = rf(page, perPage, filterType)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // GetSubmitChallengeFormById provides a mock function with given fields: id
@@ -342,6 +408,39 @@ func (_m *ServiceChallengeInterface) GetSubmitChallengeFormByStatus(page int, pe
 
 	if rf, ok := ret.Get(2).(func(int, int, string) error); ok {
 		r2 = rf(page, perPage, status)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// GetSubmitChallengeFormByStatusAndDate provides a mock function with given fields: page, perPage, filterStatus, filterType
+func (_m *ServiceChallengeInterface) GetSubmitChallengeFormByStatusAndDate(page int, perPage int, filterStatus string, filterType string) ([]*entities.ChallengeFormModels, int64, error) {
+	ret := _m.Called(page, perPage, filterStatus, filterType)
+
+	var r0 []*entities.ChallengeFormModels
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(int, int, string, string) ([]*entities.ChallengeFormModels, int64, error)); ok {
+		return rf(page, perPage, filterStatus, filterType)
+	}
+	if rf, ok := ret.Get(0).(func(int, int, string, string) []*entities.ChallengeFormModels); ok {
+		r0 = rf(page, perPage, filterStatus, filterType)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.ChallengeFormModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int, int, string, string) int64); ok {
+		r1 = rf(page, perPage, filterStatus, filterType)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(int, int, string, string) error); ok {
+		r2 = rf(page, perPage, filterStatus, filterType)
 	} else {
 		r2 = ret.Error(2)
 	}
