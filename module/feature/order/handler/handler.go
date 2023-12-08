@@ -27,6 +27,7 @@ func (h *OrderHandler) GetAllOrders() echo.HandlerFunc {
 		if currentUser.Role != "admin" {
 			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
 		}
+
 		page, _ := strconv.Atoi(c.QueryParam("page"))
 		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
 		perPage := 8
@@ -34,12 +35,29 @@ func (h *OrderHandler) GetAllOrders() echo.HandlerFunc {
 		var orders []*entities.OrderModels
 		var totalItems int64
 		var err error
+
 		search := c.QueryParam("search")
-		if search != "" {
+		dateFilter := c.QueryParam("date_filter")
+		statusFilter := c.QueryParam("status_filter")
+
+		if search != "" && dateFilter != "" && statusFilter != "" {
+			orders, totalItems, err = h.service.GetOrderByDateRangeAndStatusAndSearch(dateFilter, statusFilter, search, page, perPage)
+		} else if search != "" && statusFilter != "" {
+			orders, totalItems, err = h.service.GetOrdersBySearchAndStatus(statusFilter, search, page, perPage)
+		} else if search != "" && dateFilter != "" {
+			orders, totalItems, err = h.service.GetOrderBySearchAndDateRange(dateFilter, search, page, perPage)
+		} else if dateFilter != "" && statusFilter != "" {
+			orders, totalItems, err = h.service.GetOrderByDateRangeAndStatus(dateFilter, statusFilter, page, perPage)
+		} else if search != "" {
 			orders, totalItems, err = h.service.GetOrdersByName(page, perPage, search)
+		} else if dateFilter != "" {
+			orders, totalItems, err = h.service.GetOrderByDateRange(dateFilter, page, perPage)
+		} else if statusFilter != "" {
+			orders, totalItems, err = h.service.GetOrderByOrderStatus(statusFilter, page, perPage)
 		} else {
 			orders, totalItems, err = h.service.GetAll(pageConv, perPage)
 		}
+
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all orders:", err.Error())
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar pesanan: ")
@@ -251,5 +269,55 @@ func (h *OrderHandler) Tracking() echo.HandlerFunc {
 		}
 
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan resi", result)
+	}
+}
+
+func (h *OrderHandler) GetAllPayment() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		page, _ := strconv.Atoi(c.QueryParam("page"))
+		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
+		perPage := 8
+
+		var orders []*entities.OrderModels
+		var totalItems int64
+		var err error
+
+		search := c.QueryParam("search")
+		dateFilter := c.QueryParam("date_filter")
+		statusFilter := c.QueryParam("status_filter")
+
+		if search != "" && dateFilter != "" && statusFilter != "" {
+			orders, totalItems, err = h.service.GetOrderByDateRangeAndPaymentStatusAndSearch(dateFilter, statusFilter, search, page, perPage)
+		} else if search != "" && statusFilter != "" {
+			orders, totalItems, err = h.service.GetOrdersBySearchAndPaymentStatus(statusFilter, search, page, perPage)
+		} else if search != "" && dateFilter != "" {
+			orders, totalItems, err = h.service.GetOrderBySearchAndDateRange(dateFilter, search, page, perPage)
+		} else if dateFilter != "" && statusFilter != "" {
+			orders, totalItems, err = h.service.GetOrderByDateRangeAndPaymentStatus(dateFilter, statusFilter, page, perPage)
+		} else if search != "" {
+			orders, totalItems, err = h.service.GetOrdersByName(page, perPage, search)
+		} else if dateFilter != "" {
+			orders, totalItems, err = h.service.GetOrderByDateRange(dateFilter, page, perPage)
+		} else if statusFilter != "" {
+			orders, totalItems, err = h.service.GetOrderByPaymentStatus(statusFilter, page, perPage)
+		} else {
+			orders, totalItems, err = h.service.GetAll(pageConv, perPage)
+		}
+
+		if err != nil {
+			c.Logger().Error("handler: failed to fetch all orders:", err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar pembayaran: ")
+		}
+
+		currentPage, totalPages := h.service.CalculatePaginationValues(pageConv, int(totalItems), perPage)
+		nextPage := h.service.GetNextPage(currentPage, totalPages)
+		prevPage := h.service.GetPrevPage(currentPage)
+
+		return response.SendPaginationResponse(c, dto.FormatterOrderPayment(orders), currentPage, totalPages, int(totalItems), nextPage, prevPage, "Berhasil mendapatkan daftar pembayaran")
 	}
 }

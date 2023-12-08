@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -110,27 +111,9 @@ func (s *ArticleService) GetArticleById(id uint64, incrementViews bool) (*entiti
 }
 
 func (s *ArticleService) GetArticlesByDateRange(filterType string) ([]*entities.ArticleModels, error) {
-	now := time.Now()
-	var startDate, endDate time.Time
-
-	switch filterType {
-	case "Hari Ini":
-		startDate = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-		endDate = startDate.Add(24 * time.Hour)
-	case "Minggu Ini":
-		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
-		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
-		endDate = startDate.AddDate(0, 0, 7)
-	case "Bulan Ini":
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		nextMonth := startDate.AddDate(0, 1, 0)
-		endDate = nextMonth.Add(-time.Second)
-	case "Tahun Ini":
-		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-		nextYear := startDate.AddDate(1, 0, 0)
-		endDate = nextYear.Add(-time.Second)
-	default:
-		return nil, errors.New("tipe filter tidak valid")
+	startDate, endDate, err := s.getFilterDateRange(filterType)
+	if err != nil {
+		return nil, err
 	}
 
 	result, err := s.repo.GetArticlesByDateRange(startDate, endDate)
@@ -199,45 +182,6 @@ func (s *ArticleService) GetLatestArticles() ([]*entities.ArticleModels, error) 
 	}
 
 	return articles, nil
-}
-
-func (s *ArticleService) GetArticlesByViews(sortType string) ([]*entities.ArticleModels, error) {
-	var articles []*entities.ArticleModels
-	var err error
-	if sortType == "asc" {
-		articles, err = s.repo.GetArticleByViewsAsc()
-		if err != nil {
-			return nil, errors.New("gagal mengambil artikel: " + err.Error())
-		}
-	} else if sortType == "desc" {
-		articles, err = s.repo.GetArticleByViewsDesc()
-		if err != nil {
-			return nil, errors.New("gagal mengambil artikel: " + err.Error())
-		}
-	}
-
-	return articles, nil
-}
-
-func (s *ArticleService) GetArticlesBySortedTitle(sortType string) ([]*entities.ArticleModels, error) {
-	var articles []*entities.ArticleModels
-	var err error
-	if sortType == "asc" {
-		articles, err = s.repo.GetArticleByTitleAsc()
-		if err != nil {
-			return nil, errors.New("gagal mengambil artikel: " + err.Error())
-		}
-		return articles, nil
-	} else if sortType == "desc" {
-		articles, err = s.repo.GetArticleByTitleDesc()
-		if err != nil {
-			return nil, errors.New("gagal mengambil artikel: " + err.Error())
-		}
-
-		return articles, nil
-	}
-
-	return nil, nil
 }
 
 func (s *ArticleService) GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, int64, error) {
@@ -326,4 +270,43 @@ func (s *ArticleService) GetOtherArticle() ([]*entities.ArticleModels, error) {
 	}
 
 	return articles, nil
+}
+
+func (s *ArticleService) GetArticleSearchByDateRange(filterType, searchText string) ([]*entities.ArticleModels, error) {
+	startDate, endDate, err := s.getFilterDateRange(filterType)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := s.repo.SearchArticlesWithDateFilter(searchText, startDate, endDate)
+	if err != nil {
+		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
+	}
+
+	return result, nil
+}
+
+func (s *ArticleService) getFilterDateRange(filterType string) (time.Time, time.Time, error) {
+	filterType = strings.ToLower(filterType)
+	now := time.Now()
+
+	switch filterType {
+	case "minggu ini":
+		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
+		startDate := time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
+		endDate := startDate.AddDate(0, 0, 7)
+		return startDate, endDate, nil
+	case "bulan ini":
+		startDate := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+		nextMonth := startDate.AddDate(0, 1, 0)
+		endDate := nextMonth.Add(-time.Second)
+		return startDate, endDate, nil
+	case "tahun ini":
+		startDate := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
+		nextYear := startDate.AddDate(1, 0, 0)
+		endDate := nextYear.Add(-time.Second)
+		return startDate, endDate, nil
+	default:
+		return time.Time{}, time.Time{}, errors.New("tipe filter tidak valid")
+	}
 }

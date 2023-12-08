@@ -144,6 +144,7 @@ func RouteCart(e *echo.Echo, h cart.HandlerCartInterface, jwtService utils.JWTIn
 func RouteOrder(e *echo.Echo, h order.HandlerOrderInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	orderGroup := e.Group("/api/v1/order")
 	orderGroup.GET("", h.GetAllOrders(), middlewares.AuthMiddleware(jwtService, userService))
+	orderGroup.GET("/payment", h.GetAllPayment(), middlewares.AuthMiddleware(jwtService, userService))
 	orderGroup.GET("/:id", h.GetOrderById(), middlewares.AuthMiddleware(jwtService, userService))
 	orderGroup.POST("", h.CreateOrder(), middlewares.AuthMiddleware(jwtService, userService))
 	orderGroup.POST("/confirm/:id", h.ConfirmPayment(), middlewares.AuthMiddleware(jwtService, userService))

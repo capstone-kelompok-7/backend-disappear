@@ -21,17 +21,17 @@ type RepositoryProductInterface interface {
 	UpdateProductCategories(product *entities.ProductModels, categoryIDs []uint64) error
 	DeleteProduct(id uint64) error
 	DeleteProductImage(productID, imageID uint64) error
-	GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 	ReduceStockWhenPurchasing(productID, stock uint64) error
 	IncreaseStock(productID, quantity uint64) error
-	GetProductByAlphabet(page, perPage int) ([]*entities.ProductModels, int64, error)
-	GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error)
-	GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
-	GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetTotalProductSold() (uint64, error)
-	GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error)
 	FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ProductModels, error)
 	GetTopRatedProducts() ([]*entities.ProductModels, error)
+	GetProductsByCategoryAndName(page, perPage int, categoryName, name string) ([]*entities.ProductModels, error)
+	GetProductsCountByCategoryAndName(categoryName, name string) (int64, error)
+	GetProductsByCategoryName(categoryName string, page, perPage int) ([]*entities.ProductModels, error)
+	GetProductCountByCategoryName(categoryName string) (int64, error)
+	GetProductBySearchAndFilter(page, perPage int, sortBy, search string) ([]*entities.ProductModels, int64, error)
+	GetProductByFilter(page, perPage int, sortBy string) ([]*entities.ProductModels, int64, error)
 }
 
 type ServiceProductInterface interface {
@@ -49,17 +49,15 @@ type ServiceProductInterface interface {
 	UpdateProduct(productID uint64, request *dto.UpdateProduct) (*entities.ProductModels, error)
 	DeleteProduct(id uint64) error
 	DeleteImageProduct(productId, imageId uint64) error
-	GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 	ReduceStockWhenPurchasing(productID, quantity uint64) error
 	IncreaseStock(productID, quantity uint64) error
-	GetProductByAlphabet(page, perPage int) ([]*entities.ProductModels, int64, error)
-	GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error)
-	GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
-	GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetTotalProductSold() (uint64, error)
-	GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetProductPreferences(userID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetTopRatedProducts() ([]*entities.ProductModels, error)
+	GetProductsByCategoryAndName(categoryName, name string, page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductsByCategoryName(categoryName string, page, perPage int) ([]*entities.ProductModels, int64, error)
+	GetProductsBySearchAndFilter(page, perPage int, filter, search string) ([]*entities.ProductModels, int64, error)
+	GetProductsByFilter(page, perPage int, filter string) ([]*entities.ProductModels, int64, error)
 }
 
 type HandlerProductInterface interface {

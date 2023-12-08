@@ -21,16 +21,13 @@ type RepositoryArticleInterface interface {
 	DeleteBookmarkArticle(userID, articleID uint64) error
 	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
 	GetLatestArticle() ([]*entities.ArticleModels, error)
-	GetArticleByViewsAsc() ([]*entities.ArticleModels, error)
-	GetArticleByViewsDesc() ([]*entities.ArticleModels, error)
-	GetArticleByTitleDesc() ([]*entities.ArticleModels, error)
-	GetArticleByTitleAsc() ([]*entities.ArticleModels, error)
 	GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, error)
 	FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ArticleModels, error)
 	GetTotalArticleCount() (int64, error)
 	GetArticleAlphabet(page, perPage int) ([]*entities.ArticleModels, error)
 	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, error)
 	GetOtherArticle() ([]*entities.ArticleModels, error)
+	SearchArticlesWithDateFilter(searchText string, startDate, endDate time.Time) ([]*entities.ArticleModels, error)
 }
 
 type ServiceArticleInterface interface {
@@ -45,8 +42,6 @@ type ServiceArticleInterface interface {
 	DeleteBookmarkArticle(userID, articleID uint64) error
 	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
 	GetLatestArticles() ([]*entities.ArticleModels, error)
-	GetArticlesByViews(sortType string) ([]*entities.ArticleModels, error)
-	GetArticlesBySortedTitle(sortType string) ([]*entities.ArticleModels, error)
 	GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, int64, error)
 	GetArticlePreferences(userID uint64, page, perPage int) ([]*entities.ArticleModels, int64, error)
 	GetNextPage(currentPage int, totalPages int) int
@@ -55,6 +50,7 @@ type ServiceArticleInterface interface {
 	GetArticlesAlphabet(page, perPage int) ([]*entities.ArticleModels, int64, error)
 	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, int64, error)
 	GetOtherArticle() ([]*entities.ArticleModels, error)
+	GetArticleSearchByDateRange(filterType, searchText string) ([]*entities.ArticleModels, error)
 }
 
 type HandlerArticleInterface interface {

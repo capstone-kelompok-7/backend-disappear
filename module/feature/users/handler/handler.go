@@ -99,9 +99,16 @@ func (h *UserHandler) GetAllUsers() echo.HandlerFunc {
 		var totalItems int64
 		var err error
 		search := c.QueryParam("search")
-		if search != "" {
+		filter := c.QueryParam("filter")
+
+		switch {
+		case search != "" && filter != "":
+			user, totalItems, err = h.service.GetUsersBySearchAndFilter(page, perPage, search, filter)
+		case search != "":
 			user, totalItems, err = h.service.GetUsersByName(page, perPage, search)
-		} else {
+		case filter != "":
+			user, totalItems, err = h.service.GetUsersByLevel(page, perPage, filter)
+		default:
 			user, totalItems, err = h.service.GetAllUsers(pageConv, perPage)
 		}
 		if err != nil {

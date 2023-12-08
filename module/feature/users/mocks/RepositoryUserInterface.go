@@ -172,30 +172,70 @@ func (_m *RepositoryUserInterface) FindByName(page int, perPage int, name string
 	return r0, r1
 }
 
-// GetFilterLevel provides a mock function with given fields: level
-func (_m *RepositoryUserInterface) GetFilterLevel(level string) ([]*entities.UserModels, error) {
-	ret := _m.Called(level)
+// GetAllUsersBySearchAndFilter provides a mock function with given fields: page, perPage, search, levelFilter
+func (_m *RepositoryUserInterface) GetAllUsersBySearchAndFilter(page int, perPage int, search string, levelFilter string) ([]*entities.UserModels, int64, error) {
+	ret := _m.Called(page, perPage, search, levelFilter)
 
 	var r0 []*entities.UserModels
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]*entities.UserModels, error)); ok {
-		return rf(level)
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(int, int, string, string) ([]*entities.UserModels, int64, error)); ok {
+		return rf(page, perPage, search, levelFilter)
 	}
-	if rf, ok := ret.Get(0).(func(string) []*entities.UserModels); ok {
-		r0 = rf(level)
+	if rf, ok := ret.Get(0).(func(int, int, string, string) []*entities.UserModels); ok {
+		r0 = rf(page, perPage, search, levelFilter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*entities.UserModels)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(level)
+	if rf, ok := ret.Get(1).(func(int, int, string, string) int64); ok {
+		r1 = rf(page, perPage, search, levelFilter)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(int64)
 	}
 
-	return r0, r1
+	if rf, ok := ret.Get(2).(func(int, int, string, string) error); ok {
+		r2 = rf(page, perPage, search, levelFilter)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// GetFilterLevel provides a mock function with given fields: page, perPage, level
+func (_m *RepositoryUserInterface) GetFilterLevel(page int, perPage int, level string) ([]*entities.UserModels, int64, error) {
+	ret := _m.Called(page, perPage, level)
+
+	var r0 []*entities.UserModels
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(int, int, string) ([]*entities.UserModels, int64, error)); ok {
+		return rf(page, perPage, level)
+	}
+	if rf, ok := ret.Get(0).(func(int, int, string) []*entities.UserModels); ok {
+		r0 = rf(page, perPage, level)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.UserModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int, int, string) int64); ok {
+		r1 = rf(page, perPage, level)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(int, int, string) error); ok {
+		r2 = rf(page, perPage, level)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // GetLeaderboardByExp provides a mock function with given fields: limit
