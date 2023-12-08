@@ -32,6 +32,8 @@ type RepositoryProductInterface interface {
 	GetProductCountByCategoryName(categoryName string) (int64, error)
 	GetProductBySearchAndFilter(page, perPage int, sortBy, search string) ([]*entities.ProductModels, int64, error)
 	GetProductByFilter(page, perPage int, sortBy string) ([]*entities.ProductModels, int64, error)
+	GetRatedProductsInRange(page, perPage int, lowerBound, upperBound float64) ([]*entities.ProductModels, int64, error)
+	SearchByNameAndFilterByRating(page, perPage int, name, ratingParam string, lowerBound, upperBound float64) ([]*entities.ProductModels, int64, error)
 }
 
 type ServiceProductInterface interface {
@@ -58,6 +60,8 @@ type ServiceProductInterface interface {
 	GetProductsByCategoryName(categoryName string, page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetProductsBySearchAndFilter(page, perPage int, filter, search string) ([]*entities.ProductModels, int64, error)
 	GetProductsByFilter(page, perPage int, filter string) ([]*entities.ProductModels, int64, error)
+	GetRatedProductsInRange(page, perPage int, ratingParam string) ([]*entities.ProductModels, int64, error)
+	SearchByNameAndFilterByRating(page, perPage int, name, ratingParam string) ([]*entities.ProductModels, int64, error)
 }
 
 type HandlerProductInterface interface {
