@@ -238,14 +238,6 @@ func (s *ProductService) DeleteImageProduct(productId, imageId uint64) error {
 	return nil
 }
 
-func (s *ProductService) GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
-	products, totalItems, err := s.repo.GetProductsByCategory(categoryID, page, perPage)
-	if err != nil {
-		return nil, 0, err
-	}
-	return products, totalItems, nil
-}
-
 func (s *ProductService) ReduceStockWhenPurchasing(productID, quantity uint64) error {
 	products, err := s.repo.GetProductByID(productID)
 	if err != nil {
@@ -274,37 +266,6 @@ func (s *ProductService) IncreaseStock(productID, quantity uint64) error {
 	}
 	return nil
 }
-func (s *ProductService) GetProductByAlphabet(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	products, totalItems, err := s.repo.GetProductByAlphabet(page, perPage)
-	if err != nil {
-		return nil, 0, errors.New("gagal filter produk dari abjad")
-	}
-
-	return products, totalItems, nil
-}
-
-func (s *ProductService) GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	products, totalItems, err := s.repo.GetProductByLatest(page, perPage)
-	if err != nil {
-		return nil, 0, errors.New("gagal filter produk dari terbaru")
-	}
-	return products, totalItems, nil
-}
-
-func (s *ProductService) GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	products, totalItems, err := s.repo.GetProductsByHighestPrice(page, perPage)
-	if err != nil {
-		return nil, 0, errors.New("gagal gilter produk dari harga termahal")
-	}
-	return products, totalItems, nil
-}
-func (s *ProductService) GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	products, totalItems, err := s.repo.GetProductsByLowestPrice(page, perPage)
-	if err != nil {
-		return nil, 0, errors.New("gagal filter produk dari harga termurah")
-	}
-	return products, totalItems, nil
-}
 
 func (s *ProductService) GetTotalProductSold() (uint64, error) {
 	totalSold, err := s.repo.GetTotalProductSold()
@@ -312,14 +273,6 @@ func (s *ProductService) GetTotalProductSold() (uint64, error) {
 		return 0, err
 	}
 	return totalSold, nil
-}
-
-func (s *ProductService) GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	products, totalItems, err := s.repo.GetDiscountedProducts(page, perPage)
-	if err != nil {
-		return nil, 0, errors.New("gagal filter produk dari promo")
-	}
-	return products, totalItems, nil
 }
 
 func (s *ProductService) GetProductPreferences(userID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
@@ -340,4 +293,79 @@ func (s *ProductService) GetTopRatedProducts() ([]*entities.ProductModels, error
 		return nil, err
 	}
 	return result, nil
+}
+
+func (s *ProductService) GetProductsByCategoryAndName(categoryName, name string, page, perPage int) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var err error
+
+	products, err = s.repo.GetProductsByCategoryAndName(page, perPage, categoryName, name)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalItems, err := s.repo.GetProductsCountByCategoryAndName(categoryName, name)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func (s *ProductService) GetProductsByCategoryName(categoryName string, page, perPage int) ([]*entities.ProductModels, int64, error) {
+	products, err := s.repo.GetProductsByCategoryName(categoryName, page, perPage)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	count, err := s.repo.GetProductCountByCategoryName(categoryName)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return products, count, nil
+}
+
+func (s *ProductService) GetProductsBySearchAndFilter(page, perPage int, filter, search string) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+	var err error
+
+	if !isValidFilter(filter) {
+		products, totalItems, err = s.repo.GetProductBySearchAndFilter(page, perPage, filter, search)
+	} else {
+		products, totalItems, err = s.repo.GetProductBySearchAndFilter(page, perPage, "", search)
+	}
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func (s *ProductService) GetProductsByFilter(page, perPage int, filter string) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+	var err error
+
+	if !isValidFilter(filter) {
+		products, totalItems, err = s.repo.GetProductByFilter(page, perPage, filter)
+	}
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func isValidFilter(filter string) bool {
+	validFilters := map[string]bool{
+		"abjad":    true,
+		"termurah": true,
+		"termahal": true,
+		"terbaru":  true,
+		"promo":    true,
+	}
+	return !validFilters[filter]
 }

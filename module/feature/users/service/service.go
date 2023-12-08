@@ -292,3 +292,11 @@ func (s *UserService) AddUserPreference(userID uint64, request *dto.UserPreferen
 
 	return result, nil
 }
+
+func (s *UserService) GetUsersBySearchAndFilter(page, perPage int, search, levelFilter string) ([]*entities.UserModels, int64, error) {
+	return s.repo.GetAllUsersBySearchAndFilter(page, perPage, search, levelFilter)
+}
+
+func (s *UserService) GetUsersByLevel(page, perPage int, level string) ([]*entities.UserModels, int64, error) {
+	return s.repo.GetFilterLevel(page, perPage, level)
+}

@@ -24,40 +24,26 @@ func NewProductHandler(service product.ServiceProductInterface) product.HandlerP
 func (h *ProductHandler) GetAllProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page, _ := strconv.Atoi(c.QueryParam("page"))
-		pageConv, _ := strconv.Atoi(strconv.Itoa(page))
+		pageConv := page
 		perPage := 8
 
 		var products []*entities.ProductModels
 		var totalItems int64
 		var err error
 
-		categoryID, err := strconv.ParseUint(c.QueryParam("categoryID"), 10, 64)
-		if err == nil && categoryID > 0 {
-			products, totalItems, err = h.service.GetProductsByCategory(categoryID, pageConv, perPage)
+		search := c.QueryParam("search")
+		categoryName := c.QueryParam("category_name")
+
+		if search != "" && categoryName != "" {
+			products, totalItems, err = h.service.GetProductsByCategoryAndName(categoryName, search, pageConv, perPage)
+		} else if categoryName != "" {
+			products, totalItems, err = h.service.GetProductsByCategoryName(categoryName, pageConv, perPage)
+		} else if search != "" {
+			products, totalItems, err = h.service.GetProductsByName(pageConv, perPage, search)
 		} else {
-			search := c.QueryParam("search")
-			if search != "" {
-				products, totalItems, err = h.service.GetProductsByName(pageConv, perPage, search)
-			} else {
-				filter := c.QueryParam("filter")
-				switch filter {
-				case "":
-					products, totalItems, err = h.service.GetAll(pageConv, perPage)
-				case "abjad":
-					products, totalItems, err = h.service.GetProductByAlphabet(pageConv, perPage)
-				case "terbaru":
-					products, totalItems, err = h.service.GetProductByLatest(pageConv, perPage)
-				case "termahal":
-					products, totalItems, err = h.service.GetProductsByHighestPrice(pageConv, perPage)
-				case "termurah":
-					products, totalItems, err = h.service.GetProductsByLowestPrice(pageConv, perPage)
-				case "promo":
-					products, totalItems, err = h.service.GetDiscountedProducts(pageConv, perPage)
-				default:
-					return response.SendBadRequestResponse(c, "Filter tidak valid")
-				}
-			}
+			products, totalItems, err = h.service.GetAll(pageConv, perPage)
 		}
+
 		if err != nil {
 			c.Logger().Error("handler: failed to fetch all products:", err.Error())
 			return response.SendBadRequestResponse(c, "Gagal mendapatkan daftar produk: "+err.Error())
@@ -273,26 +259,16 @@ func (h *ProductHandler) GetAllProductsPreferences() echo.HandlerFunc {
 		var err error
 
 		search := c.QueryParam("search")
-		if search != "" {
+		filter := c.QueryParam("filter")
+
+		if filter != "" && search != "" {
+			products, totalItems, err = h.service.GetProductsBySearchAndFilter(pageConv, perPage, filter, search)
+		} else if search != "" {
 			products, totalItems, err = h.service.GetProductsByName(pageConv, perPage, search)
+		} else if filter != "" {
+			products, totalItems, err = h.service.GetProductsByFilter(pageConv, perPage, filter)
 		} else {
-			filter := c.QueryParam("filter")
-			switch filter {
-			case "":
-				products, totalItems, err = h.service.GetProductPreferences(currentUser.ID, pageConv, perPage)
-			case "abjad":
-				products, totalItems, err = h.service.GetProductByAlphabet(pageConv, perPage)
-			case "terbaru":
-				products, totalItems, err = h.service.GetProductByLatest(pageConv, perPage)
-			case "termahal":
-				products, totalItems, err = h.service.GetProductsByHighestPrice(pageConv, perPage)
-			case "termurah":
-				products, totalItems, err = h.service.GetProductsByLowestPrice(pageConv, perPage)
-			case "promo":
-				products, totalItems, err = h.service.GetDiscountedProducts(pageConv, perPage)
-			default:
-				return response.SendBadRequestResponse(c, "Filter tidak valid")
-			}
+			products, totalItems, err = h.service.GetProductPreferences(currentUser.ID, pageConv, perPage)
 		}
 
 		if err != nil {

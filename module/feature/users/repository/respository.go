@@ -166,12 +166,21 @@ func (r *UserRepository) GetUserLevel(userID uint64) (string, error) {
 	return user.Level, nil
 }
 
-func (r *UserRepository) GetFilterLevel(level string) ([]*entities.UserModels, error) {
+func (r *UserRepository) GetFilterLevel(page, perPage int, level string) ([]*entities.UserModels, int64, error) {
 	var user []*entities.UserModels
-	if err := r.db.Where("level = ? AND deleted_at IS NULL", level).Find(&user).Error; err != nil {
-		return nil, err
+	var totalItems int64
+
+	query := r.db.Model(&entities.UserModels{}).Where("level = ? AND deleted_at IS NULL", level)
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
 	}
-	return user, nil
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&user).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return user, totalItems, nil
 }
 
 func (r *UserRepository) GetLeaderboardByExp(limit int) ([]*entities.UserModels, error) {
@@ -260,4 +269,29 @@ func (r *UserRepository) AddUserPreference(userID uint64, request *dto.UserPrefe
 	}
 
 	return user, nil
+}
+
+func (r *UserRepository) GetAllUsersBySearchAndFilter(page, perPage int, search, levelFilter string) ([]*entities.UserModels, int64, error) {
+	var users []*entities.UserModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.UserModels{}).Where("deleted_at IS NULL")
+
+	if search != "" {
+		query = query.Where("name LIKE ?", "%"+search+"%")
+	}
+
+	if levelFilter != "" {
+		query = query.Where("level = ?", levelFilter)
+	}
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, totalItems, nil
 }

@@ -192,7 +192,6 @@ type OrderPaginationResponse struct {
 	UserID          uint64                      `json:"user_id"`
 	TotalAmountPaid uint64                      `json:"total_amount_paid"`
 	OrderStatus     string                      `json:"order_status"`
-	PaymentStatus   string                      `json:"payment_status"`
 	CreatedAt       time.Time                   `json:"created_at"`
 	User            UserPaginationOrderResponse `json:"user"`
 }
@@ -209,7 +208,6 @@ func FormatOrderPagination(order *entities.OrderModels) *OrderPaginationResponse
 		UserID:          order.UserID,
 		TotalAmountPaid: order.TotalAmountPaid,
 		OrderStatus:     order.OrderStatus,
-		PaymentStatus:   order.PaymentStatus,
 		CreatedAt:       order.CreatedAt,
 		User: UserPaginationOrderResponse{
 			ID:   order.User.ID,
@@ -224,6 +222,49 @@ func FormatterOrder(orders []*entities.OrderModels) []*OrderPaginationResponse {
 
 	for _, order := range orders {
 		formattedOrder := FormatOrderPagination(order)
+		orderFormatters = append(orderFormatters, formattedOrder)
+	}
+
+	return orderFormatters
+}
+
+// PaymentPaginationResponse Pagination Response
+type PaymentPaginationResponse struct {
+	ID              string                      `json:"id"`
+	IdOrder         string                      `json:"id_order"`
+	UserID          uint64                      `json:"user_id"`
+	TotalAmountPaid uint64                      `json:"total_amount_paid"`
+	PaymentStatus   string                      `json:"payment_status"`
+	CreatedAt       time.Time                   `json:"created_at"`
+	User            UserPaginationOrderResponse `json:"user"`
+}
+
+type UserPaymentPaginationOrderResponse struct {
+	ID   uint64 `json:"id"`
+	Name string `json:"name"`
+}
+
+func FormatOrderPaymentPagination(order *entities.OrderModels) *PaymentPaginationResponse {
+	orderResponse := &PaymentPaginationResponse{
+		ID:              order.ID,
+		IdOrder:         order.IdOrder,
+		UserID:          order.UserID,
+		TotalAmountPaid: order.TotalAmountPaid,
+		PaymentStatus:   order.PaymentStatus,
+		CreatedAt:       order.CreatedAt,
+		User: UserPaginationOrderResponse{
+			ID:   order.User.ID,
+			Name: order.User.Name,
+		},
+	}
+	return orderResponse
+}
+
+func FormatterOrderPayment(orders []*entities.OrderModels) []*PaymentPaginationResponse {
+	var orderFormatters []*PaymentPaginationResponse
+
+	for _, order := range orders {
+		formattedOrder := FormatOrderPaymentPagination(order)
 		orderFormatters = append(orderFormatters, formattedOrder)
 	}
 

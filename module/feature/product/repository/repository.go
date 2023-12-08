@@ -51,7 +51,7 @@ func (r *ProductRepository) GetTotalProductCountByName(name string) (int64, erro
 func (r *ProductRepository) FindAll(page, perPage int) ([]*entities.ProductModels, error) {
 	var products []*entities.ProductModels
 	offset := (page - 1) * perPage
-	err := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Where("deleted_at IS NULL").Find(&products).Error
+	err := r.db.Offset(offset).Limit(perPage).Preload("Categories").Preload("ProductPhotos").Where("deleted_at IS NULL").Find(&products).Error
 	if err != nil {
 		return nil, err
 	}
@@ -214,114 +214,12 @@ func (r *ProductRepository) ReduceStockWhenPurchasing(productID, quantity uint64
 	return nil
 }
 
-func (r *ProductRepository) GetProductsByCategory(categoryID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
-	var products []*entities.ProductModels
-	var totalItems int64
-
-	query := r.db.Model(&entities.ProductModels{}).
-		Joins("JOIN product_categories ON product_categories.product_models_id = products.id").
-		Where("product_categories.category_models_id = ?", categoryID).
-		Where("products.deleted_at IS NULL")
-
-	if err := query.Count(&totalItems).Error; err != nil {
-		return nil, 0, err
-	}
-
-	if err := query.Offset((page - 1) * perPage).Limit(perPage).
-		Preload("Categories").
-		Preload("ProductPhotos").
-		Preload("ProductReview").
-		Find(&products).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return products, totalItems, nil
-}
-
 func (r *ProductRepository) IncreaseStock(productID, quantity uint64) error {
 	var products entities.ProductModels
 	if err := r.db.Model(&products).Where("id = ?", productID).Update("stock", gorm.Expr("stock + ?", quantity)).Error; err != nil {
 		return err
 	}
 	return nil
-}
-
-func (r *ProductRepository) GetProductByAlphabet(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	var products []*entities.ProductModels
-	var totalItems int64
-
-	query := r.db.Model(&entities.ProductModels{})
-
-	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Order("name asc").Where("deleted_at IS NULL")
-
-	if err := query.Count(&totalItems).Error; err != nil {
-		return nil, 0, err
-	}
-
-	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return products, totalItems, nil
-
-}
-
-func (r *ProductRepository) GetProductByLatest(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	var products []*entities.ProductModels
-	var totalItems int64
-
-	query := r.db.Model(&entities.ProductModels{})
-
-	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Order("created_at desc").Where("deleted_at IS NULL")
-
-	if err := query.Count(&totalItems).Error; err != nil {
-		return nil, 0, err
-	}
-
-	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return products, totalItems, nil
-
-}
-
-func (r *ProductRepository) GetProductsByHighestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	var products []*entities.ProductModels
-	var totalItems int64
-
-	query := r.db.Model(&entities.ProductModels{})
-
-	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Order("price desc").Where("deleted_at IS NULL")
-
-	if err := query.Count(&totalItems).Error; err != nil {
-		return nil, 0, err
-	}
-
-	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return products, totalItems, nil
-}
-
-func (r *ProductRepository) GetProductsByLowestPrice(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	var products []*entities.ProductModels
-	var totalItems int64
-
-	query := r.db.Model(&entities.ProductModels{})
-
-	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Order("price asc").Where("deleted_at IS NULL")
-
-	if err := query.Count(&totalItems).Error; err != nil {
-		return nil, 0, err
-	}
-
-	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return products, totalItems, nil
 }
 
 func (r *ProductRepository) GetTotalProductSold() (uint64, error) {
@@ -339,25 +237,6 @@ func (r *ProductRepository) GetTotalProductSold() (uint64, error) {
 	}
 
 	return totalSold, nil
-}
-
-func (r *ProductRepository) GetDiscountedProducts(page, perPage int) ([]*entities.ProductModels, int64, error) {
-	var products []*entities.ProductModels
-	var totalItems int64
-
-	query := r.db.Model(&entities.ProductModels{})
-
-	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Where("discount > ? AND deleted_at IS NULL", 0)
-
-	if err := query.Count(&totalItems).Error; err != nil {
-		return nil, 0, err
-	}
-
-	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return products, totalItems, nil
 }
 
 func (r *ProductRepository) FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ProductModels, error) {
@@ -406,4 +285,137 @@ func (r *ProductRepository) GetTopRatedProducts() ([]*entities.ProductModels, er
 	}
 
 	return products, nil
+}
+
+func (r *ProductRepository) GetProductsByCategoryAndName(page, perPage int, categoryName, name string) ([]*entities.ProductModels, error) {
+	var products []*entities.ProductModels
+	offset := (page - 1) * perPage
+
+	query := r.db.Offset(offset).Limit(perPage).
+		Joins("JOIN product_categories ON product_categories.product_models_id = products.id").
+		Joins("JOIN category ON category.id = product_categories.category_models_id").
+		Where("category.name = ? AND products.name LIKE ? AND products.deleted_at IS NULL", categoryName, "%"+name+"%")
+
+	if err := query.Find(&products).Error; err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
+func (r *ProductRepository) GetProductsCountByCategoryAndName(categoryName, name string) (int64, error) {
+	var count int64
+
+	if err := r.db.Model(&entities.ProductModels{}).
+		Joins("JOIN product_categories ON product_categories.product_models_id = products.id").
+		Joins("JOIN category ON category.id = product_categories.category_models_id").
+		Where("category.name = ? AND products.name LIKE ? AND products.deleted_at IS NULL", categoryName, "%"+name+"%").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *ProductRepository) GetProductsByCategoryName(categoryName string, page, perPage int) ([]*entities.ProductModels, error) {
+	var products []*entities.ProductModels
+	offset := (page - 1) * perPage
+
+	var category *entities.CategoryModels
+	if err := r.db.Where("name = ?", categoryName).First(&category).Error; err != nil {
+		return nil, err
+	}
+
+	if err := r.db.Offset(offset).Limit(perPage).
+		Joins("JOIN product_categories ON product_categories.product_models_id = products.id").
+		Joins("JOIN category ON category.id = product_categories.category_models_id").
+		Where("category.name = ?", categoryName).
+		Where("products.deleted_at IS NULL").
+		Find(&products).Error; err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
+func (r *ProductRepository) GetProductCountByCategoryName(categoryName string) (int64, error) {
+	var count int64
+	if err := r.db.Model(&entities.ProductModels{}).
+		Joins("JOIN product_categories ON product_categories.product_models_id = products.id").
+		Joins("JOIN category ON category.id = product_categories.category_models_id").
+		Where("category.name = ?", categoryName).
+		Where("products.deleted_at IS NULL").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *ProductRepository) GetProductBySearchAndFilter(page, perPage int, sortBy, search string) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.ProductModels{})
+
+	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Where("deleted_at IS NULL")
+
+	if search != "" {
+		query = query.Where("name LIKE ?", "%"+search+"%")
+	}
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	switch sortBy {
+	case "termurah":
+		query = query.Order("price asc")
+	case "termahal":
+		query = query.Order("price desc")
+	case "abjad":
+		query = query.Order("name asc")
+	case "promo":
+		query = query.Where("discount > ?", 0)
+	case "terbaru":
+		query = query.Order("created_at desc")
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
+}
+
+func (r *ProductRepository) GetProductByFilter(page, perPage int, sortBy string) ([]*entities.ProductModels, int64, error) {
+	var products []*entities.ProductModels
+	var totalItems int64
+
+	query := r.db.Model(&entities.ProductModels{})
+
+	query = query.Preload("Categories").Preload("ProductPhotos").Preload("ProductReview").Where("deleted_at IS NULL")
+
+	if err := query.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
+	}
+
+	switch sortBy {
+	case "termurah":
+		query = query.Order("price asc")
+	case "termahal":
+		query = query.Order("price desc")
+	case "abjad":
+		query = query.Order("name asc")
+	case "promo":
+		query = query.Where("discount > ?", 0)
+	case "terbaru":
+		query = query.Order("created_at desc")
+	}
+
+	if err := query.Offset((page - 1) * perPage).Limit(perPage).Find(&products).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return products, totalItems, nil
 }

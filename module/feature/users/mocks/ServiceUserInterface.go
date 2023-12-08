@@ -409,6 +409,39 @@ func (_m *ServiceUserInterface) GetUsersById(userId uint64) (*entities.UserModel
 	return r0, r1
 }
 
+// GetUsersByLevel provides a mock function with given fields: page, perPage, level
+func (_m *ServiceUserInterface) GetUsersByLevel(page int, perPage int, level string) ([]*entities.UserModels, int64, error) {
+	ret := _m.Called(page, perPage, level)
+
+	var r0 []*entities.UserModels
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(int, int, string) ([]*entities.UserModels, int64, error)); ok {
+		return rf(page, perPage, level)
+	}
+	if rf, ok := ret.Get(0).(func(int, int, string) []*entities.UserModels); ok {
+		r0 = rf(page, perPage, level)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.UserModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int, int, string) int64); ok {
+		r1 = rf(page, perPage, level)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(int, int, string) error); ok {
+		r2 = rf(page, perPage, level)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // GetUsersByName provides a mock function with given fields: page, perPage, name
 func (_m *ServiceUserInterface) GetUsersByName(page int, perPage int, name string) ([]*entities.UserModels, int64, error) {
 	ret := _m.Called(page, perPage, name)
@@ -435,6 +468,39 @@ func (_m *ServiceUserInterface) GetUsersByName(page int, perPage int, name strin
 
 	if rf, ok := ret.Get(2).(func(int, int, string) error); ok {
 		r2 = rf(page, perPage, name)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// GetUsersBySearchAndFilter provides a mock function with given fields: page, perPage, search, levelFilter
+func (_m *ServiceUserInterface) GetUsersBySearchAndFilter(page int, perPage int, search string, levelFilter string) ([]*entities.UserModels, int64, error) {
+	ret := _m.Called(page, perPage, search, levelFilter)
+
+	var r0 []*entities.UserModels
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(int, int, string, string) ([]*entities.UserModels, int64, error)); ok {
+		return rf(page, perPage, search, levelFilter)
+	}
+	if rf, ok := ret.Get(0).(func(int, int, string, string) []*entities.UserModels); ok {
+		r0 = rf(page, perPage, search, levelFilter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*entities.UserModels)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int, int, string, string) int64); ok {
+		r1 = rf(page, perPage, search, levelFilter)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(int, int, string, string) error); ok {
+		r2 = rf(page, perPage, search, levelFilter)
 	} else {
 		r2 = ret.Error(2)
 	}

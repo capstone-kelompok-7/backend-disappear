@@ -22,12 +22,13 @@ type RepositoryUserInterface interface {
 	UpdateUserContribution(userID uint64, gramPlastic uint64) (*entities.UserModels, error)
 	UpdateUserLevel(userID uint64, level string) error
 	GetUserLevel(userID uint64) (string, error)
-	GetFilterLevel(level string) ([]*entities.UserModels, error)
+	GetFilterLevel(page, perPage int, level string) ([]*entities.UserModels, int64, error)
 	GetLeaderboardByExp(limit int) ([]*entities.UserModels, error)
 	GetUserTransactionActivity(userID uint64) (int, int, int, error)
 	GetUserChallengeActivity(userID uint64) (int, int, int, error)
 	FindAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error)
 	AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error)
+	GetAllUsersBySearchAndFilter(page, perPage int, search, levelFilter string) ([]*entities.UserModels, int64, error)
 }
 
 type ServiceUserInterface interface {
@@ -52,6 +53,8 @@ type ServiceUserInterface interface {
 	GetUserProfile(userID uint64) (*entities.UserModels, error)
 	GetAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error)
 	AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error)
+	GetUsersBySearchAndFilter(page, perPage int, search, levelFilter string) ([]*entities.UserModels, int64, error)
+	GetUsersByLevel(page, perPage int, level string) ([]*entities.UserModels, int64, error)
 }
 
 type HandlerUserInterface interface {
