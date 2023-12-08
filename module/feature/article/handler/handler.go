@@ -3,6 +3,7 @@ package handler
 import (
 	"mime/multipart"
 	"strconv"
+	"strings"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/article"
@@ -151,39 +152,19 @@ func (h *ArticleHandler) DeleteArticleById() echo.HandlerFunc {
 func (h *ArticleHandler) GetAllArticles() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var articles []*entities.ArticleModels
-
 		var err error
+
 		search := c.QueryParam("search")
 		dateFilterType := c.QueryParam("date_filter_type")
-		viewsSorting := c.QueryParam("views_sorting")
-		titleSorting := c.QueryParam("title_sorting")
-		if search != "" {
+		if search != "" && dateFilterType != "" {
+			articles, err = h.service.GetArticleSearchByDateRange(dateFilterType, search)
+		} else if search != "" {
 			articles, err = h.service.GetArticlesByTitle(search)
-			if err != nil {
-				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan pencarian artikel: "+err.Error())
-			}
 		} else if dateFilterType != "" {
 			articles, err = h.service.GetArticlesByDateRange(dateFilterType)
-			if err != nil {
-				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan filter artikel: "+err.Error())
-			}
-		} else if viewsSorting != "" {
-			articles, err = h.service.GetArticlesByViews(viewsSorting)
-			if err != nil {
-				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel berdasarkan views: "+err.Error())
-			}
-		} else if titleSorting != "" {
-			articles, err = h.service.GetArticlesBySortedTitle(titleSorting)
-			if err != nil {
-				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel berdasarkan judul: "+err.Error())
-			}
 		} else {
 			articles, err = h.service.GetAll()
-			if err != nil {
-				return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel: "+err.Error())
-			}
 		}
-
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar artikel: "+err.Error())
 		}
@@ -292,7 +273,7 @@ func (h *ArticleHandler) GetArticlePreferences() echo.HandlerFunc {
 		var err error
 
 		filter := c.QueryParam("filter")
-
+		filter = strings.ToLower(filter)
 		switch filter {
 		case "abjad":
 			articles, totalItems, err = h.service.GetArticlesAlphabet(page, perPage)

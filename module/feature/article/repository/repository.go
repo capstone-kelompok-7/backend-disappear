@@ -138,46 +138,6 @@ func (r *ArticleRepository) GetLatestArticle() ([]*entities.ArticleModels, error
 	return articles, nil
 }
 
-func (r *ArticleRepository) GetArticleByViewsAsc() ([]*entities.ArticleModels, error) {
-	var articles []*entities.ArticleModels
-
-	if err := r.db.Order("views asc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
-		return nil, err
-	}
-
-	return articles, nil
-}
-
-func (r *ArticleRepository) GetArticleByViewsDesc() ([]*entities.ArticleModels, error) {
-	var articles []*entities.ArticleModels
-
-	if err := r.db.Order("views desc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
-		return nil, err
-	}
-
-	return articles, nil
-}
-
-func (r *ArticleRepository) GetArticleByTitleAsc() ([]*entities.ArticleModels, error) {
-	var articles []*entities.ArticleModels
-
-	if err := r.db.Order("title asc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
-		return nil, err
-	}
-
-	return articles, nil
-}
-
-func (r *ArticleRepository) GetArticleByTitleDesc() ([]*entities.ArticleModels, error) {
-	var articles []*entities.ArticleModels
-
-	if err := r.db.Order("title desc").Where("deleted_at IS NULL").Find(&articles).Error; err != nil {
-		return nil, err
-	}
-
-	return articles, nil
-}
-
 func (r *ArticleRepository) FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ArticleModels, error) {
 	var matchingArticles []*entities.ArticleModels
 	var nonMatchingArticles []*entities.ArticleModels
@@ -258,6 +218,32 @@ func (r *ArticleRepository) GetOtherArticle() ([]*entities.ArticleModels, error)
 	var articles []*entities.ArticleModels
 
 	if err := r.db.Order("views desc").Where("deleted_at IS NULL").Limit(5).Find(&articles).Error; err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}
+
+func (r *ArticleRepository) SearchArticlesWithDateFilter(searchText string, startDate, endDate time.Time) ([]*entities.ArticleModels, error) {
+	var articles []*entities.ArticleModels
+
+	query := r.db.Where("deleted_at IS NULL")
+
+	if searchText != "" {
+		query = query.Where("title LIKE ?", "%"+searchText+"%")
+	}
+
+	if !startDate.IsZero() && !endDate.IsZero() {
+		query = query.Where("created_at BETWEEN ? AND ?", startDate, endDate)
+	} else if !startDate.IsZero() {
+		query = query.Where("created_at >= ?", startDate)
+	} else if !endDate.IsZero() {
+		query = query.Where("created_at <= ?", endDate)
+	} else {
+		query = query.Where("deleted_at IS NULL")
+	}
+
+	if err := query.Find(&articles).Error; err != nil {
 		return nil, err
 	}
 
