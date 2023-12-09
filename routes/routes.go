@@ -10,6 +10,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/fcm"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
@@ -179,4 +180,11 @@ func RouteHomepage(e *echo.Echo, h homepage.HandlerHomepageInterface, jwtService
 	homeGroup := e.Group("/api/v1/homepage")
 	homeGroup.GET("/blog-posts", h.GetBlogPost(), middlewares.AuthMiddleware(jwtService, userService))
 	homeGroup.GET("/content", h.GetHomepageContent(), middlewares.AuthMiddleware(jwtService, userService))
+}
+func RouteFcm(e *echo.Echo, h fcm.HandlerFcmInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	fcmGroup := e.Group("/api/v1/fcm")
+	fcmGroup.GET("/:id", h.GetFcmById(), middlewares.AuthMiddleware(jwtService, userService))
+	fcmGroup.GET("/iduser/:id", h.GetFcmByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
+	fcmGroup.POST("", h.CreateFcm(), middlewares.AuthMiddleware(jwtService, userService))
+	fcmGroup.PUT("/:id", h.DeleteFcmById(), middlewares.AuthMiddleware(jwtService, userService))
 }
