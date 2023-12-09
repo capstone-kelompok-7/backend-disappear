@@ -59,7 +59,7 @@ func (h *FcmHandler) GetFcmByIdUser() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar notifikasi by iduser: "+err.Error())
 		}
 
-		return response.SendStatusOkWithDataResponse(c, "Berhasil mendapatkan daftar artikel", dto.FormatFcmGetbyIdUser2(fcm))
+		return response.SendStatusOkWithDataResponse(c, "Berhasil mendapatkan daftar notifikasi by id user", dto.FormatFcmGetbyIdUser2(fcm))
 	}
 }
 func (h *FcmHandler) GetFcmById() echo.HandlerFunc {
@@ -75,7 +75,7 @@ func (h *FcmHandler) GetFcmById() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar notifikasi by id: "+err.Error())
 		}
 
-		return response.SendStatusOkWithDataResponse(c, "Berhasil mendapatkan daftar artikel", dto.FormatFcmGetbyIdUser(fcm))
+		return response.SendStatusOkWithDataResponse(c, "Berhasil mendapatkan notifikasi by id", dto.FormatFcmGetbyIdUser(fcm))
 
 	}
 }
@@ -92,6 +92,6 @@ func (h *FcmHandler) DeleteFcmById() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar notifikasi by id: "+err.Error())
 		}
 
-		return response.SendStatusOkWithDataResponse(c, "Berhasil mendapatkan daftar artikel", nil)
+		return response.SendStatusOkWithDataResponse(c, "Berhasil menghapus notifikasi by id", nil)
 	}
 }
