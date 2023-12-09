@@ -21,8 +21,9 @@ func NewFcmService(repo fcm.RepositoryFcmInterface) fcm.ServiceFcmInterface {
 
 func (s *FcmService) CreateFcm(fcm *entities.FcmModels, token string) (*entities.FcmModels, string, error) {
 	value := &entities.FcmModels{
-		Title: fcm.Title,
-		Body:  fcm.Body,
+		UserID: fcm.UserID,
+		Title:  fcm.Title,
+		Body:   fcm.Body,
 	}
 	var err error
 	var response *entities.FcmModels

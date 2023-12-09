@@ -33,8 +33,9 @@ func (h *FcmHandler) CreateFcm() echo.HandlerFunc {
 		}
 
 		newFcm := &entities.FcmModels{
-			Title: fcmRequest.Title,
-			Body:  fcmRequest.Body,
+			UserID: fcmRequest.UserID,
+			Title:  fcmRequest.Title,
+			Body:   fcmRequest.Body,
 		}
 
 		res, statusFcm, err := h.service.CreateFcm(newFcm, fcmRequest.Token)
