@@ -25,6 +25,7 @@ type CategoryResponse struct {
 }
 
 type ProductResponse struct {
+	ID     uint64                `json:"id"`
 	Name   string                `json:"name"`
 	Rating float64               `json:"rating"`
 	Price  uint64                `json:"price"`
@@ -32,8 +33,9 @@ type ProductResponse struct {
 }
 
 type ProductPhotoResponse struct {
-	ID  uint64 `json:"id"`
-	URL string `json:"url"`
+	ID        uint64 `json:"id"`
+	ProductID uint64 `json:"product_id"`
+	URL       string `json:"url"`
 }
 
 func FormatContentResponse(carousels []*entities.CarouselModels, categories []*entities.CategoryModels, products []*entities.ProductModels) *ContentResponse {
@@ -61,10 +63,12 @@ func FormatContentResponse(carousels []*entities.CarouselModels, categories []*e
 		productPhotos := &ProductPhotoResponse{}
 		if len(product.ProductPhotos) > 0 {
 			productPhotos.ID = product.ProductPhotos[0].ID
+			productPhotos.ProductID = product.ProductPhotos[0].ProductID
 			productPhotos.URL = product.ProductPhotos[0].ImageURL
 		}
 
 		productResponses = append(productResponses, ProductResponse{
+			ID:     product.ID,
 			Name:   product.Name,
 			Rating: product.Rating,
 			Price:  product.Price,
@@ -130,4 +134,3 @@ func FormatBlogPostResponse(challenges []*entities.ChallengeModels, articles []*
 		Articles:  articleResponses,
 	}
 }
-
