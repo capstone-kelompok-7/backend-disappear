@@ -2,7 +2,9 @@ package auth
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/dto"
 	"github.com/labstack/echo/v4"
+	"time"
 )
 
 type RepositoryAuthInterface interface {
@@ -14,6 +16,9 @@ type RepositoryAuthInterface interface {
 	DeleteOTP(otp *entities.OTPModels) error
 	DeleteUserOTP(userId uint64) error
 	ResetPassword(email, newPasswordHash string) error
+	LoginSocial(socialID string) (*entities.UserModels, error)
+	FindUserBySocialID(socialID string) (*entities.UserModels, error)
+	UpdateLastLogin(userID uint64, lastLogin time.Time) error
 }
 
 type ServiceAuthInterface interface {
@@ -23,6 +28,8 @@ type ServiceAuthInterface interface {
 	ResendOTP(email string) (*entities.OTPModels, error)
 	ResetPassword(email, newPassword, confirmPass string) error
 	VerifyOTP(email, otp string) (string, error)
+	RegisterSocial(req *dto.RegisterSocialRequest) (*entities.UserModels, error)
+	LoginSocial(socialID string) (*entities.UserModels, string, error)
 }
 
 type HandlerAuthInterface interface {
@@ -33,4 +40,6 @@ type HandlerAuthInterface interface {
 	VerifyOTP() echo.HandlerFunc
 	ForgotPassword() echo.HandlerFunc
 	ResetPassword() echo.HandlerFunc
+	RegisterSocial() echo.HandlerFunc
+	LoginSocial() echo.HandlerFunc
 }

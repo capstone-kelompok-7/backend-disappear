@@ -30,6 +30,8 @@ func RouteAuth(e *echo.Echo, h auth.HandlerAuthInterface, jwtService utils.JWTIn
 	authGroup.POST("/forgot-password", h.ForgotPassword())
 	authGroup.POST("/forgot-password/verify", h.VerifyOTP())
 	authGroup.POST("/forgot-password/reset", h.ResetPassword(), middlewares.AuthMiddleware(jwtService, userService))
+	authGroup.POST("/register-social", h.RegisterSocial())
+	authGroup.POST("/login-social", h.LoginSocial())
 }
 
 func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
