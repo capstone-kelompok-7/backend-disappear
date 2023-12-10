@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/caching"
 	"github.com/labstack/gommon/log"
 	"time"
@@ -48,9 +49,11 @@ func (s *AuthService) Register(newData *entities.UserModels) (*entities.UserMode
 		return nil, err
 	}
 	value := &entities.UserModels{
-		Email:    newData.Email,
-		Password: hashPassword,
-		Role:     "customer",
+		Email:     newData.Email,
+		Password:  hashPassword,
+		Role:      "customer",
+		Level:     "bronze",
+		LastLogin: time.Now(),
 	}
 
 	result, err := s.repo.Register(value)
@@ -91,6 +94,11 @@ func (s *AuthService) Login(email, password string) (*entities.UserModels, strin
 	isValidPassword, err := s.hash.ComparePassword(user.Password, password)
 	if err != nil || !isValidPassword {
 		return nil, "", errors.New("password salah")
+	}
+
+	user.LastLogin = time.Now()
+	if err := s.repo.UpdateLastLogin(user.ID, user.LastLogin); err != nil {
+		return nil, "", errors.New("gagal memperbarui LastLogin")
 	}
 
 	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Email, user.Role)
@@ -263,4 +271,56 @@ func (s *AuthService) VerifyOTP(email, otp string) (string, error) {
 	}
 
 	return accessToken, nil
+}
+
+func (s *AuthService) RegisterSocial(req *dto.RegisterSocialRequest) (*entities.UserModels, error) {
+	existingUser, _ := s.userService.GetUsersByEmail(req.Email)
+	if existingUser != nil {
+		return nil, errors.New("email sudah terdaftar")
+	}
+
+	existingUserBySocialID, _ := s.repo.FindUserBySocialID(req.SocialID)
+	if existingUserBySocialID != nil {
+		return nil, errors.New("Social ID sudah terdaftar")
+	}
+
+	value := &entities.UserModels{
+		SocialID:     req.SocialID,
+		Provider:     req.Provider,
+		Email:        req.Email,
+		Name:         req.Name,
+		PhotoProfile: req.PhotoProfile,
+		Role:         "customer",
+		Level:        "bronze",
+		LastLogin:    time.Time{},
+	}
+
+	result, err := s.repo.Register(value)
+	if err != nil {
+		return nil, errors.New("gagal mendaftarkan pengguna baru")
+	}
+	return result, nil
+}
+
+func (s *AuthService) LoginSocial(socialID string) (*entities.UserModels, string, error) {
+	user, err := s.repo.FindUserBySocialID(socialID)
+	if err != nil {
+		return nil, "", errors.New("pengguna tidak ditemukan")
+	}
+
+	if user == nil {
+		return nil, "", errors.New("pengguna tidak ditemukan")
+	}
+
+	user.LastLogin = time.Now()
+	if err := s.repo.UpdateLastLogin(user.ID, user.LastLogin); err != nil {
+		return nil, "", errors.New("gagal memperbarui LastLogin")
+	}
+
+	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Email, user.Role)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return user, accessToken, nil
 }

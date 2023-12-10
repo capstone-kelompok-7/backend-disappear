@@ -4,6 +4,8 @@ import "time"
 
 type UserModels struct {
 	ID              uint64          `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id"`
+	SocialID        string          `gorm:"column:social_id;type:VARCHAR(255)" json:"social_id"`
+	Provider        string          `gorm:"column:provider;type:VARCHAR(255)" json:"provider"`
 	Email           string          `gorm:"column:email;type:VARCHAR(255)" json:"email"`
 	Password        string          `gorm:"column:password;type:VARCHAR(255)" json:"password"`
 	Phone           string          `gorm:"column:phone;type:VARCHAR(255)" json:"phone"`
@@ -15,6 +17,7 @@ type UserModels struct {
 	Level           string          `gorm:"column:level;type:VARCHAR(255)" json:"level"`
 	Exp             uint64          `gorm:"column:exp;type:BIGINT UNSIGNED" json:"exp"`
 	IsVerified      bool            `gorm:"column:is_verified;default:false" json:"is_verified"`
+	LastLogin       time.Time       `gorm:"column:last_login;type:timestamp;default:CURRENT_TIMESTAMP" json:"last_login"`
 	PreferredTopics string          `gorm:"column:preferred_topics;type:TEXT" json:"preferred_topics"`
 	CreatedAt       time.Time       `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt       time.Time       `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`

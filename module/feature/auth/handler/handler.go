@@ -192,3 +192,54 @@ func (h *AuthHandler) ResetPassword() echo.HandlerFunc {
 		return response.SendStatusOkResponse(c, "Reset kata sandi berhasil")
 	}
 }
+
+func (h *AuthHandler) RegisterSocial() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var registerRequest *dto2.RegisterSocialRequest
+		if err := c.Bind(&registerRequest); err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		}
+
+		if err := utils.ValidateStruct(registerRequest); err != nil {
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
+		}
+
+		result, err := h.service.RegisterSocial(registerRequest)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendaftarkan akun: "+err.Error())
+		}
+		return response.SendStatusCreatedResponse(c, "Registrasi berhasil!", dto2.FormatterDetailUser(result))
+	}
+}
+
+func (h *AuthHandler) LoginSocial() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var loginRequest *dto2.LoginSocialRequest
+		if err := c.Bind(&loginRequest); err != nil {
+			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai")
+		}
+
+		if err := utils.ValidateStruct(loginRequest); err != nil {
+			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
+		}
+
+		userLogin, accessToken, err := h.service.LoginSocial(loginRequest.SocialID)
+		if err != nil {
+			if err.Error() == "user tidak ditemukan" {
+				return response.SendStatusNotFoundResponse(c, "Pengguna tidak ditemukan")
+			} else if err.Error() == "akun anda belum diverifikasi" {
+				return response.SendStatusUnauthorizedResponse(c, "akun anda belum diverifikasi")
+			}
+
+			logrus.Error("Kesalahan : " + err.Error())
+			return response.SendStatusUnauthorizedResponse(c, "Email atau kata sandi salah")
+		}
+
+		result := &dto2.LoginResponse{
+			Email:       userLogin.Email,
+			AccessToken: accessToken,
+		}
+
+		return response.SendSuccessResponse(c, "Selamat datang!, Anda telah berhasil masuk.", result)
+	}
+}
