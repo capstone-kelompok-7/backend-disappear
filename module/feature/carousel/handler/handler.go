@@ -55,6 +55,27 @@ func (h *CarouselHandler) GetAllCarousels() echo.HandlerFunc {
 	}
 }
 
+func (h *CarouselHandler) GetCarouselById() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		id := c.Param("id")
+		carouselId, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")
+		}
+		getCarousel, err := h.service.GetCarouselById(carouselId)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail carousel: "+err.Error())
+		}
+
+		return response.SendSuccessResponse(c, "Data carousel", getCarousel)
+	}
+}
+
 func (h *CarouselHandler) CreateCarousel() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
