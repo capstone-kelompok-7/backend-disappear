@@ -93,6 +93,28 @@ func (h *CategoryHandler) GetAllCategory() echo.HandlerFunc {
 	}
 }
 
+func (h *CategoryHandler) GetCategoryById() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "admin" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		id := c.Param("id")
+		categoryID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil {
+			return response.SendBadRequestResponse(c, "Format ID yang Anda masukkan tidak sesuai")
+		}
+
+		getCategory, err := h.service.GetCategoryById(categoryID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail kategori: "+err.Error())
+		}
+
+		return response.SendSuccessResponse(c, "Data kategori", getCategory)
+	}
+}
+
 func (h *CategoryHandler) UpdateCategoryById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)

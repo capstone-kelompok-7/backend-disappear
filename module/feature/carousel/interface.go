@@ -29,6 +29,7 @@ type ServiceCarouselInterface interface {
 }
 type HandlerCarouselInterface interface {
 	GetAllCarousels() echo.HandlerFunc
+	GetCarouselById() echo.HandlerFunc
 	CreateCarousel() echo.HandlerFunc
 	DeleteCarousel() echo.HandlerFunc
 	UpdateCarousel() echo.HandlerFunc

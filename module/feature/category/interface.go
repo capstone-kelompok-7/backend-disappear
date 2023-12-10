@@ -31,6 +31,7 @@ type ServiceCategoryInterface interface {
 type HandlerCategoryInterface interface {
 	CreateCategory() echo.HandlerFunc
 	GetAllCategory() echo.HandlerFunc
+	GetCategoryById() echo.HandlerFunc
 	UpdateCategoryById() echo.HandlerFunc
 	DeleteCategoryById() echo.HandlerFunc
 }
