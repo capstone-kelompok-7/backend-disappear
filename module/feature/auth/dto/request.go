@@ -27,3 +27,15 @@ type ResetPasswordRequest struct {
 	NewPassword     string `json:"new_password" validate:"required,min=6,noSpace"`
 	ConfirmPassword string `json:"confirm_password" validate:"required,min=6,noSpace"`
 }
+
+type RegisterSocialRequest struct {
+	SocialID     string `json:"social_id" validate:"required"`
+	Provider     string `json:"provider"`
+	Email        string `json:"email"`
+	Name         string `json:"name"`
+	PhotoProfile string `json:"photo_profile"`
+}
+
+type LoginSocialRequest struct {
+	SocialID string `json:"social_id" validate:"required"`
+}

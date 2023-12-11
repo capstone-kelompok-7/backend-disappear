@@ -31,6 +31,8 @@ func RouteAuth(e *echo.Echo, h auth.HandlerAuthInterface, jwtService utils.JWTIn
 	authGroup.POST("/forgot-password", h.ForgotPassword())
 	authGroup.POST("/forgot-password/verify", h.VerifyOTP())
 	authGroup.POST("/forgot-password/reset", h.ResetPassword(), middlewares.AuthMiddleware(jwtService, userService))
+	authGroup.POST("/register-social", h.RegisterSocial())
+	authGroup.POST("/login-social", h.LoginSocial())
 }
 
 func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
@@ -105,6 +107,7 @@ func RouteChallenge(e *echo.Echo, h challenge.HandlerChallengeInterface, jwtServ
 func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	categoriesGroup := e.Group("/api/v1/categories")
 	categoriesGroup.GET("", h.GetAllCategory(), middlewares.AuthMiddleware(jwtService, userService))
+	categoriesGroup.GET("/:id", h.GetCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
 	categoriesGroup.POST("", h.CreateCategory(), middlewares.AuthMiddleware(jwtService, userService))
 	categoriesGroup.PUT("/:id", h.UpdateCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
 	categoriesGroup.DELETE("/:id", h.DeleteCategoryById(), middlewares.AuthMiddleware(jwtService, userService))
@@ -113,9 +116,11 @@ func RouteCategory(e *echo.Echo, h category.HandlerCategoryInterface, jwtService
 func RouteCarousel(e *echo.Echo, h carousel.HandlerCarouselInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	carouselsGroup := e.Group("/api/v1/carousel")
 	carouselsGroup.GET("", h.GetAllCarousels(), middlewares.AuthMiddleware(jwtService, userService))
+	carouselsGroup.GET("/:id", h.GetCarouselById(), middlewares.AuthMiddleware(jwtService, userService))
 	carouselsGroup.POST("", h.CreateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
 	carouselsGroup.PUT("/:id", h.UpdateCarousel(), middlewares.AuthMiddleware(jwtService, userService))
 	carouselsGroup.DELETE("/:id", h.DeleteCarousel(), middlewares.AuthMiddleware(jwtService, userService))
+
 }
 
 func RouteAddress(e *echo.Echo, h address.HandlerAddressInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {

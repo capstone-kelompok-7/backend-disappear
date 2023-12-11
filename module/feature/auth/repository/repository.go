@@ -82,3 +82,33 @@ func (r *AuthRepository) ResetPassword(email, newPasswordHash string) error {
 	}
 	return nil
 }
+
+func (r *AuthRepository) LoginSocial(socialID string) (*entities.UserModels, error) {
+	var user entities.UserModels
+	if err := r.db.Where("social_id = ?", socialID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *AuthRepository) FindUserBySocialID(socialID string) (*entities.UserModels, error) {
+	var user entities.UserModels
+	if err := r.db.Table("users").Where("social_id = ? AND deleted_at IS NULL", socialID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *AuthRepository) UpdateLastLogin(userID uint64, lastLogin time.Time) error {
+	var user entities.UserModels
+	if err := r.db.Where("id = ?", userID).First(&user).Error; err != nil {
+		return err
+	}
+
+	user.LastLogin = lastLogin
+	if err := r.db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
