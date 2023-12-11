@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	hAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/handler"
 	rAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/repository"
@@ -30,6 +31,9 @@ import (
 	hDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/handler"
 	rDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/repository"
 	sDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/service"
+	hFcm "github.com/capstone-kelompok-7/backend-disappear/module/feature/fcm/handler"
+	rFcm "github.com/capstone-kelompok-7/backend-disappear/module/feature/fcm/repository"
+	sFcm "github.com/capstone-kelompok-7/backend-disappear/module/feature/fcm/service"
 	hHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/handler"
 	rHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/repository"
 	sHome "github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage/service"
@@ -137,6 +141,10 @@ func main() {
 	homeService := sHome.NewHomepageService(homeRepo)
 	homeHandler := hHome.NewHomepageHandler(homeService)
 
+	fcmRepo := rFcm.NewFcmRepository(db)
+	fcmService := sFcm.NewFcmService(fcmRepo)
+	fcmHandler := hFcm.NewFcmHandler(fcmService)
+
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -162,5 +170,6 @@ func main() {
 	routes.RouteChatbot(e, chatbotHandler, jwtService, userService)
 	routes.RouteDashboard(e, dashboardHandler, jwtService, userService)
 	routes.RouteHomepage(e, homeHandler, jwtService, userService)
+	routes.RouteFcm(e, fcmHandler, jwtService, userService)
 	e.Logger.Fatalf(e.Start(fmt.Sprintf(":%d", initConfig.ServerPort)).Error())
 }
