@@ -188,8 +188,8 @@ func RouteHomepage(e *echo.Echo, h homepage.HandlerHomepageInterface, jwtService
 }
 func RouteFcm(e *echo.Echo, h fcm.HandlerFcmInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	fcmGroup := e.Group("/api/v1/fcm")
-	fcmGroup.GET("/:id", h.GetFcmById())
-	fcmGroup.GET("/iduser/:id", h.GetFcmByIdUser())
-	fcmGroup.POST("", h.CreateFcm())
-	fcmGroup.PUT("/:id", h.DeleteFcmById())
+	fcmGroup.GET("/:id", h.GetFcmById(), middlewares.AuthMiddleware(jwtService, userService))
+	fcmGroup.GET("/iduser/:id", h.GetFcmByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
+	fcmGroup.POST("", h.CreateFcm(), middlewares.AuthMiddleware(jwtService, userService))
+	fcmGroup.PUT("/:id", h.DeleteFcmById(), middlewares.AuthMiddleware(jwtService, userService))
 }
