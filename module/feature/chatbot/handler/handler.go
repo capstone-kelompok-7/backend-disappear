@@ -20,12 +20,21 @@ func NewChatbotHandler(service chatbot.ServicChatbotInterface) chatbot.HandlerCh
 
 func (h *ChatbotHandler) CreateQuestion() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		chatRequest := new(entities.ChatModel)
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		chatRequest := new(dto.CreateChatRequest)
 		if err := c.Bind(chatRequest); err != nil {
 			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		err := h.service.CreateQuestion(*chatRequest)
+		newUser := &entities.ChatModel{
+			Text: chatRequest.Text,
+		}
+
+		err := h.service.CreateQuestion(currentUser.ID, *newUser)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal membuat chat: "+err.Error())
 		}
@@ -33,14 +42,24 @@ func (h *ChatbotHandler) CreateQuestion() echo.HandlerFunc {
 		return response.SendSuccessResponse(c, "Berhasil membuat chat", chatRequest.Text)
 	}
 }
+
 func (h *ChatbotHandler) CreateAnswer() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		chatRequest := new(entities.ChatModel)
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		chatRequest := new(dto.CreateChatRequest)
 		if err := c.Bind(chatRequest); err != nil {
 			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		chat, err := h.service.CreateAnswer(*chatRequest)
+		newUser := &entities.ChatModel{
+			Text: chatRequest.Text,
+		}
+
+		chat, err := h.service.CreateAnswer(currentUser.ID, *newUser)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal membuat chat: "+err.Error())
 		}
@@ -48,10 +67,15 @@ func (h *ChatbotHandler) CreateAnswer() echo.HandlerFunc {
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan jawaban", chat)
 	}
 }
+
 func (h *ChatbotHandler) GetChatByIdUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		id := c.Param("id")
-		chat, err := h.service.GetChatByIdUser(id)
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		chat, err := h.service.GetChatByIdUser(currentUser.ID)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan chat by id: "+err.Error())
 		}
@@ -62,7 +86,7 @@ func (h *ChatbotHandler) GetChatByIdUser() echo.HandlerFunc {
 
 func (h *ChatbotHandler) GenerateArtikelAi() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		judulRequest := new(dto.GenerateArtikelAiRequest)
+		judulRequest := new(dto.GenerateArticleAiRequest)
 		if err := c.Bind(judulRequest); err != nil {
 			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
 		}

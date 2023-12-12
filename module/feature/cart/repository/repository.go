@@ -62,7 +62,7 @@ func (r *CartRepository) GetCart(userID uint64) (*entities.CartModels, error) {
 		Preload("CartItems", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id, cart_id, product_id, quantity, total_price").
 				Preload("Product", func(db *gorm.DB) *gorm.DB {
-					return db.Select("id, name, gram_plastic, price").
+					return db.Select("id, name, gram_plastic, price, discount").
 						Preload("ProductPhotos")
 				})
 		}).

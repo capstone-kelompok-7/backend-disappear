@@ -28,9 +28,9 @@ func NewChatbotService(repo chatbot.RepositoryChatbotInterface, openai *openai.C
 	}
 }
 
-func (s *ChatbotService) CreateQuestion(newData entities.ChatModel) error {
+func (s *ChatbotService) CreateQuestion(userID uint64, newData entities.ChatModel) error {
 	value := &entities.ChatModel{
-		IdUser:    newData.IdUser,
+		UserID:    userID,
 		Role:      "question",
 		Text:      newData.Text,
 		CreatedAt: time.Now(),
@@ -54,7 +54,7 @@ func (s *ChatbotService) GetAnswerFromAi(chat []openai.ChatCompletionMessage, ct
 	return resp, err
 }
 
-func (s *ChatbotService) CreateAnswer(newData entities.ChatModel) (string, error) {
+func (s *ChatbotService) CreateAnswer(userID uint64, newData entities.ChatModel) (string, error) {
 	ctx := context.Background()
 	chat := []openai.ChatCompletionMessage{
 		{
@@ -70,7 +70,7 @@ func (s *ChatbotService) CreateAnswer(newData entities.ChatModel) (string, error
 	if newData.Text != "" {
 		chat = append(chat, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
-			Content: newData.Text,
+			Content: fmt.Sprintf("Kamu akan di berikan sebuah pertanyaan mengenai %s, berikan jawabannya maksimal 20 kata", newData.Text),
 		})
 	}
 
@@ -91,8 +91,10 @@ func (s *ChatbotService) CreateAnswer(newData entities.ChatModel) (string, error
 		Content: resp.Choices[0].Message.Content,
 	}
 
+	answerText := fmt.Sprintf(resp.Choices[0].Message.Content)
+
 	value := &entities.ChatModel{
-		IdUser:    newData.IdUser,
+		UserID:    userID,
 		Role:      "answer",
 		Text:      answer.Content,
 		CreatedAt: time.Now(),
@@ -102,10 +104,10 @@ func (s *ChatbotService) CreateAnswer(newData entities.ChatModel) (string, error
 		logrus.Error("Can't create answer in the repository: ", err.Error())
 		return "", err
 	}
-	return answer.Content, nil
+	return answerText, nil
 }
 
-func (s *ChatbotService) GetChatByIdUser(id string) ([]entities.ChatModel, error) {
+func (s *ChatbotService) GetChatByIdUser(id uint64) ([]entities.ChatModel, error) {
 	res, err := s.repo.GetChatByIdUser(id)
 	if err != nil {
 		logrus.Error("error getting chat by id", err.Error())

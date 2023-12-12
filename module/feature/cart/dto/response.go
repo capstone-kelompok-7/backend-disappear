@@ -31,6 +31,7 @@ type ProductResponse struct {
 	ID            uint64                 `json:"id"`
 	Name          string                 `json:"name"`
 	Price         uint64                 `json:"price"`
+	Discount      uint64                 `json:"discount"`
 	ProductPhotos []ProductPhotoResponse `json:"product_photos"`
 }
 
@@ -63,6 +64,7 @@ func FormatCart(cart *entities.CartModels) *CartFormatter {
 				ID:            item.Product.ID,
 				Name:          item.Product.Name,
 				Price:         item.Product.Price,
+				Discount:      item.Product.Discount,
 				ProductPhotos: productPhotos,
 			},
 		}
