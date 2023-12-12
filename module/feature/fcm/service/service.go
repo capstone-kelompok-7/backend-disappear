@@ -19,28 +19,28 @@ func NewFcmService(repo fcm.RepositoryFcmInterface) fcm.ServiceFcmInterface {
 	}
 }
 
-func (s *FcmService) CreateFcm(fcm *entities.FcmModels, token string) (*entities.FcmModels, string, error) {
+func (s *FcmService) CreateFcm(request sendnotif.SendNotificationRequest) (*entities.FcmModels, string, error) {
 	value := &entities.FcmModels{
-		UserID: fcm.UserID,
-		Title:  fcm.Title,
-		Body:   fcm.Body,
+		OrderID: request.OrderID,
+		UserID:  request.UserID,
+		Title:   request.Title,
+		Body:    request.Body,
 	}
 	var err error
 	var response *entities.FcmModels
-	var sendsuccess string
+	var sendSuccess string
 
-	sendsuccess, err = sendnotif.SendNotification(fcm.Title, fcm.Body, token)
+	sendSuccess, err = sendnotif.SendNotification(request)
 	if err == nil {
 		response, err = s.repo.CreateFcm(value)
 		if err != nil {
 			logrus.Error("gagal membuat notification ke database")
 		}
-	} else if err != nil {
+	} else {
 		logrus.Error("gagal mengirim notification")
 	}
 
-	return response, sendsuccess, nil
-
+	return response, sendSuccess, err
 }
 
 func (s *FcmService) GetFcmByIdUser(id uint64) ([]*entities.FcmModels, error) {

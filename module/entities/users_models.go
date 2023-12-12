@@ -19,6 +19,7 @@ type UserModels struct {
 	IsVerified      bool            `gorm:"column:is_verified;default:false" json:"is_verified"`
 	LastLogin       time.Time       `gorm:"column:last_login;type:timestamp;default:CURRENT_TIMESTAMP" json:"last_login"`
 	PreferredTopics string          `gorm:"column:preferred_topics;type:TEXT" json:"preferred_topics"`
+	DeviceToken     string          `gorm:"column:device_token;type:VARCHAR(255)" json:"device_token"`
 	CreatedAt       time.Time       `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt       time.Time       `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
 	DeletedAt       *time.Time      `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`

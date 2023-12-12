@@ -2,15 +2,19 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/address"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/cart"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/fcm"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/product"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/voucher"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/sendnotif"
+	"github.com/sirupsen/logrus"
 	"math"
 	"time"
 )
@@ -23,6 +27,7 @@ type OrderService struct {
 	addressService address.ServiceAddressInterface
 	userService    users.ServiceUserInterface
 	cartService    cart.ServiceCartInterface
+	fcmService     fcm.ServiceFcmInterface
 }
 
 func NewOrderService(
@@ -33,6 +38,7 @@ func NewOrderService(
 	addressService address.ServiceAddressInterface,
 	userService users.ServiceUserInterface,
 	cartService cart.ServiceCartInterface,
+	fcmService fcm.ServiceFcmInterface,
 ) order.ServiceOrderInterface {
 	return &OrderService{
 		repo:           repo,
@@ -42,6 +48,7 @@ func NewOrderService(
 		addressService: addressService,
 		userService:    userService,
 		cartService:    cartService,
+		fcmService:     fcmService,
 	}
 }
 
@@ -198,7 +205,7 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 	}
 
 	grandTotalPrice := totalPrice
-	totalAmountPaid := grandTotalPrice + 2000 + 24000 - discountFromVoucher
+	totalAmountPaid := grandTotalPrice + 2000 + 0 - discountFromVoucher
 
 	newData := &entities.OrderModels{
 		ID:                    orderID,
@@ -211,7 +218,7 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 		GrandTotalExp:         totalExp,
 		GrandTotalQuantity:    totalQuantity,
 		GrandTotalPrice:       grandTotalPrice,
-		ShipmentFee:           24000,
+		ShipmentFee:           0,
 		AdminFees:             2000,
 		GrandTotalDiscount:    totalDiscount,
 		TotalAmountPaid:       totalAmountPaid,
@@ -231,6 +238,23 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 		if err := s.voucherService.DeleteVoucherClaims(userID, vouchers.ID); err != nil {
 			return nil, err
 		}
+	}
+
+	user, err := s.userService.GetUsersById(createdOrder.UserID)
+	if err != nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+
+	notificationRequest := dto.SendNotificationPaymentRequest{
+		OrderID:       createdOrder.ID,
+		UserID:        createdOrder.UserID,
+		PaymentStatus: "Menunggu Konfirmasi",
+		Token:         user.DeviceToken,
+	}
+	_, err = s.SendNotificationPayment(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
+		return nil, err
 	}
 
 	switch request.PaymentMethod {
@@ -340,7 +364,7 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 	}
 
 	grandTotalPrice := totalPrice
-	totalAmountPaid := grandTotalPrice + 2000 + 24000 - discountFromVoucher
+	totalAmountPaid := grandTotalPrice + 2000 + 0 - discountFromVoucher
 
 	newData := &entities.OrderModels{
 		ID:                    orderID,
@@ -353,7 +377,7 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 		GrandTotalExp:         totalExp,
 		GrandTotalQuantity:    totalQuantity,
 		GrandTotalPrice:       grandTotalPrice,
-		ShipmentFee:           24000,
+		ShipmentFee:           0,
 		AdminFees:             2000,
 		GrandTotalDiscount:    totalDiscount,
 		TotalAmountPaid:       totalAmountPaid,
@@ -374,6 +398,22 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 		if err := s.voucherService.DeleteVoucherClaims(userID, vouchers.ID); err != nil {
 			return nil, err
 		}
+	}
+	user, err := s.userService.GetUsersById(createdOrder.UserID)
+	if err != nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+
+	notificationRequest := dto.SendNotificationPaymentRequest{
+		OrderID:       createdOrder.ID,
+		UserID:        createdOrder.UserID,
+		PaymentStatus: "Menunggu Konfirmasi",
+		Token:         user.DeviceToken,
+	}
+	_, err = s.SendNotificationPayment(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
+		return nil, err
 	}
 
 	switch request.PaymentMethod {
@@ -402,21 +442,20 @@ func (s *OrderService) processGatewayPayment(totalAmountPaid uint64, orderID str
 	return result, nil
 }
 
-func (s *OrderService) CallBack(notifPayload map[string]any) error {
+func (s *OrderService) CallBack(notifPayload map[string]interface{}) error {
 	orderID, exist := notifPayload["order_id"].(string)
 	if !exist {
 		return errors.New("invalid notification payload")
 	}
+
 	status, err := s.repo.CheckTransaction(orderID)
 	if err != nil {
 		return err
 	}
+
 	transaction, err := s.repo.GetOrderById(orderID)
 	if err != nil {
 		return errors.New("transaction data not found")
-	}
-	if err := s.repo.ConfirmPayment(transaction.ID, status.OrderStatus, status.PaymentStatus); err != nil {
-		return err
 	}
 
 	user, err := s.userService.GetUsersById(transaction.UserID)
@@ -424,7 +463,7 @@ func (s *OrderService) CallBack(notifPayload map[string]any) error {
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	if status.OrderStatus != "Gagal" {
+	if status.PaymentStatus == "Konfirmasi" {
 		user.Exp += transaction.GrandTotalExp
 		if _, err := s.userService.UpdateUserExp(user.ID, user.Exp); err != nil {
 			return err
@@ -434,17 +473,41 @@ func (s *OrderService) CallBack(notifPayload map[string]any) error {
 		if _, err := s.userService.UpdateUserContribution(user.ID, user.TotalGram); err != nil {
 			return err
 		}
-	} else {
-		orders, err := s.repo.GetOrderById(orderID)
-		if err != nil {
-			return errors.New("failed to retrieve order details")
+
+		notificationRequest := dto.SendNotificationPaymentRequest{
+			OrderID:       orderID,
+			UserID:        user.ID,
+			PaymentStatus: "Konfirmasi",
+			Token:         user.DeviceToken,
 		}
-		for _, orderDetail := range orders.OrderDetails {
+
+		_, err = s.SendNotificationPayment(notificationRequest)
+		if err != nil {
+			logrus.Error("Gagal mengirim notifikasi: ", err)
+			return err
+		}
+	} else if status.PaymentStatus == "Gagal" {
+
+		for _, orderDetail := range transaction.OrderDetails {
 			if err := s.productService.IncreaseStock(orderDetail.ProductID, orderDetail.Quantity); err != nil {
 				return errors.New("failed to increase product stock")
 			}
 		}
+
+		notificationRequest := dto.SendNotificationPaymentRequest{
+			OrderID:       orderID,
+			UserID:        user.ID,
+			PaymentStatus: "Gagal",
+			Token:         user.DeviceToken,
+		}
+
+		_, err = s.SendNotificationPayment(notificationRequest)
+		if err != nil {
+			logrus.Error("Gagal mengirim notifikasi: ", err)
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -476,6 +539,18 @@ func (s *OrderService) ConfirmPayment(orderID string) error {
 		return err
 	}
 
+	notificationRequest := dto.SendNotificationPaymentRequest{
+		OrderID:       orderID,
+		UserID:        user.ID,
+		PaymentStatus: "Konfirmasi",
+		Token:         user.DeviceToken,
+	}
+	_, err = s.SendNotificationPayment(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
+		return err
+	}
+
 	return nil
 }
 
@@ -498,16 +573,48 @@ func (s *OrderService) CancelPayment(orderID string) error {
 		return errors.New("gagal membatalkan pesanan")
 	}
 
+	user, err := s.userService.GetUsersById(orders.UserID)
+	if err != nil {
+		return errors.New("pengguna tidak ditemukan")
+	}
+
+	notificationRequest := dto.SendNotificationPaymentRequest{
+		OrderID:       orderID,
+		UserID:        user.ID,
+		PaymentStatus: "Gagal",
+		Token:         user.DeviceToken,
+	}
+	_, err = s.SendNotificationPayment(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
+		return err
+	}
+
 	return nil
 }
 
 func (s *OrderService) UpdateOrderStatus(req *dto.UpdateOrderStatus) error {
-	_, err := s.repo.GetOrderById(req.OrderID)
+	orders, err := s.repo.GetOrderById(req.OrderID)
 	if err != nil {
 		return errors.New("pesanan tidak ditemukan")
 	}
 
 	if err := s.repo.UpdateOrderStatus(req); err != nil {
+		return err
+	}
+	user, err := s.userService.GetUsersById(orders.UserID)
+	if err != nil {
+		return errors.New("pengguna tidak ditemukan")
+	}
+	notificationRequest := dto.SendNotificationOrderRequest{
+		OrderID:     orders.ID,
+		UserID:      user.ID,
+		OrderStatus: "Pengiriman",
+		Token:       user.DeviceToken,
+	}
+	_, err = s.SendNotificationOrder(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
 		return err
 	}
 
@@ -546,6 +653,23 @@ func (s *OrderService) AcceptOrder(orderID string) error {
 	orders.OrderStatus = "Selesai"
 
 	if err := s.repo.AcceptOrder(orders.ID, orders.OrderStatus); err != nil {
+		return err
+	}
+
+	user, err := s.userService.GetUsersById(orders.UserID)
+	if err != nil {
+		return errors.New("pengguna tidak ditemukan")
+	}
+
+	notificationRequest := dto.SendNotificationOrderRequest{
+		OrderID:     orders.ID,
+		UserID:      user.ID,
+		OrderStatus: "Selesai",
+		Token:       user.DeviceToken,
+	}
+	_, err = s.SendNotificationOrder(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
 		return err
 	}
 
@@ -839,4 +963,82 @@ func (s *OrderService) GetOrdersBySearchAndPaymentStatus(status, search string, 
 	}
 
 	return result, totalItems, nil
+}
+
+func (s *OrderService) SendNotificationPayment(request dto.SendNotificationPaymentRequest) (string, error) {
+	var notificationMsg string
+	var err error
+
+	user, err := s.userService.GetUsersById(request.UserID)
+	if err != nil {
+		return "", err
+	}
+	orders, err := s.repo.GetOrderById(request.OrderID)
+	if err != nil {
+		return "", err
+	}
+
+	switch request.PaymentStatus {
+	case "Menunggu Konfirmasi":
+		notificationMsg = fmt.Sprintf("Alloo, %s! Pesananmu dengan ID %s udah berhasil dibuat, nih. Ditunggu yupp!!", user.Name, orders.IdOrder)
+	case "Konfirmasi":
+		notificationMsg = fmt.Sprintf("Thengkyuu, %s! Pembayaran untuk pesananmu dengan ID %s udah kami terima, nih. Semoga harimu menyenangkan!", user.Name, orders.IdOrder)
+	case "Gagal":
+		notificationMsg = fmt.Sprintf("Maaf, %s. Pembayaran untuk pesanan dengan ID %s gagal, nih. Beritahu kami apabila kamu butuh bantuan yaa!!", user.Name, orders.IdOrder)
+	default:
+		return "", errors.New("Status pesanan tidak valid")
+	}
+
+	notificationRequest := sendnotif.SendNotificationRequest{
+		OrderID: request.OrderID,
+		UserID:  request.UserID,
+		Title:   "Status Pembayaran",
+		Body:    notificationMsg,
+		Token:   user.DeviceToken,
+	}
+	_, _, err = s.fcmService.CreateFcm(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
+		return "", err
+	}
+
+	return notificationMsg, nil
+}
+
+func (s *OrderService) SendNotificationOrder(request dto.SendNotificationOrderRequest) (string, error) {
+	var notificationMsg string
+	var err error
+
+	user, err := s.userService.GetUsersById(request.UserID)
+	if err != nil {
+		return "", err
+	}
+	orders, err := s.repo.GetOrderById(request.OrderID)
+	if err != nil {
+		return "", err
+	}
+
+	switch request.OrderStatus {
+	case "Pengiriman":
+		notificationMsg = fmt.Sprintf("Alloo, %s! Pesanan dengan ID %s udah dalam proses pengiriman, nih. Mohon ditunggu yupp!", user.Name, orders.IdOrder)
+	case "Selesai":
+		notificationMsg = fmt.Sprintf("Yeayy, %s! Pesananmu dengan ID %s udah sampai tujuan, nih. Semoga sukakk yupp!", user.Name, orders.IdOrder)
+	default:
+		return "", errors.New("Status pengiriman tidak valid")
+	}
+
+	notificationRequest := sendnotif.SendNotificationRequest{
+		OrderID: request.OrderID,
+		UserID:  request.UserID,
+		Title:   "Status Pengiriman",
+		Body:    notificationMsg,
+		Token:   user.DeviceToken,
+	}
+	_, _, err = s.fcmService.CreateFcm(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
+		return "", err
+	}
+
+	return notificationMsg, nil
 }

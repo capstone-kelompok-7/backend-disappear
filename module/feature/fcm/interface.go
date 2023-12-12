@@ -2,6 +2,7 @@ package fcm
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/sendnotif"
 	"github.com/labstack/echo/v4"
 )
 
@@ -12,7 +13,7 @@ type RepositoryFcmInterface interface {
 	DeleteFcmById(id uint64) error
 }
 type ServiceFcmInterface interface {
-	CreateFcm(fcm *entities.FcmModels, token string) (*entities.FcmModels, string, error)
+	CreateFcm(request sendnotif.SendNotificationRequest) (*entities.FcmModels, string, error)
 	GetFcmByIdUser(id uint64) ([]*entities.FcmModels, error)
 	GetFcmById(id uint64) (*entities.FcmModels, error)
 	DeleteFcmById(id uint64) error

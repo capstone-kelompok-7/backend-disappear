@@ -39,3 +39,23 @@ type UpdateOrderStatus struct {
 	OrderStatus     string    `json:"order_status"`
 	ExtraInfo       string    `json:"extra_info"`
 }
+
+type SendNotificationPaymentRequest struct {
+	PaymentStatus string `json:"payment_status"`
+	OrderID       string `json:"order_id"`
+	UserID        uint64 `json:"user_id"`
+	UserName      string `json:"user_name"`
+	Title         string `json:"title"`
+	Body          string `json:"body"`
+	Token         string `json:"token"`
+}
+
+type SendNotificationOrderRequest struct {
+	OrderStatus string `json:"order_status"`
+	OrderID     string `json:"order_id"`
+	UserID      uint64 `json:"user_id"`
+	UserName    string `json:"user_name"`
+	Title       string `json:"title"`
+	Body        string `json:"body"`
+	Token       string `json:"token"`
+}
