@@ -39,9 +39,8 @@ func (r *ChatbotRepository) CreateAnswer(newData entities.ChatModel) error {
 	return nil
 }
 
-func (r *ChatbotRepository) GetChatByIdUser(id string) ([]entities.ChatModel, error) {
-	// chatCollection := entities.ChatModelBotCollection()
-	res, err := r.collection.Find(context.Background(), bson.M{"iduser": id})
+func (r *ChatbotRepository) GetChatByIdUser(id uint64) ([]entities.ChatModel, error) {
+	res, err := r.collection.Find(context.Background(), bson.M{"userid": id})
 	if err != nil {
 		logrus.Error("cant get chat by id user", err.Error())
 	}
