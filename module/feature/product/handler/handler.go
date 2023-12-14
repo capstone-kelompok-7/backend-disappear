@@ -297,6 +297,6 @@ func (h *ProductHandler) GetTopRatedProducts() echo.HandlerFunc {
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail produk: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail produk", dto.FormatterOtherProduct(result))
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan produk lainnya", dto.FormatterOtherProduct(result))
 	}
 }

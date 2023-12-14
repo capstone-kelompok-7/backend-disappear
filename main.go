@@ -118,13 +118,17 @@ func main() {
 	reviewService := sReview.NewReviewService(reviewRepo, productService)
 	reviewHandler := hReview.NewReviewHandler(reviewService)
 
+	fcmRepo := rFcm.NewFcmRepository(db)
+	fcmService := sFcm.NewFcmService(fcmRepo)
+	fcmHandler := hFcm.NewFcmHandler(fcmService)
+
 	cartRepo := rCart.NewCartRepository(db)
 	cartService := sCart.NewCartService(cartRepo, productService)
 	cartHandler := hCart.NewCartHandler(cartService)
 
 	orderRepo := rOrder.NewOrderRepository(db, coreApi)
 	orderService := sOrder.NewOrderService(orderRepo, generatorID, productService,
-		voucherService, addressService, userService, cartService)
+		voucherService, addressService, userService, cartService, fcmService)
 	orderHandler := hOrder.NewOrderHandler(orderService)
 
 	mgodb := database.InitMongoDB(*initConfig)
@@ -140,10 +144,6 @@ func main() {
 	homeRepo := rHome.NewHomepageRepository(db)
 	homeService := sHome.NewHomepageService(homeRepo)
 	homeHandler := hHome.NewHomepageHandler(homeService)
-
-	fcmRepo := rFcm.NewFcmRepository(db)
-	fcmService := sFcm.NewFcmService(fcmRepo)
-	fcmHandler := hFcm.NewFcmHandler(fcmService)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

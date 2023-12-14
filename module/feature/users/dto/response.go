@@ -176,6 +176,7 @@ func FormatUserProfileResponse(user *entities.UserModels) *UserProfileResponse {
 		ID:             user.ID,
 		Email:          user.Email,
 		Name:           user.Name,
+		Phone:          user.Phone,
 		PhotoProfile:   user.PhotoProfile,
 		TotalGram:      user.TotalGram,
 		TotalChallenge: user.TotalChallenge,

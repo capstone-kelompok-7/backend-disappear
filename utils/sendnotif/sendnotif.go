@@ -2,16 +2,34 @@ package sendnotif
 
 import (
 	"context"
-
+	"encoding/base64"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
+	"github.com/capstone-kelompok-7/backend-disappear/config"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 )
 
-func SendNotification(title string, body string, token string) (string, error) {
-	opt := option.WithCredentialsFile("contoh-c4760-firebase-adminsdk-i3rk9-0a642f465e.json")
-	app, err := firebase.NewApp(context.Background(), nil, opt)
+func getDecodedFireBaseKey() ([]byte, error) {
+	fireBaseAuthKey := config.InitConfig().FirebaseKey
+	decodedKey, err := base64.StdEncoding.DecodeString(fireBaseAuthKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodedKey, nil
+}
+
+func SendNotification(request SendNotificationRequest) (string, error) {
+	decodedKey, err := getDecodedFireBaseKey()
+
+	if err != nil {
+		return "", err
+	}
+
+	opt := []option.ClientOption{option.WithCredentialsJSON(decodedKey)}
+
+	app, err := firebase.NewApp(context.Background(), nil, opt...)
 	if err != nil {
 		logrus.Error("Error initializing Firebase app", err)
 	}
@@ -23,10 +41,11 @@ func SendNotification(title string, body string, token string) (string, error) {
 
 	message := &messaging.Message{
 		Data: map[string]string{
-			"title": title,
-			"body":  body,
+			"order_id": request.OrderID,
+			"title":    request.Title,
+			"body":     request.Body,
 		},
-		Token: token,
+		Token: request.Token,
 	}
 
 	response, err := client.Send(context.Background(), message)
