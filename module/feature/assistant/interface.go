@@ -1,4 +1,4 @@
-package chatbot
+package assistant
 
 import (
 	"context"
@@ -8,23 +8,28 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-type RepositoryChatbotInterface interface {
+type RepositoryAssistantInterface interface {
 	GetChatByIdUser(id uint64) ([]entities.ChatModel, error)
 	CreateQuestion(chat entities.ChatModel) error
 	CreateAnswer(chat entities.ChatModel) error
+	GetLastOrdersByUserID(userID uint64) ([]*entities.OrderModels, error)
+	GetTopSellingProducts() ([]string, error)
+	GetTopRatedProducts() ([]*entities.ProductModels, error)
 }
 
-type ServicChatbotInterface interface {
+type ServiceAssistantInterface interface {
 	GetChatByIdUser(id uint64) ([]entities.ChatModel, error)
 	CreateQuestion(userID uint64, newData entities.ChatModel) error
 	CreateAnswer(userID uint64, newData entities.ChatModel) (string, error)
 	GetAnswerFromAi(chat []openai.ChatCompletionMessage, ctx context.Context) (openai.ChatCompletionResponse, error)
-	GenerateArtikelAi(judul string) (string, error)
+	GenerateArticle(title string) (string, error)
+	GenerateRecommendationProduct(userID uint64) ([]string, error)
 }
 
-type HandlerChatbotInterface interface {
+type HandlerAssistantInterface interface {
 	GetChatByIdUser() echo.HandlerFunc
 	CreateQuestion() echo.HandlerFunc
 	CreateAnswer() echo.HandlerFunc
-	GenerateArtikelAi() echo.HandlerFunc
+	GenerateArticle() echo.HandlerFunc
+	GetProductByIdUser() echo.HandlerFunc
 }

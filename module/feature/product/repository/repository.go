@@ -240,44 +240,6 @@ func (r *ProductRepository) GetTotalProductSold() (uint64, error) {
 	return totalSold, nil
 }
 
-func (r *ProductRepository) FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ProductModels, error) {
-	var matchingProduct []*entities.ProductModels
-	var nonMatchingProduct []*entities.ProductModels
-
-	userPreferences, err := r.getUserPreferences(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	searchPattern := "%" + strings.Join(userPreferences, "%") + "%"
-	offset := (page - 1) * perPage
-
-	err = r.db.Where("deleted_at IS NULL").Where("description LIKE ?", searchPattern).Offset(offset).Limit(perPage).Find(&matchingProduct).Error
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.db.Where("deleted_at IS NULL").Where("description NOT LIKE ?", searchPattern).Offset(offset).Limit(perPage).Find(&nonMatchingProduct).Error
-	if err != nil {
-		return nil, err
-	}
-
-	products := append(matchingProduct, nonMatchingProduct...)
-
-	return products, nil
-}
-
-func (r *ProductRepository) getUserPreferences(userID uint64) ([]string, error) {
-	var userPreferences []string
-
-	err := r.db.Model(&entities.UserModels{}).Select("preferred_topics").Where("id = ?", userID).Pluck("preferred_topics", &userPreferences).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return userPreferences, nil
-}
-
 func (r *ProductRepository) GetTopRatedProducts() ([]*entities.ProductModels, error) {
 	var products []*entities.ProductModels
 
@@ -470,4 +432,39 @@ func (r *ProductRepository) SearchByNameAndFilterByRating(page, perPage int, nam
 	}
 
 	return products, totalItems, nil
+}
+
+func (r *ProductRepository) FindAllProductByUserPreference(page, perPage int, productsFromAI []string) ([]*entities.ProductModels, error) {
+	var matchingProducts []*entities.ProductModels
+
+	if len(productsFromAI) == 0 {
+		return nil, nil
+	}
+
+	offset := (page - 1) * perPage
+
+	relevantQuery := r.db.Table("products")
+
+	var relevantConditions []string
+	var relevantValues []interface{}
+	for _, productDesc := range productsFromAI {
+		relevantConditions = append(relevantConditions, "name LIKE ?")
+		relevantValues = append(relevantValues, "%"+productDesc+"%")
+	}
+
+	relevantQuery = relevantQuery.Where(strings.Join(relevantConditions, " OR "), relevantValues...)
+
+	irrelevantQuery := r.db.Table("products").Where("deleted_at IS NULL")
+
+	fullQuery := r.db.Raw("(?) UNION (?)", relevantQuery, irrelevantQuery).
+		Preload("ProductPhotos").
+		Preload("Categories").
+		Limit(perPage).Offset(offset).
+		Find(&matchingProducts)
+
+	if fullQuery.Error != nil {
+		return nil, fullQuery.Error
+	}
+
+	return matchingProducts, nil
 }

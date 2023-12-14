@@ -2,7 +2,6 @@ package dto
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
-	"strings"
 )
 
 // UserDetailResponse for detail users
@@ -159,19 +158,17 @@ func FormatUserActivityResponse(numSuccessfulOrders, numFailedOrders, totalOrder
 
 // UserProfileResponse for get profile
 type UserProfileResponse struct {
-	ID             uint64   `json:"id"`
-	Email          string   `json:"email"`
-	Name           string   `json:"name"`
-	Phone          string   `json:"phone"`
-	PhotoProfile   string   `json:"photo_profile"`
-	TotalGram      uint64   `json:"total_gram"`
-	TotalChallenge uint64   `json:"total_challenge"`
-	Level          string   `json:"level"`
-	Preference     []string `json:"preference"`
+	ID             uint64 `json:"id"`
+	Email          string `json:"email"`
+	Name           string `json:"name"`
+	Phone          string `json:"phone"`
+	PhotoProfile   string `json:"photo_profile"`
+	TotalGram      uint64 `json:"total_gram"`
+	TotalChallenge uint64 `json:"total_challenge"`
+	Level          string `json:"level"`
 }
 
 func FormatUserProfileResponse(user *entities.UserModels) *UserProfileResponse {
-	preferences := strings.Split(user.PreferredTopics, ",")
 	userFormatter := &UserProfileResponse{
 		ID:             user.ID,
 		Email:          user.Email,
@@ -181,40 +178,6 @@ func FormatUserProfileResponse(user *entities.UserModels) *UserProfileResponse {
 		TotalGram:      user.TotalGram,
 		TotalChallenge: user.TotalChallenge,
 		Level:          user.Level,
-		Preference:     preferences,
 	}
 	return userFormatter
-}
-
-type UserPersonalizationResponse struct {
-	ID         uint64 `json:"id"`
-	UserID     uint64 `json:"user_id"`
-	IsuID      uint64 `json:"isu_id"`
-	CategoryID uint64 `json:"category_id"`
-}
-
-type EnvironmentIssuesResponse struct {
-	ID    uint64 `json:"id"`
-	Name  string `json:"name"`
-	Photo string `json:"photo"`
-}
-
-func FormatEnvironmentIssuesResponse(environmentIssue *entities.EnvironmentIssuesModels) *EnvironmentIssuesResponse {
-	environmentIssues := &EnvironmentIssuesResponse{
-		ID:    environmentIssue.ID,
-		Name:  environmentIssue.Name,
-		Photo: environmentIssue.Photo,
-	}
-	return environmentIssues
-}
-
-func FormatterEnvironmentIssues(environmentIssues []*entities.EnvironmentIssuesModels) []*EnvironmentIssuesResponse {
-	environmentIssuesFormatters := make([]*EnvironmentIssuesResponse, 0)
-
-	for _, environmentIssue := range environmentIssues {
-		formattedEnvironmentIssues := FormatEnvironmentIssuesResponse(environmentIssue)
-		environmentIssuesFormatters = append(environmentIssuesFormatters, formattedEnvironmentIssues)
-	}
-
-	return environmentIssuesFormatters
 }

@@ -14,32 +14,6 @@ type RepositoryUserInterface struct {
 	mock.Mock
 }
 
-// AddUserPreference provides a mock function with given fields: userID, request
-func (_m *RepositoryUserInterface) AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error) {
-	ret := _m.Called(userID, request)
-
-	var r0 *entities.UserModels
-	var r1 error
-	if rf, ok := ret.Get(0).(func(uint64, *dto.UserPreferenceRequest) (*entities.UserModels, error)); ok {
-		return rf(userID, request)
-	}
-	if rf, ok := ret.Get(0).(func(uint64, *dto.UserPreferenceRequest) *entities.UserModels); ok {
-		r0 = rf(userID, request)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entities.UserModels)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(uint64, *dto.UserPreferenceRequest) error); ok {
-		r1 = rf(userID, request)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ChangePassword provides a mock function with given fields: userID, newPasswordHash
 func (_m *RepositoryUserInterface) ChangePassword(userID uint64, newPasswordHash string) error {
 	ret := _m.Called(userID, newPasswordHash)
@@ -113,32 +87,6 @@ func (_m *RepositoryUserInterface) FindAll(page int, perPage int) ([]*entities.U
 
 	if rf, ok := ret.Get(1).(func(int, int) error); ok {
 		r1 = rf(page, perPage)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FindAllEnvironmentsIssues provides a mock function with given fields:
-func (_m *RepositoryUserInterface) FindAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error) {
-	ret := _m.Called()
-
-	var r0 []*entities.EnvironmentIssuesModels
-	var r1 error
-	if rf, ok := ret.Get(0).(func() ([]*entities.EnvironmentIssuesModels, error)); ok {
-		return rf()
-	}
-	if rf, ok := ret.Get(0).(func() []*entities.EnvironmentIssuesModels); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*entities.EnvironmentIssuesModels)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}

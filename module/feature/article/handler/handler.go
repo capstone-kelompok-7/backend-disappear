@@ -258,7 +258,7 @@ func (h *ArticleHandler) GetUsersBookmark() echo.HandlerFunc {
 	}
 }
 
-func (h *ArticleHandler) GetArticlePreferences() echo.HandlerFunc {
+func (h *ArticleHandler) GetAllArticleUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
@@ -282,7 +282,7 @@ func (h *ArticleHandler) GetArticlePreferences() echo.HandlerFunc {
 		case "terbanyak":
 			articles, totalItems, err = h.service.GetArticleMostViews(page, perPage)
 		default:
-			articles, totalItems, err = h.service.GetArticlePreferences(currentUser.ID, page, perPage)
+			articles, totalItems, err = h.service.GetAllArticleUser(page, perPage)
 		}
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan artikel berdasarkan preferensi pengguna: "+err.Error())

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"strings"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -138,44 +137,6 @@ func (r *ArticleRepository) GetLatestArticle() ([]*entities.ArticleModels, error
 	return articles, nil
 }
 
-func (r *ArticleRepository) FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ArticleModels, error) {
-	var matchingArticles []*entities.ArticleModels
-	var nonMatchingArticles []*entities.ArticleModels
-
-	userPreferences, err := r.getUserPreferences(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	searchPattern := "%" + strings.Join(userPreferences, "%") + "%"
-	offset := (page - 1) * perPage
-
-	err = r.db.Where("deleted_at IS NULL").Where("title LIKE ?", searchPattern).Offset(offset).Limit(perPage).Find(&matchingArticles).Error
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.db.Where("deleted_at IS NULL").Where("title NOT LIKE ?", searchPattern).Offset(offset).Limit(perPage).Find(&nonMatchingArticles).Error
-	if err != nil {
-		return nil, err
-	}
-
-	articles := append(matchingArticles, nonMatchingArticles...)
-
-	return articles, nil
-}
-
-func (r *ArticleRepository) getUserPreferences(userID uint64) ([]string, error) {
-	var userPreferences []string
-
-	err := r.db.Model(&entities.UserModels{}).Select("preferred_topics").Where("id = ?", userID).Pluck("preferred_topics", &userPreferences).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return userPreferences, nil
-}
-
 func (r *ArticleRepository) GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, error) {
 	var articles []*entities.ArticleModels
 	offset := (page - 1) * perPage
@@ -244,6 +205,18 @@ func (r *ArticleRepository) SearchArticlesWithDateFilter(searchText string, star
 	}
 
 	if err := query.Find(&articles).Error; err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}
+
+func (r *ArticleRepository) FindAllArticle(page, perPage int) ([]*entities.ArticleModels, error) {
+	var articles []*entities.ArticleModels
+	offset := (page - 1) * perPage
+
+	err := r.db.Where("deleted_at IS NULL").Offset(offset).Limit(perPage).Find(&articles).Error
+	if err != nil {
 		return nil, err
 	}
 

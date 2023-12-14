@@ -473,7 +473,6 @@ func (s *OrderService) CallBack(notifPayload map[string]interface{}) error {
 		if _, err := s.userService.UpdateUserContribution(user.ID, user.TotalGram); err != nil {
 			return err
 		}
-
 		notificationRequest := dto.SendNotificationPaymentRequest{
 			OrderID:       orderID,
 			UserID:        user.ID,
@@ -486,6 +485,7 @@ func (s *OrderService) CallBack(notifPayload map[string]interface{}) error {
 			logrus.Error("Gagal mengirim notifikasi: ", err)
 			return err
 		}
+
 	} else if status.PaymentStatus == "Gagal" {
 
 		for _, orderDetail := range transaction.OrderDetails {
@@ -506,6 +506,7 @@ func (s *OrderService) CallBack(notifPayload map[string]interface{}) error {
 			logrus.Error("Gagal mengirim notifikasi: ", err)
 			return err
 		}
+
 	}
 
 	return nil
@@ -602,14 +603,16 @@ func (s *OrderService) UpdateOrderStatus(req *dto.UpdateOrderStatus) error {
 	if err := s.repo.UpdateOrderStatus(req); err != nil {
 		return err
 	}
+
 	user, err := s.userService.GetUsersById(orders.UserID)
 	if err != nil {
 		return errors.New("pengguna tidak ditemukan")
 	}
+
 	notificationRequest := dto.SendNotificationOrderRequest{
 		OrderID:     orders.ID,
 		UserID:      user.ID,
-		OrderStatus: "Pengiriman",
+		OrderStatus: req.OrderStatus,
 		Token:       user.DeviceToken,
 	}
 	_, err = s.SendNotificationOrder(notificationRequest)
@@ -661,16 +664,18 @@ func (s *OrderService) AcceptOrder(orderID string) error {
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	notificationRequest := dto.SendNotificationOrderRequest{
-		OrderID:     orders.ID,
-		UserID:      user.ID,
-		OrderStatus: "Selesai",
-		Token:       user.DeviceToken,
-	}
-	_, err = s.SendNotificationOrder(notificationRequest)
-	if err != nil {
-		logrus.Error("Gagal mengirim notifikasi: ", err)
-		return err
+	if user.DeviceToken != "" {
+		notificationRequest := dto.SendNotificationOrderRequest{
+			OrderID:     orders.ID,
+			UserID:      user.ID,
+			OrderStatus: "Selesai",
+			Token:       user.DeviceToken,
+		}
+		_, err = s.SendNotificationOrder(notificationRequest)
+		if err != nil {
+			logrus.Error("Gagal mengirim notifikasi: ", err)
+			return err
+		}
 	}
 
 	return nil
@@ -1023,6 +1028,12 @@ func (s *OrderService) SendNotificationOrder(request dto.SendNotificationOrderRe
 		notificationMsg = fmt.Sprintf("Alloo, %s! Pesanan dengan ID %s udah dalam proses pengiriman, nih. Mohon ditunggu yupp!", user.Name, orders.IdOrder)
 	case "Selesai":
 		notificationMsg = fmt.Sprintf("Yeayy, %s! Pesananmu dengan ID %s udah sampai tujuan, nih. Semoga sukakk yupp!", user.Name, orders.IdOrder)
+	case "Menunggu Konfirmasi":
+		notificationMsg = fmt.Sprintf("Alloo, %s! Pesananmu dengan ID %s sedang menunggu konfirmasi, nih. Ditunggu yupp!", user.Name, orders.IdOrder)
+	case "Proses":
+		notificationMsg = fmt.Sprintf("Alloo, %s! Pesananmu dengan ID %s sedang dalam proses, nih. Ditunggu yupp!", user.Name, orders.IdOrder)
+	case "Gagal":
+		notificationMsg = fmt.Sprintf("Sowwy, %s. Pesananmu dengan ID %s gagal. Coba lagi, yukk!", user.Name, orders.IdOrder)
 	default:
 		return "", errors.New("Status pengiriman tidak valid")
 	}
