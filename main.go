@@ -10,6 +10,9 @@ import (
 	hArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/handler"
 	rArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/repository"
 	sArticle "github.com/capstone-kelompok-7/backend-disappear/module/feature/article/service"
+	hChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant/handler"
+	rChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant/repository"
+	sChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant/service"
 	hAuth "github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/handler"
 	rAuth "github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/repository"
 	sAuth "github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/service"
@@ -25,9 +28,6 @@ import (
 	hChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/handler"
 	rChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/repository"
 	sChallenge "github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge/service"
-	hChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/handler"
-	rChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/repository"
-	sChatbot "github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/service"
 	hDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/handler"
 	rDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/repository"
 	sDashboard "github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard/service"
@@ -90,8 +90,14 @@ func main() {
 	voucherService := sVoucher.NewVoucherService(voucherRepo, userService)
 	voucherHandler := hVoucher.NewVoucherHandler(voucherService)
 
+	mgodb := database.InitMongoDB(*initConfig)
+	var client = openai.NewClient(initConfig.OpenAiApiKey)
+	chatbotRepo := rChatbot.NewAssistantRepository(mgodb, db)
+	chatbotService := sChatbot.NewAssistantService(chatbotRepo, client, *initConfig)
+	chatbotHandler := hChatbot.NewAssistantHandler(chatbotService)
+
 	productRepo := repository.NewProductRepository(db)
-	productService := service.NewProductService(productRepo)
+	productService := service.NewProductService(productRepo, chatbotService)
 	productHandler := handler.NewProductHandler(productService)
 
 	categoryRepo := rCategory.NewCategoryRepository(db)
@@ -131,12 +137,6 @@ func main() {
 		voucherService, addressService, userService, cartService, fcmService)
 	orderHandler := hOrder.NewOrderHandler(orderService)
 
-	mgodb := database.InitMongoDB(*initConfig)
-	var client = openai.NewClient(initConfig.OpenAiApiKey)
-	chatbotRepo := rChatbot.NewChatbotRepository(mgodb)
-	chatbotService := sChatbot.NewChatbotService(chatbotRepo, client, *initConfig)
-	chatbotHandler := hChatbot.NewChatbotHandler(chatbotService)
-
 	dashboardRepo := rDashboard.NewDashboardRepository(db)
 	dashboardService := sDashboard.NewDashboardService(dashboardRepo, rdb)
 	dashboardHandler := hDashboard.NewDashboardHandler(dashboardService)
@@ -153,8 +153,9 @@ func main() {
 	e.Use(middlewares.ConfigureLogging())
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, Disappear!")
+		return c.String(http.StatusOK, "Hello, Disappear! 🦄✨🍩")
 	})
+
 	routes.RouteUser(e, userHandler, jwtService, userService)
 	routes.RouteAuth(e, authHandler, jwtService, userService)
 	routes.RouteVoucher(e, voucherHandler, jwtService, userService)
@@ -167,7 +168,7 @@ func main() {
 	routes.RouteReview(e, reviewHandler, jwtService, userService)
 	routes.RouteCart(e, cartHandler, jwtService, userService)
 	routes.RouteOrder(e, orderHandler, jwtService, userService)
-	routes.RouteChatbot(e, chatbotHandler, jwtService, userService)
+	routes.RouteAssistant(e, chatbotHandler, jwtService, userService)
 	routes.RouteDashboard(e, dashboardHandler, jwtService, userService)
 	routes.RouteHomepage(e, homeHandler, jwtService, userService)
 	routes.RouteFcm(e, fcmHandler, jwtService, userService)

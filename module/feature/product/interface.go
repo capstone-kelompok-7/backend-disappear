@@ -24,7 +24,6 @@ type RepositoryProductInterface interface {
 	ReduceStockWhenPurchasing(productID, stock uint64) error
 	IncreaseStock(productID, quantity uint64) error
 	GetTotalProductSold() (uint64, error)
-	FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ProductModels, error)
 	GetTopRatedProducts() ([]*entities.ProductModels, error)
 	GetProductsByCategoryAndName(page, perPage int, categoryName, name string) ([]*entities.ProductModels, error)
 	GetProductsCountByCategoryAndName(categoryName, name string) (int64, error)
@@ -34,6 +33,7 @@ type RepositoryProductInterface interface {
 	GetProductByFilter(page, perPage int, sortBy string) ([]*entities.ProductModels, int64, error)
 	GetRatedProductsInRange(page, perPage int, lowerBound, upperBound float64) ([]*entities.ProductModels, int64, error)
 	SearchByNameAndFilterByRating(page, perPage int, name, ratingParam string, lowerBound, upperBound float64) ([]*entities.ProductModels, int64, error)
+	FindAllProductByUserPreference(page, perPage int, productsFromAI []string) ([]*entities.ProductModels, error)
 }
 
 type ServiceProductInterface interface {
@@ -54,7 +54,6 @@ type ServiceProductInterface interface {
 	ReduceStockWhenPurchasing(productID, quantity uint64) error
 	IncreaseStock(productID, quantity uint64) error
 	GetTotalProductSold() (uint64, error)
-	GetProductPreferences(userID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetTopRatedProducts() ([]*entities.ProductModels, error)
 	GetProductsByCategoryAndName(categoryName, name string, page, perPage int) ([]*entities.ProductModels, int64, error)
 	GetProductsByCategoryName(categoryName string, page, perPage int) ([]*entities.ProductModels, int64, error)
@@ -62,6 +61,7 @@ type ServiceProductInterface interface {
 	GetProductsByFilter(page, perPage int, filter string) ([]*entities.ProductModels, int64, error)
 	GetRatedProductsInRange(page, perPage int, ratingParam string) ([]*entities.ProductModels, int64, error)
 	SearchByNameAndFilterByRating(page, perPage int, name, ratingParam string) ([]*entities.ProductModels, int64, error)
+	GetProductRecommendation(userID uint64, page, perPage int) ([]*entities.ProductModels, int64, error)
 }
 
 type HandlerProductInterface interface {

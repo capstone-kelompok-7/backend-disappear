@@ -239,38 +239,3 @@ func (h *UserHandler) GetUserProfile() echo.HandlerFunc {
 		return response.SendSuccessResponse(c, "Berhasil mendapat detail pengguna", dto.FormatUserProfileResponse(user))
 	}
 }
-
-func (h *UserHandler) GetAllEnvironmentsIssues() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		environmentIssues, err := h.service.GetAllEnvironmentsIssues()
-		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan personalisasi isu lingkungan: "+err.Error())
-		}
-
-		formattedEnvironmentIssues := dto.FormatterEnvironmentIssues(environmentIssues)
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan personalisasi isu lingkungan", formattedEnvironmentIssues)
-	}
-}
-
-func (h *UserHandler) AddUserPreferenceHandler() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		currentUser := c.Get("CurrentUser").(*entities.UserModels)
-		if currentUser.Role != "customer" {
-			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
-		}
-		var request *dto.UserPreferenceRequest
-		if err := c.Bind(&request); err != nil {
-			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
-		}
-		if err := utils.ValidateStruct(request); err != nil {
-			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
-		}
-
-		result, err := h.service.AddUserPreference(currentUser.ID, request)
-		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal menambah preferensi pengguna: "+err.Error())
-		}
-
-		return response.SendStatusCreatedResponse(c, "Berhasil mendapat detail pengguna", dto.FormatUserProfileResponse(result))
-	}
-}

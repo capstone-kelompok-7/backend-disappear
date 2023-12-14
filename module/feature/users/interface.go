@@ -26,8 +26,6 @@ type RepositoryUserInterface interface {
 	GetLeaderboardByExp(limit int) ([]*entities.UserModels, error)
 	GetUserTransactionActivity(userID uint64) (int, int, int, error)
 	GetUserChallengeActivity(userID uint64) (int, int, int, error)
-	FindAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error)
-	AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error)
 	GetAllUsersBySearchAndFilter(page, perPage int, search, levelFilter string) ([]*entities.UserModels, int64, error)
 }
 
@@ -51,8 +49,6 @@ type ServiceUserInterface interface {
 	GetUserTransactionActivity(userID uint64) (int, int, int, error)
 	GetUserChallengeActivity(userID uint64) (int, int, int, error)
 	GetUserProfile(userID uint64) (*entities.UserModels, error)
-	GetAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error)
-	AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error)
 	GetUsersBySearchAndFilter(page, perPage int, search, levelFilter string) ([]*entities.UserModels, int64, error)
 	GetUsersByLevel(page, perPage int, level string) ([]*entities.UserModels, int64, error)
 }
@@ -67,6 +63,4 @@ type HandlerUserInterface interface {
 	GetLeaderboard() echo.HandlerFunc
 	GetUserTransactionActivity() echo.HandlerFunc
 	GetUserProfile() echo.HandlerFunc
-	GetAllEnvironmentsIssues() echo.HandlerFunc
-	AddUserPreferenceHandler() echo.HandlerFunc
 }

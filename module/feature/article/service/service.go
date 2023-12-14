@@ -196,8 +196,8 @@ func (s *ArticleService) GetOldestArticle(page, perPage int) ([]*entities.Articl
 	return result, totalItems, nil
 }
 
-func (s *ArticleService) GetArticlePreferences(userID uint64, page, perPage int) ([]*entities.ArticleModels, int64, error) {
-	result, err := s.repo.FindAllByUserPreference(userID, page, perPage)
+func (s *ArticleService) GetAllArticleUser(page, perPage int) ([]*entities.ArticleModels, int64, error) {
+	result, err := s.repo.FindAllArticle(page, perPage)
 	if err != nil {
 		return nil, 0, err
 	}

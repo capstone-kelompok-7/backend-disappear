@@ -2,23 +2,23 @@ package handler
 
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
-	"github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot"
-	"github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot/dto"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/response"
 	"github.com/labstack/echo/v4"
 )
 
-type ChatbotHandler struct {
-	service chatbot.ServicChatbotInterface
+type AssistantHandler struct {
+	service assistant.ServiceAssistantInterface
 }
 
-func NewChatbotHandler(service chatbot.ServicChatbotInterface) chatbot.HandlerChatbotInterface {
-	return &ChatbotHandler{
+func NewAssistantHandler(service assistant.ServiceAssistantInterface) assistant.HandlerAssistantInterface {
+	return &AssistantHandler{
 		service: service,
 	}
 }
 
-func (h *ChatbotHandler) CreateQuestion() echo.HandlerFunc {
+func (h *AssistantHandler) CreateQuestion() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
@@ -43,7 +43,7 @@ func (h *ChatbotHandler) CreateQuestion() echo.HandlerFunc {
 	}
 }
 
-func (h *ChatbotHandler) CreateAnswer() echo.HandlerFunc {
+func (h *AssistantHandler) CreateAnswer() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
@@ -68,7 +68,7 @@ func (h *ChatbotHandler) CreateAnswer() echo.HandlerFunc {
 	}
 }
 
-func (h *ChatbotHandler) GetChatByIdUser() echo.HandlerFunc {
+func (h *AssistantHandler) GetChatByIdUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get("CurrentUser").(*entities.UserModels)
 		if currentUser.Role != "customer" {
@@ -84,18 +84,34 @@ func (h *ChatbotHandler) GetChatByIdUser() echo.HandlerFunc {
 	}
 }
 
-func (h *ChatbotHandler) GenerateArtikelAi() echo.HandlerFunc {
+func (h *AssistantHandler) GenerateArticle() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		judulRequest := new(dto.GenerateArticleAiRequest)
-		if err := c.Bind(judulRequest); err != nil {
+		request := new(dto.GenerateArticleAiRequest)
+		if err := c.Bind(request); err != nil {
 			return response.SendBadRequestResponse(c, "Format input yang Anda masukkan tidak sesuai.")
 		}
 
-		chat, err := h.service.GenerateArtikelAi(judulRequest.Text)
+		chat, err := h.service.GenerateArticle(request.Text)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal generate artikel: "+err.Error())
 		}
 
 		return response.SendSuccessResponse(c, "Berhasil mendapatkan jawaban", chat)
+	}
+}
+
+func (h *AssistantHandler) GetProductByIdUser() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
+
+		chat, err := h.service.GenerateRecommendationProduct(currentUser.ID)
+		if err != nil {
+			return response.SendStatusInternalServerResponse(c, "Gagal rekomendasi "+err.Error())
+		}
+
+		return response.SendSuccessResponse(c, "Berhasil rekomendasi", chat)
 	}
 }

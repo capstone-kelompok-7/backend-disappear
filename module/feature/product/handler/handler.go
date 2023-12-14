@@ -275,7 +275,7 @@ func (h *ProductHandler) GetAllProductsPreferences() echo.HandlerFunc {
 		} else if filter != "" {
 			products, totalItems, err = h.service.GetProductsByFilter(pageConv, perPage, filter)
 		} else {
-			products, totalItems, err = h.service.GetProductPreferences(currentUser.ID, pageConv, perPage)
+			products, totalItems, err = h.service.GetProductRecommendation(currentUser.ID, pageConv, perPage)
 		}
 
 		if err != nil {
