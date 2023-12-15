@@ -224,20 +224,3 @@ func (s *AssistantService) GenerateRecommendationProduct(userID uint64) ([]strin
 
 	return recommendedProducts, nil
 }
-
-//func extractProductNamesFromRecommendation(recommendations string) string {
-//	lines := strings.Split(recommendations, "\n")
-//
-//	productNames := make([]string, 0)
-//
-//	for _, line := range lines {
-//		if strings.TrimSpace(line) != "" {
-//			product := strings.SplitN(line, ". ", 2)
-//			if len(product) > 1 {
-//				productNames = append(productNames, strings.TrimSpace(product[1]))
-//			}
-//		}
-//	}
-//
-//	return strings.Join(productNames, ", ")
-//}

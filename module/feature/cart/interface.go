@@ -30,6 +30,7 @@ type ServiceCartInterface interface {
 	DeleteCartItem(cartItemID uint64) error
 	IsProductInCart(userID, productID uint64) bool
 	RemoveProductFromCart(userID, productID uint64) error
+	RecalculateGrandTotal(cart *entities.CartModels) error
 }
 
 type HandlerCartInterface interface {
