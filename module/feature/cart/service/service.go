@@ -52,7 +52,7 @@ func (s *CartService) AddCartItems(userID uint64, request *dto.AddCartItemsReque
 		if err != nil {
 			return nil, errors.New("gagal mengubah jumlah produk di keranjang")
 		}
-		err = s.recalculateGrandTotal(carts)
+		err = s.RecalculateGrandTotal(carts)
 		if err != nil {
 			return nil, errors.New("gagal menghitung ulang grand total")
 		}
@@ -77,7 +77,7 @@ func (s *CartService) AddCartItems(userID uint64, request *dto.AddCartItemsReque
 		return nil, errors.New("gagal menambahkan produk ke keranjang")
 	}
 
-	err = s.recalculateGrandTotal(carts)
+	err = s.RecalculateGrandTotal(carts)
 	if err != nil {
 		return nil, errors.New("gagal menghitung ulang grand total")
 	}
@@ -101,7 +101,7 @@ func (s *CartService) DeleteCartItem(cartItemID uint64) error {
 		return errors.New("gagal menghapus item dikeranjang")
 	}
 
-	err = s.recalculateGrandTotal(carts)
+	err = s.RecalculateGrandTotal(carts)
 	if err != nil {
 		return errors.New("gagal untuk menghitung ulang grand total")
 	}
@@ -138,7 +138,7 @@ func (s *CartService) ReduceCartItemQuantity(cartItemID, quantity uint64) error 
 	if err != nil {
 		return errors.New("keranjang tidak ditemukan")
 	}
-	err = s.recalculateGrandTotal(carts)
+	err = s.RecalculateGrandTotal(carts)
 	if err != nil {
 		return errors.New("gagal menghitung ulang grand total")
 	}
@@ -146,7 +146,7 @@ func (s *CartService) ReduceCartItemQuantity(cartItemID, quantity uint64) error 
 	return nil
 }
 
-func (s *CartService) recalculateGrandTotal(cart *entities.CartModels) error {
+func (s *CartService) RecalculateGrandTotal(cart *entities.CartModels) error {
 	cartItems, err := s.repo.GetCartItemsByCartID(cart.ID)
 	if err != nil {
 		return err

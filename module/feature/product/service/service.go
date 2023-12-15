@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant"
 	"math"
 	"strings"
@@ -423,7 +422,6 @@ func (s *ProductService) GetProductRecommendation(userID uint64, page, perPage i
 	if err != nil {
 		return nil, 0, err
 	}
-	fmt.Println(recommendations)
 
 	result, err := s.repo.FindAllProductByUserPreference(page, perPage, recommendations)
 	if err != nil {
