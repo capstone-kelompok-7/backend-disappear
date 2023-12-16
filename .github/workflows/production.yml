@@ -37,6 +37,7 @@ jobs:
           key: ${{ secrets.PD_KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            set -e
             sudo docker stop ${{ secrets.PDCNAME }}
             sudo docker rm ${{ secrets.PDCNAME }}
             sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear
