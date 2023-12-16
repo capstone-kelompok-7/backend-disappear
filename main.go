@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/sendnotif"
 
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	hAddress "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/handler"
@@ -76,6 +77,7 @@ func main() {
 	jwtService := utils.NewJWT(initConfig.Secret)
 	hash := utils.NewHash()
 	generatorID := utils.NewGeneratorUUID(db)
+	fcm := sendnotif.NewFcmService()
 	coreApi := payment.InitSnapMidtrans(*initConfig)
 
 	userRepo := rUser.NewUserRepository(db)
@@ -124,7 +126,7 @@ func main() {
 	reviewService := sReview.NewReviewService(reviewRepo, productService)
 	reviewHandler := hReview.NewReviewHandler(reviewService)
 
-	fcmRepo := rFcm.NewFcmRepository(db)
+	fcmRepo := rFcm.NewFcmRepository(db, fcm)
 	fcmService := sFcm.NewFcmService(fcmRepo)
 	fcmHandler := hFcm.NewFcmHandler(fcmService)
 

@@ -2,6 +2,9 @@ package service
 
 import (
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant"
@@ -13,8 +16,6 @@ import (
 	productsMocks "github.com/capstone-kelompok-7/backend-disappear/module/feature/product/mocks"
 	products "github.com/capstone-kelompok-7/backend-disappear/module/feature/product/service"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func setupTestService(t *testing.T) (*mocks.RepositoryCartInterface, cart.ServiceCartInterface, product.ServiceProductInterface, assistant.ServiceAssistantInterface) {

@@ -16,6 +16,7 @@ import (
 	"github.com/capstone-kelompok-7/backend-disappear/utils/sendnotif"
 	"github.com/sirupsen/logrus"
 	"math"
+	"strings"
 	"time"
 )
 
@@ -259,9 +260,9 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 
 	switch request.PaymentMethod {
 	case "whatsapp", "telegram":
-		return s.processManualPayment(orderID)
+		return s.ProcessManualPayment(orderID)
 	case "qris", "bank_transfer", "gopay", "shopepay":
-		return s.processGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
+		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
 	default:
 		return nil, errors.New("jenis pembayaran tidak valid")
 	}
@@ -418,15 +419,15 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 
 	switch request.PaymentMethod {
 	case "whatsapp", "telegram":
-		return s.processManualPayment(orderID)
+		return s.ProcessManualPayment(orderID)
 	case "qris", "bank_transfer", "gopay", "shopepay":
-		return s.processGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
+		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
 	default:
 		return nil, errors.New("jenis pembayaran tidak valid")
 	}
 }
 
-func (s *OrderService) processManualPayment(orderID string) (*entities.OrderModels, error) {
+func (s *OrderService) ProcessManualPayment(orderID string) (*entities.OrderModels, error) {
 	result, err := s.repo.GetOrderById(orderID)
 	if err != nil {
 		return nil, err
@@ -434,7 +435,7 @@ func (s *OrderService) processManualPayment(orderID string) (*entities.OrderMode
 	return result, nil
 }
 
-func (s *OrderService) processGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error) {
+func (s *OrderService) ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error) {
 	result, err := s.repo.ProcessGatewayPayment(totalAmountPaid, orderID, paymentMethod)
 	if err != nil {
 		return nil, err
@@ -653,29 +654,28 @@ func (s *OrderService) AcceptOrder(orderID string) error {
 	if err != nil {
 		return errors.New("pesanan tidak ditemukan")
 	}
-	orders.OrderStatus = "Selesai"
-
-	if err := s.repo.AcceptOrder(orders.ID, orders.OrderStatus); err != nil {
-		return err
-	}
 
 	user, err := s.userService.GetUsersById(orders.UserID)
 	if err != nil {
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	if user.DeviceToken != "" {
-		notificationRequest := dto.SendNotificationOrderRequest{
-			OrderID:     orders.ID,
-			UserID:      user.ID,
-			OrderStatus: "Selesai",
-			Token:       user.DeviceToken,
-		}
-		_, err = s.SendNotificationOrder(notificationRequest)
-		if err != nil {
-			logrus.Error("Gagal mengirim notifikasi: ", err)
-			return err
-		}
+	orders.OrderStatus = "Selesai"
+
+	if err := s.repo.AcceptOrder(orders.ID, orders.OrderStatus); err != nil {
+		return err
+	}
+
+	notificationRequest := dto.SendNotificationOrderRequest{
+		OrderID:     orders.ID,
+		UserID:      user.ID,
+		OrderStatus: "Selesai",
+		Token:       user.DeviceToken,
+	}
+	_, err = s.SendNotificationOrder(notificationRequest)
+	if err != nil {
+		logrus.Error("Gagal mengirim notifikasi: ", err)
+		return err
 	}
 
 	return nil
@@ -690,36 +690,21 @@ func (s *OrderService) Tracking(courier, awb string) (map[string]interface{}, er
 }
 
 func (s *OrderService) GetOrderByDateRange(filterType string, page, perPage int) ([]*entities.OrderModels, int64, error) {
-	now := time.Now()
-	var startDate, endDate time.Time
-
-	switch filterType {
-	case "Minggu Ini":
-		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
-		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
-		endDate = startDate.AddDate(0, 0, 7)
-	case "Bulan Ini":
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		nextMonth := startDate.AddDate(0, 1, 0)
-		endDate = nextMonth.Add(-time.Second)
-	case "Tahun Ini":
-		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-		nextYear := startDate.AddDate(1, 0, 0)
-		endDate = nextYear.Add(-time.Second)
-	default:
-		return nil, 0, errors.New("tipe filter tidak valid")
+	startDate, endDate, err := s.GetFilterDateRange(filterType)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	offset := (page - 1) * perPage
 
 	result, err := s.repo.GetOrderByDateRange(startDate, endDate, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pesanan tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountByDateRange(startDate, endDate)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pesanan")
 	}
 
 	return result, totalItems, nil
@@ -730,120 +715,75 @@ func (s *OrderService) GetOrderByOrderStatus(orderStatus string, page, perPage i
 
 	result, err := s.repo.GetOrderByOrderStatus(orderStatus, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pesanan tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountByByOrderStatus(orderStatus)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pesanan")
 	}
 
 	return result, totalItems, nil
 }
 
 func (s *OrderService) GetOrderByDateRangeAndStatus(filterType, status string, page, perPage int) ([]*entities.OrderModels, int64, error) {
-	now := time.Now()
-	var startDate, endDate time.Time
-
-	switch filterType {
-	case "Minggu Ini":
-		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
-		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
-		endDate = startDate.AddDate(0, 0, 7)
-	case "Bulan Ini":
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		nextMonth := startDate.AddDate(0, 1, 0)
-		endDate = nextMonth.Add(-time.Second)
-	case "Tahun Ini":
-		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-		nextYear := startDate.AddDate(1, 0, 0)
-		endDate = nextYear.Add(-time.Second)
-	default:
-		return nil, 0, errors.New("tipe filter tidak valid")
+	startDate, endDate, err := s.GetFilterDateRange(filterType)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	offset := (page - 1) * perPage
 
 	result, err := s.repo.GetOrderByDateRangeAndStatus(startDate, endDate, status, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pesanan tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountByDateRangeAndStatus(startDate, endDate, status)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pesanan")
 	}
 
 	return result, totalItems, nil
 }
 
 func (s *OrderService) GetOrderByDateRangeAndStatusAndSearch(filterType, status, search string, page, perPage int) ([]*entities.OrderModels, int64, error) {
-	now := time.Now()
-	var startDate, endDate time.Time
-
-	switch filterType {
-	case "Minggu Ini":
-		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
-		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
-		endDate = startDate.AddDate(0, 0, 7)
-	case "Bulan Ini":
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		nextMonth := startDate.AddDate(0, 1, 0)
-		endDate = nextMonth.Add(-time.Second)
-	case "Tahun Ini":
-		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-		nextYear := startDate.AddDate(1, 0, 0)
-		endDate = nextYear.Add(-time.Second)
-	default:
-		return nil, 0, errors.New("tipe filter tidak valid")
+	startDate, endDate, err := s.GetFilterDateRange(filterType)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	offset := (page - 1) * perPage
 
 	result, err := s.repo.GetOrderByDateRangeAndStatusAndSearch(startDate, endDate, status, search, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pesanan tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountByDateRangeAndStatusAndSearch(startDate, endDate, status, search)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pesanan")
 	}
 
 	return result, totalItems, nil
 }
 
 func (s *OrderService) GetOrderBySearchAndDateRange(filterType, search string, page, perPage int) ([]*entities.OrderModels, int64, error) {
-	now := time.Now()
-	var startDate, endDate time.Time
-
-	switch filterType {
-	case "Minggu Ini":
-		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
-		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
-		endDate = startDate.AddDate(0, 0, 7)
-	case "Bulan Ini":
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		nextMonth := startDate.AddDate(0, 1, 0)
-		endDate = nextMonth.Add(-time.Second)
-	case "Tahun Ini":
-		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-		nextYear := startDate.AddDate(1, 0, 0)
-		endDate = nextYear.Add(-time.Second)
-	default:
-		return nil, 0, errors.New("tipe filter tidak valid")
+	startDate, endDate, err := s.GetFilterDateRange(filterType)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	offset := (page - 1) * perPage
 
 	result, err := s.repo.GetOrdersBySearchAndDateRange(startDate, endDate, search, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pesanan tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountBySearchAndDateRange(startDate, endDate, search)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pesanan")
 	}
 
 	return result, totalItems, nil
@@ -854,12 +794,12 @@ func (s *OrderService) GetOrdersBySearchAndStatus(status, search string, page, p
 
 	result, err := s.repo.GetOrdersBySearchAndStatus(status, search, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pesanan tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrdersCountBySearchAndStatus(status, search)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pesanan")
 	}
 
 	return result, totalItems, nil
@@ -871,84 +811,54 @@ func (s *OrderService) GetOrderByPaymentStatus(orderStatus string, page, perPage
 
 	result, err := s.repo.GetOrderByPaymentStatus(orderStatus, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pembayaran tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountByByPaymentStatus(orderStatus)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pembayaran")
 	}
 
 	return result, totalItems, nil
 }
 
 func (s *OrderService) GetOrderByDateRangeAndPaymentStatus(filterType, status string, page, perPage int) ([]*entities.OrderModels, int64, error) {
-	now := time.Now()
-	var startDate, endDate time.Time
-
-	switch filterType {
-	case "Minggu Ini":
-		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
-		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
-		endDate = startDate.AddDate(0, 0, 7)
-	case "Bulan Ini":
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		nextMonth := startDate.AddDate(0, 1, 0)
-		endDate = nextMonth.Add(-time.Second)
-	case "Tahun Ini":
-		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-		nextYear := startDate.AddDate(1, 0, 0)
-		endDate = nextYear.Add(-time.Second)
-	default:
-		return nil, 0, errors.New("tipe filter tidak valid")
+	startDate, endDate, err := s.GetFilterDateRange(filterType)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	offset := (page - 1) * perPage
 
 	result, err := s.repo.GetOrderByDateRangeAndPaymentStatus(startDate, endDate, status, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pembayaran tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountByDateRangeAndPaymentStatus(startDate, endDate, status)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pembayaran")
 	}
 
 	return result, totalItems, nil
 }
 
 func (s *OrderService) GetOrderByDateRangeAndPaymentStatusAndSearch(filterType, status, search string, page, perPage int) ([]*entities.OrderModels, int64, error) {
-	now := time.Now()
-	var startDate, endDate time.Time
-
-	switch filterType {
-	case "Minggu Ini":
-		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
-		startDate = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
-		endDate = startDate.AddDate(0, 0, 7)
-	case "Bulan Ini":
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		nextMonth := startDate.AddDate(0, 1, 0)
-		endDate = nextMonth.Add(-time.Second)
-	case "Tahun Ini":
-		startDate = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-		nextYear := startDate.AddDate(1, 0, 0)
-		endDate = nextYear.Add(-time.Second)
-	default:
-		return nil, 0, errors.New("tipe filter tidak valid")
+	startDate, endDate, err := s.GetFilterDateRange(filterType)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	offset := (page - 1) * perPage
 
 	result, err := s.repo.GetOrderByDateRangeAndPaymentStatusAndSearch(startDate, endDate, status, search, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pembayaran tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountByDateRangeAndPaymentStatusAndSearch(startDate, endDate, status, search)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pembayaran")
 	}
 
 	return result, totalItems, nil
@@ -959,12 +869,12 @@ func (s *OrderService) GetOrdersBySearchAndPaymentStatus(status, search string, 
 
 	result, err := s.repo.GetOrderBySearchAndPaymentStatus(status, search, offset, perPage)
 	if err != nil {
-		return nil, 0, errors.New("pesanan tidak ditemukan: " + err.Error())
+		return nil, 0, errors.New("pembayaran tidak ditemukan")
 	}
 
 	totalItems, err := s.repo.GetOrderCountBySearchAndPaymentStatus(status, search)
 	if err != nil {
-		return nil, 0, errors.New("gagal mendapatkan total pesanan: " + err.Error())
+		return nil, 0, errors.New("gagal mendapatkan total pembayaran")
 	}
 
 	return result, totalItems, nil
@@ -1052,4 +962,29 @@ func (s *OrderService) SendNotificationOrder(request dto.SendNotificationOrderRe
 	}
 
 	return notificationMsg, nil
+}
+
+func (s *OrderService) GetFilterDateRange(filterType string) (time.Time, time.Time, error) {
+	filterType = strings.ToLower(filterType)
+	now := time.Now()
+
+	switch filterType {
+	case "minggu ini":
+		startOfWeek := now.AddDate(0, 0, -int(now.Weekday()))
+		startDate := time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, time.UTC)
+		endDate := startDate.AddDate(0, 0, 7)
+		return startDate, endDate, nil
+	case "bulan ini":
+		startDate := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+		nextMonth := startDate.AddDate(0, 1, 0)
+		endDate := nextMonth.Add(-time.Second)
+		return startDate, endDate, nil
+	case "tahun ini":
+		startDate := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
+		nextYear := startDate.AddDate(1, 0, 0)
+		endDate := nextYear.Add(-time.Second)
+		return startDate, endDate, nil
+	default:
+		return time.Time{}, time.Time{}, errors.New("tipe filter tidak valid")
+	}
 }
