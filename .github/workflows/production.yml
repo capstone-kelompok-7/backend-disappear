@@ -15,8 +15,8 @@ jobs:
         name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.PD_DOCKERHUB_USERNAME }}
-          password: ${{ secrets.PD_DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -27,7 +27,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.PD_DOCKERHUB_USERNAME }}/production_disappear:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear:latest
       -
         name: connect ssh
         uses: appleboy/ssh-action@v0.1.9
@@ -40,7 +40,7 @@ jobs:
             set -e
             sudo docker stop ${{ secrets.PDCNAME }}
             sudo docker rm ${{ secrets.PDCNAME }} 
-            sudo docker rmi ${{ secrets.PD_DOCKERHUB_USERNAME }}/production_disappear
+            sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear
             sudo docker run --name ${{ secrets.PDCNAME }} -p 80:8000 -d \
               -e DBHOST=${{secrets.PD_DBHOST}} \
               -e DBPORT=${{secrets.PD_DBPORT}} \
@@ -64,4 +64,4 @@ jobs:
               -e REDIS_PASS=${{secrets.REDIS_PASS}} \
               -e RESIKEY=${{secrets.RESIKEY}} \
               -e FIREBASEKEY=${{secrets.FIREBASEKEY}} \
-              ${{ secrets.PD_DOCKERHUB_USERNAME }}/production_disappear
+              ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear
