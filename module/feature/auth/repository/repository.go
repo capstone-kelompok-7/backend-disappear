@@ -1,9 +1,10 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -111,4 +112,23 @@ func (r *AuthRepository) UpdateLastLogin(userID uint64, lastLogin time.Time) err
 	}
 
 	return nil
+}
+
+func (r *AuthRepository) CekDeviceTokenByEmail(email string) (string, error) {
+	var user entities.UserModels
+	if err := r.db.Table("users").Where("email = ? AND  deleted_at IS NULL", email).First(&user).Error; err != nil {
+		return "", err
+	}
+
+	return user.DeviceToken, nil
+}
+
+func (r *AuthRepository) UpdateDeviceTokenByID(email string, deviceToken string) (*entities.UserModels, error) {
+	var user entities.UserModels
+	if err := r.db.Model(&user).Where("email = ?", email).Update("device_token", deviceToken).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+
 }

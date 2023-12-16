@@ -3,12 +3,13 @@ package service
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/caching"
 	"github.com/labstack/gommon/log"
-	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/users"
 	"github.com/capstone-kelompok-7/backend-disappear/utils"
@@ -79,7 +80,7 @@ func (s *AuthService) Register(newData *entities.UserModels) (*entities.UserMode
 	return result, nil
 }
 
-func (s *AuthService) Login(email, password string) (*entities.UserModels, string, error) {
+func (s *AuthService) Login(email, password, deviceToken string) (*entities.UserModels, string, error) {
 	cachedToken, err := s.cache.Get(email)
 	if err == nil {
 		return nil, string(cachedToken), nil
@@ -104,6 +105,15 @@ func (s *AuthService) Login(email, password string) (*entities.UserModels, strin
 	accessToken, err := s.jwt.GenerateJWT(user.ID, user.Email, user.Role)
 	if err != nil {
 		return nil, "", err
+	}
+
+	cekDeviceToken, err := s.repo.CekDeviceTokenByEmail(email)
+	if cekDeviceToken != deviceToken {
+		_, err := s.repo.UpdateDeviceTokenByID(email, deviceToken)
+		if err != nil {
+			return nil, "", errors.New("gagal memperbarui device token")
+		}
+
 	}
 
 	err = s.cache.Set(email, []byte(accessToken), 1*time.Second)

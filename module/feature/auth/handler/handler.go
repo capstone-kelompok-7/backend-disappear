@@ -59,7 +59,7 @@ func (h *AuthHandler) Login() echo.HandlerFunc {
 			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 
-		userLogin, accessToken, err := h.service.Login(loginRequest.Email, loginRequest.Password)
+		userLogin, accessToken, err := h.service.Login(loginRequest.Email, loginRequest.Password, loginRequest.DeviceToken)
 		if err != nil {
 			if err.Error() == "user tidak ditemukan" {
 				return response.SendStatusNotFoundResponse(c, "Pengguna tidak ditemukan")
