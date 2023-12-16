@@ -48,7 +48,7 @@ func (s *FcmService) CreateFcm(request sendnotif.SendNotificationRequest) (strin
 func (s *FcmService) GetFcmByIdUser(id uint64) ([]*entities.FcmModels, error) {
 	res, err := s.repo.GetFcmByIdUser(id)
 	if err != nil {
-		return nil, errors.New("Notifikasi tidak ditemukan" + err.Error())
+		return nil, errors.New("Notifikasi tidak ditemukan")
 	}
 	return res, nil
 }
@@ -56,7 +56,7 @@ func (s *FcmService) GetFcmByIdUser(id uint64) ([]*entities.FcmModels, error) {
 func (s *FcmService) GetFcmById(id uint64) (*entities.FcmModels, error) {
 	res, err := s.repo.GetFcmById(id)
 	if err != nil {
-		return nil, errors.New("Notifikasi tidak ditemukan" + err.Error())
+		return nil, errors.New("Notifikasi tidak ditemukan")
 	}
 	return res, nil
 }
@@ -69,7 +69,7 @@ func (s *FcmService) DeleteFcmById(id uint64) error {
 
 	err = s.repo.DeleteFcmById(result.ID)
 	if err != nil {
-		return err
+		return errors.New("fcm id tidak ditemukan")
 	}
 
 	return nil
