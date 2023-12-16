@@ -38,10 +38,10 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             set -e
-            sudo docker stop ${{ secrets.CNAME }}
-            sudo docker rm ${{ secrets.CNAME }}
+            sudo docker stop ${{ secrets.PDCNAME }}
+            sudo docker rm ${{ secrets.PDCNAME }}
             sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear
-            sudo docker run --name ${{ secrets.CNAME }} -p 80:8000 -d \
+            sudo docker run --name ${{ secrets.PDCNAME }} -p 80:8000 -d \
               -e DBHOST=${{secrets.PD_DBHOST}} \
               -e DBPORT=${{secrets.PD_DBPORT}} \
               -e DBUSER=${{secrets.DBUSER}} \
