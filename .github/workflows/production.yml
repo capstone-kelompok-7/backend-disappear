@@ -44,4 +44,4 @@ jobs:
               -e DBUSER=${{ secrets.DBUSER }} \
               -e DBNAME=${{ secrets.DBNAME }} \
               -e DBPASS=${{ secrets.PD_DBPASS }} \
-              ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear:latest
+              -e SECRET=${{secrets.SECRET}} -e SERVER=${{secrets.SERVER}} -e SMTP_PASS=${{secrets.SMTP_PASS}} -e SMTP_USER=${{secrets.SMTP_USER}} -e SMTP_PORT=${{secrets.SMTP_PORT}} -e CCNAME=${{secrets.CCNAME}} -e CCAPIKEY=${{secrets.CCAPIKEY}} -e CCAPISECRET=${{secrets.CCAPISECRET}} -e CCFOLDER=${{secrets.CCFOLDER}} -e OPENAIAPIKEY=${{secrets.OPENAIAPIKEY}} -e MONGOURL=${{secrets.MONGOURL}} -e CLIENTKEY=${{secrets.CLIENTKEY}} -e SERVERKEY=${{secrets.SERVERKEY}} -e REDIS_ADDR=${{secrets.REDIS_ADDR}} -e REDIS_PASS=${{secrets.REDIS_PASS}} -e RESIKEY=${{secrets.RESIKEY}} -e FIREBASEKEY=${{secrets.FIREBASEKEY}} ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear:latest
