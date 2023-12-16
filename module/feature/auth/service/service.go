@@ -108,6 +108,9 @@ func (s *AuthService) Login(email, password, deviceToken string) (*entities.User
 	}
 
 	cekDeviceToken, err := s.repo.CekDeviceTokenByEmail(email)
+	if err != nil {
+		return nil, "", err
+	}
 	if cekDeviceToken != deviceToken {
 		_, err := s.repo.UpdateDeviceTokenByID(email, deviceToken)
 		if err != nil {
