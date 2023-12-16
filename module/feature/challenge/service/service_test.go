@@ -1089,3 +1089,260 @@ func TestChallengeService_GetChallengeFormById(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 }
+
+func TestGetDatesFromFilterType(t *testing.T) {
+	t.Run("Valid Filter Type - Hari Ini", func(t *testing.T) {
+		filterType := "Hari Ini"
+		startDate, endDate, err := getDatesFromFilterType(filterType)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, startDate)
+		assert.NotNil(t, endDate)
+		assert.True(t, startDate.Before(endDate))
+	})
+
+	t.Run("Valid Filter Type - Minggu Ini", func(t *testing.T) {
+		filterType := "Minggu Ini"
+		startDate, endDate, err := getDatesFromFilterType(filterType)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, startDate)
+		assert.NotNil(t, endDate)
+		assert.True(t, startDate.Before(endDate))
+	})
+
+	t.Run("Valid Filter Type - Bulan Ini", func(t *testing.T) {
+		filterType := "Bulan Ini"
+		startDate, endDate, err := getDatesFromFilterType(filterType)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, startDate)
+		assert.NotNil(t, endDate)
+		assert.True(t, startDate.Before(endDate))
+	})
+
+	t.Run("Valid Filter Type - Tahun Ini", func(t *testing.T) {
+		filterType := "Tahun Ini"
+		startDate, endDate, err := getDatesFromFilterType(filterType)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, startDate)
+		assert.NotNil(t, endDate)
+		assert.True(t, startDate.Before(endDate))
+	})
+
+	t.Run("Invalid Filter Type", func(t *testing.T) {
+		filterType := "Invalid Type"
+		startDate, endDate, err := getDatesFromFilterType(filterType)
+
+		assert.Error(t, err)
+		assert.Equal(t, time.Time{}, startDate)
+		assert.Equal(t, time.Time{}, endDate)
+		assert.Equal(t, errors.New("tipe filter tidak valid"), err)
+	})
+}
+
+func TestChallengeService_GetSubmitChallengeFormByDateRange(t *testing.T) {
+	repo := mocks.NewRepositoryChallengeInterface(t)
+	userRepo := user_mock.NewRepositoryUserInterface(t)
+	userService := user_service.NewUserService(userRepo, utils.NewHash())
+	service := NewChallengeService(repo, userService)
+
+	t.Run("Success Case", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		filterType := "Hari Ini"
+
+		expectedForms := []*entities.ChallengeFormModels{}
+		expectedTotalItems := int64(len(expectedForms))
+
+		startDate, endDate, _ := getDatesFromFilterType(filterType)
+
+		repo.On("GetSubmitChallengeFormByDateRange", page, perPage, startDate, endDate).Return(expectedForms, nil).Once()
+		repo.On("GetTotalSubmitChallengeFormCountByDateRange", startDate, endDate).Return(expectedTotalItems, nil).Once()
+
+		resultForms, resultTotalItems, err := service.GetSubmitChallengeFormByDateRange(page, perPage, filterType)
+
+		assert.Nil(t, err)
+		assert.Equal(t, expectedForms, resultForms)
+		assert.Equal(t, expectedTotalItems, resultTotalItems)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Error Case - Failed to Get Dates from FilterType", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		filterType := "InvalidFilterType"
+		_, _, err := service.GetSubmitChallengeFormByDateRange(page, perPage, filterType)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "tipe filter tidak valid")
+
+	})
+
+	t.Run("Error Case - GetSubmitChallengeFormByDateRange", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		filterType := "Hari Ini"
+
+		startDate, endDate, _ := getDatesFromFilterType(filterType)
+
+		repo.On("GetSubmitChallengeFormByDateRange", page, perPage, startDate, endDate).Return(nil, errors.New("database error")).Once()
+
+		resultForms, resultTotalItems, err := service.GetSubmitChallengeFormByDateRange(page, perPage, filterType)
+
+		assert.Error(t, err)
+		assert.Nil(t, resultForms)
+		assert.Zero(t, resultTotalItems)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Error Case - GetTotalSubmitChallengeFormCountByDateRange", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		filterType := "Hari Ini"
+
+		expectedForms := []*entities.ChallengeFormModels{}
+
+		startDate, endDate, _ := getDatesFromFilterType(filterType)
+
+		repo.On("GetSubmitChallengeFormByDateRange", page, perPage, startDate, endDate).Return(expectedForms, nil).Once()
+		repo.On("GetTotalSubmitChallengeFormCountByDateRange", startDate, endDate).Return(int64(0), errors.New("database error")).Once()
+
+		resultForms, resultTotalItems, err := service.GetSubmitChallengeFormByDateRange(page, perPage, filterType)
+
+		assert.Error(t, err)
+		assert.Nil(t, resultForms)
+		assert.Zero(t, resultTotalItems)
+
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestChallengeService_GetSubmitChallengeFormByStatusAndDate(t *testing.T) {
+	repo := mocks.NewRepositoryChallengeInterface(t)
+	userRepo := user_mock.NewRepositoryUserInterface(t)
+	userService := user_service.NewUserService(userRepo, utils.NewHash())
+	service := NewChallengeService(repo, userService)
+
+	t.Run("Success Case", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		filterStatus := "approved"
+		filterType := "Hari Ini"
+
+		expectedForms := []*entities.ChallengeFormModels{}
+		expectedTotalItems := int64(len(expectedForms))
+
+		startDate, endDate, _ := getDatesFromFilterType(filterType)
+
+		repo.On("GetSubmitChallengeFormByStatusAndDate", page, perPage, filterStatus, startDate, endDate).Return(expectedForms, nil).Once()
+		repo.On("GetTotalSubmitChallengeFormCountByStatusAndDate", filterStatus, startDate, endDate).Return(expectedTotalItems, nil).Once()
+
+		resultForms, resultTotalItems, err := service.GetSubmitChallengeFormByStatusAndDate(page, perPage, filterStatus, filterType)
+
+		assert.Nil(t, err)
+		assert.Equal(t, expectedForms, resultForms)
+		assert.Equal(t, expectedTotalItems, resultTotalItems)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Error Case - Failed to Get Dates from FilterType", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		filterStatus := "status"
+		filterType := "kadaluwarsa"
+
+		_, _, err := service.GetSubmitChallengeFormByStatusAndDate(page, perPage, filterStatus, filterType)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "tipe filter tidak valid")
+	})
+
+	t.Run("Error Case - GetSubmitChallengeFormByStatusAndDate", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		filterStatus := "approved"
+		filterType := "Hari Ini"
+
+		startDate, endDate, _ := getDatesFromFilterType(filterType)
+
+		repo.On("GetSubmitChallengeFormByStatusAndDate", page, perPage, filterStatus, startDate, endDate).Return(nil, errors.New("database error")).Once()
+
+		resultForms, resultTotalItems, err := service.GetSubmitChallengeFormByStatusAndDate(page, perPage, filterStatus, filterType)
+
+		assert.Error(t, err)
+		assert.Nil(t, resultForms)
+		assert.Zero(t, resultTotalItems)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Error Case - GetTotalSubmitChallengeFormCountByStatusAndDate", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		filterStatus := "approved"
+		filterType := "Hari Ini"
+
+		expectedForms := []*entities.ChallengeFormModels{}
+
+		startDate, endDate, _ := getDatesFromFilterType(filterType)
+
+		repo.On("GetSubmitChallengeFormByStatusAndDate", page, perPage, filterStatus, startDate, endDate).Return(expectedForms, nil).Once()
+		repo.On("GetTotalSubmitChallengeFormCountByStatusAndDate", filterStatus, startDate, endDate).Return(int64(0), errors.New("database error")).Once()
+
+		resultForms, resultTotalItems, err := service.GetSubmitChallengeFormByStatusAndDate(page, perPage, filterStatus, filterType)
+
+		assert.Error(t, err)
+		assert.Nil(t, resultForms)
+		assert.Zero(t, resultTotalItems)
+
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestChallengeService_GetChallengesBySearchAndStatus(t *testing.T) {
+	repo := mocks.NewRepositoryChallengeInterface(t)
+	userRepo := user_mock.NewRepositoryUserInterface(t)
+	userService := user_service.NewUserService(userRepo, utils.NewHash())
+	service := NewChallengeService(repo, userService)
+
+	t.Run("Success Case", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		search := "keyword"
+		status := "active"
+
+		expectedChallenges := []*entities.ChallengeModels{}
+		expectedTotalItems := int64(len(expectedChallenges))
+
+		repo.On("GetChallengesBySearchAndStatus", page, perPage, search, status).Return(expectedChallenges, expectedTotalItems, nil).Once()
+
+		resultChallenges, resultTotalItems, err := service.GetChallengesBySearchAndStatus(page, perPage, search, status)
+
+		assert.Nil(t, err)
+		assert.Equal(t, expectedChallenges, resultChallenges)
+		assert.Equal(t, expectedTotalItems, resultTotalItems)
+
+		repo.AssertExpectations(t)
+	})
+	t.Run("Error Case - Failed to Get Challenges", func(t *testing.T) {
+		page := 1
+		perPage := 10
+		search := "yourSearchQuery"
+		status := "yourStatus"
+
+		repo.On("GetChallengesBySearchAndStatus", page, perPage, search, status).Return(nil, int64(0), errors.New("database error")).Once()
+
+		resultChallenges, resultTotalItems, err := service.GetChallengesBySearchAndStatus(page, perPage, search, status)
+
+		assert.Error(t, err)
+		assert.Nil(t, resultChallenges)
+		assert.Zero(t, resultTotalItems)
+
+		repo.AssertExpectations(t)
+	})
+}

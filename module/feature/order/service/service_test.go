@@ -3,6 +3,10 @@ package service
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"testing"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/config"
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	addressMock "github.com/capstone-kelompok-7/backend-disappear/module/feature/address/mocks"
@@ -24,9 +28,6 @@ import (
 	utils "github.com/capstone-kelompok-7/backend-disappear/utils/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"reflect"
-	"testing"
-	"time"
 )
 
 func setupOrderService(t *testing.T) (
@@ -39,6 +40,7 @@ func setupOrderService(t *testing.T) (
 	*addressMock.RepositoryAddressInterface,
 	*cartMocks.RepositoryCartInterface,
 	*fcmMocks.RepositoryFcmInterface,
+	*utils.GeneratorInterface,
 ) {
 	orderRepo := orders.NewRepositoryOrderInterface(t)
 	generatorRepo := utils.NewGeneratorInterface(t)
@@ -60,7 +62,7 @@ func setupOrderService(t *testing.T) (
 	fcmService := fcm.NewFcmService(fcmRepo)
 	orderService := NewOrderService(orderRepo, generatorRepo, productService, voucherService, addressService, userService, cartService, fcmService)
 
-	return orderService.(*OrderService), orderRepo, userRepo, productRepo, assistantRepo, voucherRepo, addressRepo, cartRepo, fcmRepo
+	return orderService.(*OrderService), orderRepo, userRepo, productRepo, assistantRepo, voucherRepo, addressRepo, cartRepo, fcmRepo, generatorRepo
 }
 
 func TestGetFilterDateRange(t *testing.T) {
@@ -155,7 +157,7 @@ func TestOrderService_PaginationFunctions(t *testing.T) {
 }
 
 func TestOrderService_GetAll(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 
 	order := []*entities.OrderModels{
 		{ID: "order1100sada", IdOrder: "13123sasdasd", AddressID: 1, UserID: 1},
@@ -203,7 +205,7 @@ func TestOrderService_GetAll(t *testing.T) {
 }
 
 func TestOrderService_GetOrdersByName(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 
 	order := []*entities.OrderModels{
 		{ID: "order1100sada", IdOrder: "13123sasdasd", AddressID: 1, UserID: 1},
@@ -254,7 +256,7 @@ func TestOrderService_GetOrdersByName(t *testing.T) {
 }
 
 func TestOrderService_GetOrderById(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 
 	order := &entities.OrderModels{
 		ID:        "order1100sada",
@@ -302,7 +304,7 @@ func TestOrderService_GetOrderById(t *testing.T) {
 
 func TestOrderService_ProcessManualPayment(t *testing.T) {
 
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	orderID := "order123"
 	expectedOrder := &entities.OrderModels{
 		ID:        orderID,
@@ -338,7 +340,7 @@ func TestOrderService_ProcessManualPayment(t *testing.T) {
 }
 
 func TestOrderService_ProcessGatewayPayment(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	orderID := "order123"
 	totalAmountPaid := uint64(50000)
 	paymentMethod := "credit_card"
@@ -373,7 +375,7 @@ func TestOrderService_ProcessGatewayPayment(t *testing.T) {
 }
 
 func TestOrderService_GetAllOrdersByUserID(t *testing.T) {
-	orderService, orderRepo, userRepo, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, userRepo, _, _, _, _, _, _, _ := setupOrderService(t)
 
 	userID := uint64(123)
 	expectedUser := &entities.UserModels{ID: userID}
@@ -423,7 +425,7 @@ func TestOrderService_GetAllOrdersByUserID(t *testing.T) {
 }
 
 func TestOrderService_GetAllOrdersWithFilter(t *testing.T) {
-	orderService, orderRepo, userRepo, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, userRepo, _, _, _, _, _, _, _ := setupOrderService(t)
 
 	userID := uint64(123)
 	orderStatus := "completed"
@@ -482,7 +484,7 @@ func TestOrderService_GetAllOrdersWithFilter(t *testing.T) {
 }
 
 func TestOrderService_Tracking(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 
 	courier := "JNE"
 	awb := "123456789"
@@ -518,7 +520,7 @@ func TestOrderService_Tracking(t *testing.T) {
 }
 
 func TestOrderService_GetOrderByDateRange(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	userID := uint64(123)
 	expectedOrders := []*entities.OrderModels{
 		{ID: "order123", UserID: userID},
@@ -653,7 +655,7 @@ func TestOrderService_GetOrderByDateRange(t *testing.T) {
 }
 
 func TestOrderService_GetOrderByOrderStatus(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	expectedOrders := []*entities.OrderModels{
 		{ID: "order123", OrderStatus: "Pending"},
 		{ID: "order456", OrderStatus: "Shipped"},
@@ -719,7 +721,7 @@ func TestOrderService_GetOrderByOrderStatus(t *testing.T) {
 }
 
 func TestOrderService_GetOrderByDateRangeAndStatus(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	orderStatus := "Pending"
 	filterType := "Minggu Ini"
 	page := 1
@@ -794,7 +796,7 @@ func TestOrderService_GetOrderByDateRangeAndStatus(t *testing.T) {
 }
 
 func TestOrderService_GetOrderByDateRangeAndStatusAndSearch(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	orderStatus := "Pending"
 	search := "name"
 	filterType := "Minggu Ini"
@@ -870,7 +872,7 @@ func TestOrderService_GetOrderByDateRangeAndStatusAndSearch(t *testing.T) {
 }
 
 func TestOrderService_GetOrderBySearchAndDateRange(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	search := "name"
 	filterType := "Minggu Ini"
 	page := 1
@@ -943,7 +945,7 @@ func TestOrderService_GetOrderBySearchAndDateRange(t *testing.T) {
 }
 
 func TestOrderService_GetOrdersBySearchAndStatus(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	search := "name"
 	orderStatus := "Pending"
 	page := 1
@@ -1000,7 +1002,7 @@ func TestOrderService_GetOrdersBySearchAndStatus(t *testing.T) {
 }
 
 func TestOrderService_GetOrderByPaymentStatus(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	paymentStatus := "Confirm"
 	page := 1
 	perPage := 8
@@ -1060,7 +1062,7 @@ func TestOrderService_GetOrderByPaymentStatus(t *testing.T) {
 }
 
 func TestOrderService_GetOrderByDateRangeAndPaymentStatus(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	paymentStatus := "Confirm"
 	filterType := "Minggu Ini"
 	page := 1
@@ -1135,7 +1137,7 @@ func TestOrderService_GetOrderByDateRangeAndPaymentStatus(t *testing.T) {
 }
 
 func TestOrderService_GetOrderByDateRangeAndPaymentStatusAndSearch(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	paymentStatus := "Confirm"
 	search := "name"
 	filterType := "Minggu Ini"
@@ -1211,7 +1213,7 @@ func TestOrderService_GetOrderByDateRangeAndPaymentStatusAndSearch(t *testing.T)
 }
 
 func TestOrderService_GetOrdersBySearchAndPaymentStatus(t *testing.T) {
-	orderService, orderRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+	orderService, orderRepo, _, _, _, _, _, _, _, _ := setupOrderService(t)
 	paymentStatus := "Confirm"
 	search := "name"
 	page := 1
@@ -1287,7 +1289,7 @@ func TestOrderService_SendNotificationPayment(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 
-	orderService, orderRepo, userRepo, _, _, _, _, _, fcmRepo := setupOrderService(t)
+	orderService, orderRepo, userRepo, _, _, _, _, _, fcmRepo, _ := setupOrderService(t)
 
 	t.Run("Success Case - SendNotificationPayment", func(t *testing.T) {
 		userRepo.On("GetUsersById", uint64(1)).Return(mockUser, nil).Once()
@@ -1476,7 +1478,7 @@ func TestOrderService_SendNotificationOrder(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 
-	orderService, orderRepo, userRepo, _, _, _, _, _, fcmRepo := setupOrderService(t)
+	orderService, orderRepo, userRepo, _, _, _, _, _, fcmRepo, _ := setupOrderService(t)
 
 	t.Run("Success Case - SendNotificationOrder", func(t *testing.T) {
 		userRepo.On("GetUsersById", uint64(1)).Return(mockUser, nil).Once()
@@ -1689,7 +1691,27 @@ func TestOrderService_AcceptOrder(t *testing.T) {
 		UserID: 1,
 	}
 
-	orderService, orderRepo, userRepo, _, _, _, _, _, _ := setupOrderService(t)
+	// mockUser := &entities.UserModels{
+	// 	ID:          1,
+	// 	DeviceToken: "user_device_token",
+	// }
+
+	orderService, orderRepo, userRepo, _, _, _, _, _, _, _ := setupOrderService(t)
+
+	// t.Run("Success Case - Order Accepted", func(t *testing.T) {
+	// 	orderRepo.On("GetOrderById", mock.AnythingOfType("string")).Return(mockOrder, nil)
+	// 	userRepo.On("GetUsersById", mock.AnythingOfType("uint64")).Return(mockUser, nil)
+	// 	orderRepo.On("AcceptOrder", mockOrder.ID, "Selesai").Return(nil).Once()
+	// 	fcmRepo.On("SendNotificationOrder", mock.AnythingOfType("dto.SendNotificationOrderRequest")).Return("", nil).Once()
+
+	// 	err := orderService.AcceptOrder(orderID)
+
+	// 	assert.NoError(t, err)
+
+	// 	orderRepo.AssertExpectations(t)
+	// 	userRepo.AssertExpectations(t)
+	// 	fcmRepo.AssertExpectations(t)
+	// })
 
 	t.Run("Failure Case - Order Not Found", func(t *testing.T) {
 		expectedErr := errors.New("pesanan tidak ditemukan")
@@ -1718,4 +1740,168 @@ func TestOrderService_AcceptOrder(t *testing.T) {
 		userRepo.AssertExpectations(t)
 	})
 
+}
+
+func TestOrderService_CreateOrder(t *testing.T) {
+	orderService, orderRepo, userRepo, productRepo, _, voucherRepo, addressRepo, cartRepo, fcmRepo, generatorRepo :=
+		setupOrderService(t)
+
+	orderService.repo = orderRepo
+	orderService.generatorID = generatorRepo
+	userID := uint64(1)
+	orderID := "fake_order_id"
+
+	createOrderRequest := &dto.CreateOrderRequest{
+		AddressID:     1,
+		VoucherID:     1,
+		Note:          "test order",
+		ProductID:     1,
+		Quantity:      1,
+		PaymentMethod: "whatsapp",
+	}
+
+	mockAddress := &entities.AddressModels{
+		ID: userID,
+	}
+
+	mockVoucher := &entities.VoucherModels{
+		ID:    1,
+		Stock: 10,
+	}
+
+	mockUser := &entities.UserModels{
+		ID:          1,
+		Name:        "John",
+		DeviceToken: "device_token_1",
+	}
+
+	mockProduct := &entities.ProductModels{
+		ID:    1,
+		Stock: 100,
+	}
+
+	mockOrder := &entities.OrderModels{
+		IdOrder: "fake_order_id",
+	}
+
+	mockFcm := &entities.FcmModels{
+		ID:        1,
+		OrderID:   "order_id_1",
+		UserID:    1,
+		Title:     "Status Pengiriman",
+		Body:      fmt.Sprintf("Alloo, %s! Pesananmu dengan ID %s sedang menunggu konfirmasi, nih. Ditunggu yupp!", mockUser.Name, mockOrder.IdOrder),
+		CreatedAt: time.Now(),
+	}
+
+	t.Run("Success Case - Create Order", func(t *testing.T) {
+		generatorRepo.On("GenerateUUID").Return(orderID, nil)
+		generatorRepo.On("GenerateOrderID").Return("fake_id_order", nil)
+		addressRepo.On("GetAddressByID", createOrderRequest.AddressID).Return(mockAddress, nil)
+		voucherRepo.On("GetVoucherById", createOrderRequest.VoucherID).Return(mockVoucher, nil)
+		productRepo.On("GetProductByID", createOrderRequest.ProductID).Return(mockProduct, nil)
+		cartRepo.On("IsProductInCart", userID, mockProduct.ID).Return(false).Once()
+		productRepo.On("ReduceStockWhenPurchasing", createOrderRequest.ProductID, createOrderRequest.Quantity).Return(nil)
+		orderRepo.On("CreateOrder", mock.AnythingOfType("*entities.OrderModels")).Return(mockOrder, nil)
+		voucherRepo.On("DeleteUserVoucherClaims", mock.AnythingOfType("uint64"), mock.AnythingOfType("uint64")).Return(nil)
+		userRepo.On("GetUsersById", mock.AnythingOfType("uint64")).Return(mockUser, nil)
+		orderRepo.On("GetOrderById", mock.AnythingOfType("string")).Return(mockOrder, nil)
+		fcmRepo.On("SendMessageNotification", mock.Anything).Return("", nil).Once()
+		fcmRepo.On("CreateFcm", mock.Anything).Return(mockFcm, nil).Once()
+
+		result, err := orderService.CreateOrder(userID, createOrderRequest)
+		generatorRepo.AssertExpectations(t)
+		addressRepo.AssertExpectations(t)
+		voucherRepo.AssertExpectations(t)
+		cartRepo.AssertExpectations(t)
+		productRepo.AssertExpectations(t)
+		orderRepo.AssertExpectations(t)
+		voucherRepo.AssertExpectations(t)
+		userRepo.AssertExpectations(t)
+		fcmRepo.AssertExpectations(t)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
+	})
+
+	t.Run("Failed Case- Create order id", func(t *testing.T) {
+		orderService, _, _, _, _, _, _, _, _, generatorRepo := setupOrderService(t)
+
+		generatorRepo.On("GenerateUUID").Return("", errors.New("gagal membuat id pesanan"))
+
+		_, err := orderService.CreateOrder(1, &dto.CreateOrderRequest{})
+
+		generatorRepo.AssertExpectations(t)
+
+		assert.NotNil(t, err)
+		assert.Equal(t, "gagal membuat id pesanan", err.Error())
+	})
+
+	t.Run("Failed Case - Create id_order", func(t *testing.T) {
+		orderService, _, _, _, _, _, _, _, _, generatorRepo := setupOrderService(t)
+
+		generatorRepo.On("GenerateUUID").Return("fake_order_id", nil)
+		generatorRepo.On("GenerateOrderID").Return("", errors.New("gagal membuat id_order"))
+
+		_, err := orderService.CreateOrder(1, &dto.CreateOrderRequest{})
+
+		generatorRepo.AssertExpectations(t)
+
+		assert.NotNil(t, err)
+		assert.Equal(t, "gagal membuat id_order", err.Error())
+	})
+
+	t.Run("Failed Case - AddressNotFound", func(t *testing.T) {
+		orderService, _, _, _, _, _, addressRepo, _, _, generatorRepo := setupOrderService(t)
+
+		generatorRepo.On("GenerateUUID").Return("fake_order_id", nil)
+		generatorRepo.On("GenerateOrderID").Return("fake_id_order", nil)
+		addressRepo.On("GetAddressByID", mock.AnythingOfType("uint64")).Return(nil, errors.New("alamat tidak ditemukan"))
+
+		_, err := orderService.CreateOrder(1, &dto.CreateOrderRequest{
+			AddressID: 1,
+		})
+
+		generatorRepo.AssertExpectations(t)
+		addressRepo.AssertExpectations(t)
+
+		assert.NotNil(t, err)
+		assert.Equal(t, "alamat tidak ditemukan", err.Error())
+	})
+
+	t.Run("Failed Case - VoucherNotFound", func(t *testing.T) {
+		orderService, _, _, _, _, voucherRepo, addressRepo, _, _, generatorRepo := setupOrderService(t)
+
+		generatorRepo.On("GenerateUUID").Return("fake_order_id", nil)
+		generatorRepo.On("GenerateOrderID").Return("fake_id_order", nil)
+		addressRepo.On("GetAddressByID", mock.AnythingOfType("uint64")).Return(&entities.AddressModels{}, nil)
+		voucherRepo.On("GetVoucherById", mock.AnythingOfType("uint64")).Return(nil, errors.New("kupon tidak ditemukan"))
+
+		_, err := orderService.CreateOrder(1, &dto.CreateOrderRequest{
+			AddressID: 1,
+			VoucherID: 1,
+		})
+
+		generatorRepo.AssertExpectations(t)
+		addressRepo.AssertExpectations(t)
+		voucherRepo.AssertExpectations(t)
+
+		assert.NotNil(t, err)
+		assert.Equal(t, "kupon tidak ditemukan", err.Error())
+	})
+
+	t.Run("InvalidPaymentMethod", func(t *testing.T) {
+		orderService, _, _, _, _, _, addressRepo, _, _, generatorRepo := setupOrderService(t)
+
+		generatorRepo.On("GenerateUUID").Return("fake_order_id", nil)
+		generatorRepo.On("GenerateOrderID").Return("fake_id_order", nil)
+		addressRepo.On("GetAddressByID", mock.AnythingOfType("uint64")).Return(&entities.AddressModels{}, nil)
+
+		_, err := orderService.CreateOrder(1, &dto.CreateOrderRequest{
+			AddressID:     1,
+			PaymentMethod: "invalid_method",
+		})
+
+		assert.NotNil(t, err)
+		assert.Equal(t, "jenis pembayaran tidak valid", err.Error())
+	})
 }
