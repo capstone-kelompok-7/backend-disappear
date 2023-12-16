@@ -275,7 +275,7 @@ func (h *ProductHandler) GetAllProductsPreferences() echo.HandlerFunc {
 		} else if filter != "" {
 			products, totalItems, err = h.service.GetProductsByFilter(pageConv, perPage, filter)
 		} else {
-			products, totalItems, err = h.service.GetProductPreferences(currentUser.ID, pageConv, perPage)
+			products, totalItems, err = h.service.GetProductRecommendation(currentUser.ID, pageConv, perPage)
 		}
 
 		if err != nil {
@@ -297,6 +297,6 @@ func (h *ProductHandler) GetTopRatedProducts() echo.HandlerFunc {
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan detail produk: "+err.Error())
 		}
-		return response.SendSuccessResponse(c, "Berhasil mendapatkan detail produk", dto.FormatterOtherProduct(result))
+		return response.SendSuccessResponse(c, "Berhasil mendapatkan produk lainnya", dto.FormatterOtherProduct(result))
 	}
 }

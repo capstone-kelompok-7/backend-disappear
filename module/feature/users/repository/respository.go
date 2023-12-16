@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -244,31 +243,6 @@ func (r *UserRepository) GetUserChallengeActivity(userID uint64) (int, int, int,
 
 	return numSuccess, numFailed, total, nil
 
-}
-
-func (r *UserRepository) FindAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error) {
-	var environmentIssues []*entities.EnvironmentIssuesModels
-	err := r.db.Find(&environmentIssues).Error
-	if err != nil {
-		return nil, err
-	}
-	return environmentIssues, nil
-}
-
-func (r *UserRepository) AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error) {
-	var user *entities.UserModels
-	if err := r.db.First(&user, userID).Error; err != nil {
-		return nil, err
-	}
-
-	preferredTopicsString := strings.Join(request.PreferredTopics, ",")
-	user.PreferredTopics = preferredTopicsString
-
-	if err := r.db.Save(&user).Error; err != nil {
-		return nil, err
-	}
-
-	return user, nil
 }
 
 func (r *UserRepository) GetAllUsersBySearchAndFilter(page, perPage int, search, levelFilter string) ([]*entities.UserModels, int64, error) {

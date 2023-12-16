@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant"
 	"math"
 	"strings"
 	"time"
@@ -12,12 +13,14 @@ import (
 )
 
 type ProductService struct {
-	repo product.RepositoryProductInterface
+	repo       product.RepositoryProductInterface
+	botService assistant.ServiceAssistantInterface
 }
 
-func NewProductService(repo product.RepositoryProductInterface) product.ServiceProductInterface {
+func NewProductService(repo product.RepositoryProductInterface, botService assistant.ServiceAssistantInterface) product.ServiceProductInterface {
 	return &ProductService{
-		repo: repo,
+		repo:       repo,
+		botService: botService,
 	}
 }
 
@@ -276,18 +279,6 @@ func (s *ProductService) GetTotalProductSold() (uint64, error) {
 	return totalSold, nil
 }
 
-func (s *ProductService) GetProductPreferences(userID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
-	result, err := s.repo.FindAllByUserPreference(userID, page, perPage)
-	if err != nil {
-		return nil, 0, err
-	}
-	totalItems, err := s.repo.GetTotalProductCount()
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, totalItems, nil
-}
-
 func (s *ProductService) GetTopRatedProducts() ([]*entities.ProductModels, error) {
 	result, err := s.repo.GetTopRatedProducts()
 	if err != nil {
@@ -424,4 +415,23 @@ func (s *ProductService) SearchByNameAndFilterByRating(page, perPage int, name, 
 	}
 
 	return products, totalItems, nil
+}
+
+func (s *ProductService) GetProductRecommendation(userID uint64, page, perPage int) ([]*entities.ProductModels, int64, error) {
+	recommendations, err := s.botService.GenerateRecommendationProduct(userID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	result, err := s.repo.FindAllProductByUserPreference(page, perPage, recommendations)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalItems, err := s.repo.GetTotalProductCount()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, totalItems, nil
 }

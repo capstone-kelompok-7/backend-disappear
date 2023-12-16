@@ -22,12 +22,12 @@ type RepositoryArticleInterface interface {
 	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
 	GetLatestArticle() ([]*entities.ArticleModels, error)
 	GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, error)
-	FindAllByUserPreference(userID uint64, page, perPage int) ([]*entities.ArticleModels, error)
 	GetTotalArticleCount() (int64, error)
 	GetArticleAlphabet(page, perPage int) ([]*entities.ArticleModels, error)
 	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, error)
 	GetOtherArticle() ([]*entities.ArticleModels, error)
 	SearchArticlesWithDateFilter(searchText string, startDate, endDate time.Time) ([]*entities.ArticleModels, error)
+	FindAllArticle(page, perPage int) ([]*entities.ArticleModels, error)
 }
 
 type ServiceArticleInterface interface {
@@ -43,7 +43,6 @@ type ServiceArticleInterface interface {
 	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
 	GetLatestArticles() ([]*entities.ArticleModels, error)
 	GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, int64, error)
-	GetArticlePreferences(userID uint64, page, perPage int) ([]*entities.ArticleModels, int64, error)
 	GetNextPage(currentPage int, totalPages int) int
 	GetPrevPage(currentPage int) int
 	CalculatePaginationValues(page int, totalItems int, perPage int) (int, int)
@@ -51,6 +50,7 @@ type ServiceArticleInterface interface {
 	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, int64, error)
 	GetOtherArticle() ([]*entities.ArticleModels, error)
 	GetArticleSearchByDateRange(filterType, searchText string) ([]*entities.ArticleModels, error)
+	GetAllArticleUser(page, perPage int) ([]*entities.ArticleModels, int64, error)
 }
 
 type HandlerArticleInterface interface {
@@ -62,7 +62,7 @@ type HandlerArticleInterface interface {
 	BookmarkArticle() echo.HandlerFunc
 	DeleteBookmarkedArticle() echo.HandlerFunc
 	GetUsersBookmark() echo.HandlerFunc
-	GetArticlePreferences() echo.HandlerFunc
 	GetOtherArticle() echo.HandlerFunc
 	GetLatestArticle() echo.HandlerFunc
+	GetAllArticleUser() echo.HandlerFunc
 }

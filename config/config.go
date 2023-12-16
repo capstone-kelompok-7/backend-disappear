@@ -26,6 +26,7 @@ type Config struct {
 	ServerKey    string
 	Redis        Redis
 	ResiKey      string
+	FirebaseKey  string
 }
 
 type Redis struct {
@@ -115,6 +116,9 @@ func loadConfig() *Config {
 	}
 	if value, found := os.LookupEnv("RESIKEY"); found {
 		res.ResiKey = value
+	}
+	if value, found := os.LookupEnv("FIREBASEKEY"); found {
+		res.FirebaseKey = value
 	}
 
 	return res

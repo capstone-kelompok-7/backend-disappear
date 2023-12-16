@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/capstone-kelompok-7/backend-disappear/utils/sendnotif"
 	"strconv"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -32,30 +33,31 @@ func (h *FcmHandler) CreateFcm() echo.HandlerFunc {
 			return response.SendBadRequestResponse(c, "Validasi gagal: "+err.Error())
 		}
 
-		newFcm := &entities.FcmModels{
+		createFcmRequest := sendnotif.SendNotificationRequest{
 			UserID: fcmRequest.UserID,
 			Title:  fcmRequest.Title,
 			Body:   fcmRequest.Body,
+			Token:  fcmRequest.Token,
 		}
-
-		res, statusFcm, err := h.service.CreateFcm(newFcm, fcmRequest.Token)
+		res, statusFcm, err := h.service.CreateFcm(createFcmRequest)
 		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal mengirim noifikasi: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal mengirim notifikasi: "+err.Error())
 		}
 
-		return response.SendStatusCreatedResponse(c, "Berhasil mengirim noifikasi", dto.FormatFcmCreate(res, statusFcm, fcmRequest.Token))
-
+		return response.SendStatusCreatedResponse(c, "Berhasil mengirim notifikasi", dto.FormatFcmCreate(res, statusFcm, fcmRequest.Token))
 	}
 }
+
 func (h *FcmHandler) GetFcmByIdUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		currentUser := c.Get("CurrentUser").(*entities.UserModels)
+		if currentUser.Role != "customer" {
+			return response.SendStatusForbiddenResponse(c, "Tidak diizinkan: Anda tidak memiliki izin")
+		}
 		var fcm []*entities.FcmModels
 		var err error
-
-		idUser := c.Param("id")
-		idUserConf, _ := strconv.Atoi(idUser)
-
-		fcm, err = h.service.GetFcmByIdUser(uint64(idUserConf))
+		
+		fcm, err = h.service.GetFcmByIdUser(currentUser.ID)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar notifikasi by iduser: "+err.Error())
 		}

@@ -3,12 +3,12 @@ package routes
 import (
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/address"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/article"
+	"github.com/capstone-kelompok-7/backend-disappear/module/feature/assistant"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/carousel"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/cart"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/category"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/challenge"
-	"github.com/capstone-kelompok-7/backend-disappear/module/feature/chatbot"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/dashboard"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/fcm"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/homepage"
@@ -46,8 +46,6 @@ func RouteUser(e *echo.Echo, h users.HandlerUserInterface, jwtService utils.JWTI
 	usersGroup.GET("/leaderboard", h.GetLeaderboard(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.GET("/get-activities/:id", h.GetUserTransactionActivity(), middlewares.AuthMiddleware(jwtService, userService))
 	usersGroup.GET("/get-profile", h.GetUserProfile(), middlewares.AuthMiddleware(jwtService, userService))
-	usersGroup.GET("/environment-issues", h.GetAllEnvironmentsIssues(), middlewares.AuthMiddleware(jwtService, userService))
-	usersGroup.POST("/preferences", h.AddUserPreferenceHandler(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteVoucher(e *echo.Echo, h voucher.HandlerVoucherInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
@@ -86,7 +84,7 @@ func RouteArticle(e *echo.Echo, h article.HandlerArticleInterface, jwtService ut
 	articlesGroup.POST("/bookmark", h.BookmarkArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.DELETE("/bookmark/:id", h.DeleteBookmarkedArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("/bookmark", h.GetUsersBookmark(), middlewares.AuthMiddleware(jwtService, userService))
-	articlesGroup.GET("/preferences", h.GetArticlePreferences(), middlewares.AuthMiddleware(jwtService, userService))
+	articlesGroup.GET("/preferences", h.GetAllArticleUser(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("/other-article", h.GetOtherArticle(), middlewares.AuthMiddleware(jwtService, userService))
 	articlesGroup.GET("/latest-article", h.GetLatestArticle(), middlewares.AuthMiddleware(jwtService, userService))
 }
@@ -163,12 +161,13 @@ func RouteOrder(e *echo.Echo, h order.HandlerOrderInterface, jwtService utils.JW
 	orderGroup.GET("/track", h.Tracking(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
-func RouteChatbot(e *echo.Echo, h chatbot.HandlerChatbotInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
-	chatbotGroup := e.Group("/api/v1/chatbot")
-	chatbotGroup.POST("/question", h.CreateQuestion(), middlewares.AuthMiddleware(jwtService, userService))
-	chatbotGroup.POST("/answer", h.CreateAnswer(), middlewares.AuthMiddleware(jwtService, userService))
-	chatbotGroup.GET("/:id", h.GetChatByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
-	chatbotGroup.POST("/generate", h.GenerateArtikelAi(), middlewares.AuthMiddleware(jwtService, userService))
+func RouteAssistant(e *echo.Echo, h assistant.HandlerAssistantInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
+	assistantGroup := e.Group("/api/v1/assistant")
+	assistantGroup.POST("/question", h.CreateQuestion(), middlewares.AuthMiddleware(jwtService, userService))
+	assistantGroup.POST("/answer", h.CreateAnswer(), middlewares.AuthMiddleware(jwtService, userService))
+	assistantGroup.GET("", h.GetChatByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
+	assistantGroup.POST("/generate-article", h.GenerateArticle(), middlewares.AuthMiddleware(jwtService, userService))
+	assistantGroup.GET("/product", h.GetProductByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
 }
 
 func RouteDashboard(e *echo.Echo, h dashboard.HandlerDashboardInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
@@ -186,10 +185,11 @@ func RouteHomepage(e *echo.Echo, h homepage.HandlerHomepageInterface, jwtService
 	homeGroup.GET("/blog-posts", h.GetBlogPost(), middlewares.AuthMiddleware(jwtService, userService))
 	homeGroup.GET("/content", h.GetHomepageContent(), middlewares.AuthMiddleware(jwtService, userService))
 }
+
 func RouteFcm(e *echo.Echo, h fcm.HandlerFcmInterface, jwtService utils.JWTInterface, userService users.ServiceUserInterface) {
 	fcmGroup := e.Group("/api/v1/fcm")
 	fcmGroup.GET("/:id", h.GetFcmById(), middlewares.AuthMiddleware(jwtService, userService))
-	fcmGroup.GET("/iduser/:id", h.GetFcmByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
+	fcmGroup.GET("/users", h.GetFcmByIdUser(), middlewares.AuthMiddleware(jwtService, userService))
 	fcmGroup.POST("", h.CreateFcm(), middlewares.AuthMiddleware(jwtService, userService))
 	fcmGroup.PUT("/:id", h.DeleteFcmById(), middlewares.AuthMiddleware(jwtService, userService))
 }

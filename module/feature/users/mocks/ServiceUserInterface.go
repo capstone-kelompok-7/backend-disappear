@@ -14,32 +14,6 @@ type ServiceUserInterface struct {
 	mock.Mock
 }
 
-// AddUserPreference provides a mock function with given fields: userID, request
-func (_m *ServiceUserInterface) AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error) {
-	ret := _m.Called(userID, request)
-
-	var r0 *entities.UserModels
-	var r1 error
-	if rf, ok := ret.Get(0).(func(uint64, *dto.UserPreferenceRequest) (*entities.UserModels, error)); ok {
-		return rf(userID, request)
-	}
-	if rf, ok := ret.Get(0).(func(uint64, *dto.UserPreferenceRequest) *entities.UserModels); ok {
-		r0 = rf(userID, request)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entities.UserModels)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(uint64, *dto.UserPreferenceRequest) error); ok {
-		r1 = rf(userID, request)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CalculatePaginationValues provides a mock function with given fields: page, totalItems, perPage
 func (_m *ServiceUserInterface) CalculatePaginationValues(page int, totalItems int, perPage int) (int, int) {
 	ret := _m.Called(page, totalItems, perPage)
@@ -111,32 +85,6 @@ func (_m *ServiceUserInterface) EditProfile(userID uint64, updatedData dto.EditP
 
 	if rf, ok := ret.Get(1).(func(uint64, dto.EditProfileRequest) error); ok {
 		r1 = rf(userID, updatedData)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetAllEnvironmentsIssues provides a mock function with given fields:
-func (_m *ServiceUserInterface) GetAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error) {
-	ret := _m.Called()
-
-	var r0 []*entities.EnvironmentIssuesModels
-	var r1 error
-	if rf, ok := ret.Get(0).(func() ([]*entities.EnvironmentIssuesModels, error)); ok {
-		return rf()
-	}
-	if rf, ok := ret.Get(0).(func() []*entities.EnvironmentIssuesModels); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*entities.EnvironmentIssuesModels)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}

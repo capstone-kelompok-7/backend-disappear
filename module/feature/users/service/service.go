@@ -270,29 +270,6 @@ func (s *UserService) GetUserProfile(userID uint64) (*entities.UserModels, error
 
 }
 
-func (s *UserService) GetAllEnvironmentsIssues() ([]*entities.EnvironmentIssuesModels, error) {
-	environmentIssues, err := s.repo.FindAllEnvironmentsIssues()
-	if err != nil {
-		return nil, err
-	}
-
-	return environmentIssues, nil
-}
-
-func (s *UserService) AddUserPreference(userID uint64, request *dto.UserPreferenceRequest) (*entities.UserModels, error) {
-	user, err := s.repo.GetUsersById(userID)
-	if err != nil {
-		return nil, errors.New("pengguna tidak ditemukan")
-	}
-
-	result, err := s.repo.AddUserPreference(user.ID, request)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
 func (s *UserService) GetUsersBySearchAndFilter(page, perPage int, search, levelFilter string) ([]*entities.UserModels, int64, error) {
 	return s.repo.GetAllUsersBySearchAndFilter(page, perPage, search, levelFilter)
 }
