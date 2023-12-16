@@ -34,7 +34,7 @@ jobs:
         with:
           host: ${{ secrets.PD_HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
+          key: ${{ secrets.PD_KEY }}
           port: ${{ secrets.PORT }}
           script: |
             sudo docker stop ${{ secrets.PDCNAME }}
