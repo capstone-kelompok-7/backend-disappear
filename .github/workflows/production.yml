@@ -5,7 +5,7 @@ on:
     branches: "production"
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,7 +28,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear:latest
 
-      - name: Stop and remove previous container
+      - name: Connect via SSH and restart container
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.PD_HOST }}
@@ -36,39 +36,12 @@ jobs:
           key: ${{ secrets.PD_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            sudo docker stop ${{ secrets.PDCNAME }} || true
-            sudo docker rm ${{ secrets.PDCNAME }} || true
-            sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear:latest || true
-
-      - name: Run new container
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.PD_HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.PD_KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            sudo docker run --name ${{ secrets.PDCNAME }} -p 80:8000 -d \
+            sudo docker stop production_container || true
+            sudo docker rm production_container || true
+            sudo docker run --name production_container -p 80:8000 -d \
               -e DBHOST=${{ secrets.PD_DBHOST }} \
               -e DBPORT=${{ secrets.PD_DBPORT }} \
               -e DBUSER=${{ secrets.DBUSER }} \
               -e DBNAME=${{ secrets.DBNAME }} \
               -e DBPASS=${{ secrets.PD_DBPASS }} \
-              -e SECRET=${{ secrets.SECRET }} \
-              -e SERVER=${{ secrets.SERVER }} \
-              -e SMTP_PASS=${{ secrets.SMTP_PASS }} \
-              -e SMTP_USER=${{ secrets.SMTP_USER }} \
-              -e SMTP_PORT=${{ secrets.SMTP_PORT }} \
-              -e CCNAME=${{ secrets.CCNAME }} \
-              -e CCAPIKEY=${{ secrets.CCAPIKEY }} \
-              -e CCAPISECRET=${{ secrets.CCAPISECRET }} \
-              -e CCFOLDER=${{ secrets.CCFOLDER }} \
-              -e OPENAIAPIKEY=${{ secrets.OPENAIAPIKEY }} \
-              -e MONGOURL=${{ secrets.PD_MONGOURL }} \
-              -e CLIENTKEY=${{ secrets.CLIENTKEY }} \
-              -e SERVERKEY=${{ secrets.SERVERKEY }} \
-              -e REDIS_ADDR=${{ secrets.REDIS_ADDR }} \
-              -e REDIS_PASS=${{ secrets.REDIS_PASS }} \
-              -e RESIKEY=${{ secrets.RESIKEY }} \
-              -e FIREBASEKEY=${{ secrets.FIREBASEKEY }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear:latest
