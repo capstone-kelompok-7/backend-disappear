@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/database/seeder"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/sendnotif"
 
 	"github.com/capstone-kelompok-7/backend-disappear/config"
@@ -74,6 +75,10 @@ func main() {
 	db := database.InitDatabase(*initConfig)
 	rdb := redis.NewRedisClient(*initConfig)
 	database.Migrate(db)
+	err := seeder.DBSeed(db)
+	if err != nil {
+		return
+	}
 	jwtService := utils.NewJWT(initConfig.Secret)
 	hash := utils.NewHash()
 	generatorID := utils.NewGeneratorUUID(db)
