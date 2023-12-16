@@ -1,6 +1,7 @@
 package seeder
 
 import (
+	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/database/faker"
 	"gorm.io/gorm"
 )
@@ -22,9 +23,31 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 	}
 }
 
+func IsSeederExecuted(db *gorm.DB) bool {
+	var status entities.StatusSeederModels
+	result := db.First(&status)
+	if result.Error != nil {
+		return false
+	}
+	return status.IsExecuted
+}
+
+func SetSeederStatus(db *gorm.DB, executed bool) error {
+	status := entities.StatusSeederModels{IsExecuted: executed}
+	result := db.Create(&status)
+	return result.Error
+}
+
 func DBSeed(db *gorm.DB) error {
-	for _, seeder := range RegisterSeeders(db) {
-		err := db.Debug().Create(seeder.Seeder).Error
+	if !IsSeederExecuted(db) {
+		for _, seeder := range RegisterSeeders(db) {
+			err := db.Debug().Create(seeder.Seeder).Error
+			if err != nil {
+				return err
+			}
+		}
+
+		err := SetSeederStatus(db, true)
 		if err != nil {
 			return err
 		}
