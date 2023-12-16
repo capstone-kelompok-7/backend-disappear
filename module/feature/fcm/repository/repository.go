@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"github.com/capstone-kelompok-7/backend-disappear/utils/sendnotif"
+	"github.com/sirupsen/logrus"
 	"time"
 
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
@@ -10,12 +12,14 @@ import (
 )
 
 type FcmRepository struct {
-	db *gorm.DB
+	db  *gorm.DB
+	fcm sendnotif.FcmServiceInterface
 }
 
-func NewFcmRepository(db *gorm.DB) fcm.RepositoryFcmInterface {
+func NewFcmRepository(db *gorm.DB, fcm sendnotif.FcmServiceInterface) fcm.RepositoryFcmInterface {
 	return &FcmRepository{
-		db: db,
+		db:  db,
+		fcm: fcm,
 	}
 }
 
@@ -60,4 +64,17 @@ func (r *FcmRepository) DeleteFcmById(id uint64) error {
 
 	return nil
 
+}
+
+func (r *FcmRepository) SendMessageNotification(request sendnotif.SendNotificationRequest) (string, error) {
+	var err error
+	var sendSuccess string
+
+	sendSuccess, err = r.fcm.SendNotification(request)
+	if err != nil {
+		logrus.Error("Failed to send notification")
+		return "", err
+	}
+
+	return sendSuccess, nil
 }

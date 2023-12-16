@@ -19,28 +19,30 @@ func NewFcmService(repo fcm.RepositoryFcmInterface) fcm.ServiceFcmInterface {
 	}
 }
 
-func (s *FcmService) CreateFcm(request sendnotif.SendNotificationRequest) (*entities.FcmModels, string, error) {
+func (s *FcmService) CreateFcm(request sendnotif.SendNotificationRequest) (string, *entities.FcmModels, error) {
+	var sendSuccess string
+	var err error
+
+	sendSuccess, err = s.repo.SendMessageNotification(request)
+	if err != nil {
+		logrus.Error("Failed to send notification:", err)
+		return "", nil, err
+	}
+
 	value := &entities.FcmModels{
 		OrderID: request.OrderID,
 		UserID:  request.UserID,
 		Title:   request.Title,
 		Body:    request.Body,
 	}
-	var err error
-	var response *entities.FcmModels
-	var sendSuccess string
 
-	sendSuccess, err = sendnotif.SendNotification(request)
-	if err == nil {
-		response, err = s.repo.CreateFcm(value)
-		if err != nil {
-			logrus.Error("gagal membuat notification ke database")
-		}
-	} else {
-		logrus.Error("gagal mengirim notification")
+	response, createErr := s.repo.CreateFcm(value)
+	if createErr != nil {
+		logrus.Error("Failed to create notification in the database:", createErr)
+		return "", nil, createErr
 	}
 
-	return response, sendSuccess, err
+	return sendSuccess, response, nil
 }
 
 func (s *FcmService) GetFcmByIdUser(id uint64) ([]*entities.FcmModels, error) {
@@ -60,18 +62,14 @@ func (s *FcmService) GetFcmById(id uint64) (*entities.FcmModels, error) {
 }
 
 func (s *FcmService) DeleteFcmById(id uint64) error {
-	findfcm, err := s.repo.GetFcmById(id)
+	result, err := s.repo.GetFcmById(id)
 	if err != nil {
-		return errors.New("fcm tidak ditemukan: " + err.Error())
+		return errors.New("fcm tidak ditemukan")
 	}
 
-	if findfcm == nil {
-		return errors.New("fcm tidak ditemukan: " + err.Error())
-	}
-
-	err = s.repo.DeleteFcmById(id)
+	err = s.repo.DeleteFcmById(result.ID)
 	if err != nil {
-		return errors.New("gagal menghapus artikel: " + err.Error())
+		return err
 	}
 
 	return nil

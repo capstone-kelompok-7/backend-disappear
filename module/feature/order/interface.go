@@ -71,6 +71,10 @@ type ServiceOrderInterface interface {
 	GetOrderByDateRangeAndPaymentStatusAndSearch(filterType, status, search string, page, perPage int) ([]*entities.OrderModels, int64, error)
 	GetOrderByDateRangeAndPaymentStatus(filterType, status string, page, perPage int) ([]*entities.OrderModels, int64, error)
 	GetOrderByPaymentStatus(orderStatus string, page, perPage int) ([]*entities.OrderModels, int64, error)
+	ProcessManualPayment(orderID string) (*entities.OrderModels, error)
+	ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error)
+	SendNotificationOrder(request dto.SendNotificationOrderRequest) (string, error)
+	SendNotificationPayment(request dto.SendNotificationPaymentRequest) (string, error)
 }
 
 type HandlerOrderInterface interface {
