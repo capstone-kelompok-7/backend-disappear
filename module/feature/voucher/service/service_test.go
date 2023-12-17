@@ -175,7 +175,7 @@ func TestChallengeService_GetAll(t *testing.T) {
 	})
 }
 
-func TestChallengeService_GetChallengeByTitle(t *testing.T) {
+func TestVoucherService_GetChallengeByTitle(t *testing.T) {
 	repo := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
@@ -225,7 +225,7 @@ func TestChallengeService_GetChallengeByTitle(t *testing.T) {
 	})
 }
 
-func TestChallengeService_CreateSubmitChallengeForm(t *testing.T) {
+func TestVoucherService_CreateSubmitChallengeForm(t *testing.T) {
 	repo := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
