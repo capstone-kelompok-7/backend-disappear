@@ -13,12 +13,9 @@ type ChallengeModels struct {
 	Description string                `gorm:"column:description;type:text" json:"description"`
 	Status      string                `gorm:"column:status;type:varchar(255)" json:"status"`
 	Exp         uint64                `gorm:"column:exp;type:int" json:"exp"`
-	// CreatedAt   time.Time             `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	// UpdatedAt   time.Time             `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	// DeletedAt   *time.Time            `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
-	CreatedAt time.Time    `gorm:"column:created_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt time.Time    `gorm:"column:updated_at;type:timestamp DEFAULT CURRENT_TIMESTAMP" json:"updated_at"`
-	DeletedAt *time.Time   `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
+	CreatedAt   time.Time             `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
+	UpdatedAt   time.Time             `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
+	DeletedAt   *time.Time            `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Forms       []ChallengeFormModels `gorm:"foreignKey:ChallengeID" json:"forms"`
 }
 
