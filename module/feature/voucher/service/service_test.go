@@ -267,15 +267,182 @@ func TestChallengeService_CreateSubmitChallengeForm(t *testing.T) {
 
 	t.Run("Succes Case", func(t *testing.T) {
 		repo.On("GetVoucherByCode", existingvouchers.Code).Return(nil, nil).Once()
-
 		repo.On("CreateVoucher", mock.AnythingOfType("*entities.VoucherModels")).Return(nil, nil).Once()
 		result, err := service.CreateVoucher(vouchers)
-
 		assert.Nil(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, vouchers, result)
+		assert.Nil(t, result)
+		assert.NotEqual(t, vouchers, result)
 
 		repo.AssertExpectations(t)
 	})
 
+	t.Run("Failed Case - Error Creating Challenge", func(t *testing.T) {
+		expectedErr := errors.New("failed to create challenge")
+		repo.On("GetVoucherByCode", existingvouchers.Code).Return(nil, nil).Once()
+		repo.On("CreateVoucher", mock.AnythingOfType("*entities.VoucherModels")).Return(nil, expectedErr).Once()
+		result, err := service.CreateVoucher(vouchers)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, errors.New("gagal menambahkan kupon"), err)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Failed Case - kupon sudah digunakan ", func(t *testing.T) {
+		expectedErr := errors.New("failed to get voucher by code")
+		repo.On("GetVoucherByCode", existingvouchers.Code).Return(existingvouchers, expectedErr).Once()
+		result, err := service.CreateVoucher(vouchers)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, errors.New("kode kupon sudah digunakan"), err)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Success Case - Create Voucher", func(t *testing.T) {
+		existingVoucher := &entities.VoucherModels{
+			Name:        "voucher a",
+			ID:          1,
+			Code:        "abc",
+			Category:    "abc",
+			Description: "abc",
+			Discount:    1000,
+			StartDate:   time.Now(),
+			EndDate:     time.Now().Add(time.Hour * 24),
+			Status:      "Belum Kadaluwarsa",
+		}
+
+		newVoucher := &entities.VoucherModels{
+			Name:        "voucher b",
+			ID:          2,
+			Code:        "def",
+			Category:    "def",
+			Description: "def",
+			Discount:    1500,
+			StartDate:   time.Now(),
+			EndDate:     time.Now().Add(time.Hour * 48),
+		}
+
+		repo.On("GetVoucherByCode", newVoucher.Code).Return(nil, nil).Once()
+		repo.On("CreateVoucher", mock.AnythingOfType("*entities.VoucherModels")).Return(existingVoucher, nil).Once()
+
+		result, err := service.CreateVoucher(newVoucher)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, existingVoucher, result)
+		assert.Equal(t, "Belum Kadaluwarsa", result.Status)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestVoucherService_UpdateVoucher_Success(t *testing.T) {
+	repo := voucherMocks.NewRepositoryVoucherInterface(t)
+	repoUser := user_mock.NewRepositoryUserInterface(t)
+	userService := user_service.NewUserService(repoUser, utils.NewHash())
+	service := NewVoucherService(repo, userService)
+
+	existingVoucher := &entities.VoucherModels{
+		Name:        "voucher a",
+		ID:          1,
+		Code:        "abc",
+		Category:    "abc",
+		Description: "abc",
+		Discount:    1000,
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(time.Hour * 24),
+		MinPurchase: 1000,
+		Stock:       10,
+		Status:      "Belum Kadaluwarsa",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+		DeletedAt:   nil,
+	}
+
+	updatedVoucher := &entities.VoucherModels{
+		ID:          1,
+		Name:        "voucher b",
+		Code:        "def",
+		Category:    "def",
+		Description: "def",
+		Discount:    1500,
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(time.Hour * 48),
+		MinPurchase: 1200,
+		Stock:       15,
+		Status:      "active",
+		UpdatedAt:   time.Now(),
+	}
+
+	t.Run("Success Case - Update Voucher", func(t *testing.T) {
+		repo.On("GetVoucherById", updatedVoucher.ID).Return(existingVoucher, nil).Once()
+		repo.On("GetVoucherByCode", updatedVoucher.Code).Return(nil, nil).Once()
+		repo.On("UpdateVoucher", updatedVoucher.ID, mock.AnythingOfType("*entities.VoucherModels")).Return(nil).Once()
+
+		err := service.UpdateVoucher(updatedVoucher.ID, updatedVoucher)
+
+		assert.Nil(t, err)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Failed Case - Voucher Not Found", func(t *testing.T) {
+		repo.On("GetVoucherById", updatedVoucher.ID).Return(nil, errors.New("kupon tidak ditemukan")).Once()
+
+		err := service.UpdateVoucher(updatedVoucher.ID, updatedVoucher)
+
+		assert.Error(t, err)
+		assert.Equal(t, errors.New("kupon tidak ditemukan"), err)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Failed Case - Voucher Code Already Used", func(t *testing.T) {
+		repo.On("GetVoucherById", updatedVoucher.ID).Return(existingVoucher, nil).Once()
+		repo.On("GetVoucherByCode", updatedVoucher.Code).Return(existingVoucher, nil).Once()
+
+		err := service.UpdateVoucher(updatedVoucher.ID, updatedVoucher)
+
+		assert.Error(t, err)
+		assert.Equal(t, errors.New("kode kupon sudah digunakan"), err)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Failed Case - Update Failure", func(t *testing.T) {
+		repo.On("GetVoucherById", updatedVoucher.ID).Return(existingVoucher, nil).Once()
+		repo.On("GetVoucherByCode", updatedVoucher.Code).Return(nil, nil).Once()
+		repo.On("UpdateVoucher", updatedVoucher.ID, mock.AnythingOfType("*entities.VoucherModels")).Return(errors.New("gagal memperbarui kupon")).Once()
+
+		err := service.UpdateVoucher(updatedVoucher.ID, updatedVoucher)
+
+		assert.Error(t, err)
+		assert.Equal(t, errors.New("gagal memperbarui kupon"), err)
+
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Success Case - Update Voucher (Status Kadaluwarsa)", func(t *testing.T) {
+		updatedVoucher := &entities.VoucherModels{
+			ID:        1,
+			Discount:  1500,
+			StartDate: time.Now(),
+			EndDate:   time.Now().Add(time.Hour * 48),
+			Status:    "Kadaluwarsa",
+			UpdatedAt: time.Now(),
+		}
+
+		updatedVoucher.EndDate = time.Now().Add(-time.Hour * 48)
+
+		repo.On("GetVoucherById", updatedVoucher.ID).Return(existingVoucher, nil).Once()
+		repo.On("GetVoucherByCode", updatedVoucher.Code).Return(nil, nil).Once()
+		repo.On("UpdateVoucher", updatedVoucher.ID, mock.AnythingOfType("*entities.VoucherModels")).Return(nil).Once()
+
+		err := service.UpdateVoucher(updatedVoucher.ID, updatedVoucher)
+
+		assert.Nil(t, err)
+		assert.Equal(t, "Kadaluwarsa", updatedVoucher.Status)
+
+		repo.AssertExpectations(t)
+	})
 }
