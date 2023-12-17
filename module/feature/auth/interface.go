@@ -1,10 +1,11 @@
 package auth
 
 import (
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/dto"
 	"github.com/labstack/echo/v4"
-	"time"
 )
 
 type RepositoryAuthInterface interface {
@@ -19,11 +20,13 @@ type RepositoryAuthInterface interface {
 	LoginSocial(socialID string) (*entities.UserModels, error)
 	FindUserBySocialID(socialID string) (*entities.UserModels, error)
 	UpdateLastLogin(userID uint64, lastLogin time.Time) error
+	CekDeviceTokenByEmail(email string) (string, error)
+	UpdateDeviceTokenByID(email string, deviceToken string) (*entities.UserModels, error)
 }
 
 type ServiceAuthInterface interface {
 	Register(newData *entities.UserModels) (*entities.UserModels, error)
-	Login(email, password string) (*entities.UserModels, string, error)
+	Login(email, password, deviceToken string) (*entities.UserModels, string, error)
 	VerifyEmail(email, otp string) error
 	ResendOTP(email string) (*entities.OTPModels, error)
 	ResetPassword(email, newPassword, confirmPass string) error

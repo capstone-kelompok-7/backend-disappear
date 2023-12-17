@@ -11,9 +11,10 @@ type RepositoryFcmInterface interface {
 	GetFcmByIdUser(id uint64) ([]*entities.FcmModels, error)
 	GetFcmById(id uint64) (*entities.FcmModels, error)
 	DeleteFcmById(id uint64) error
+	SendMessageNotification(request sendnotif.SendNotificationRequest) (string, error)
 }
 type ServiceFcmInterface interface {
-	CreateFcm(request sendnotif.SendNotificationRequest) (*entities.FcmModels, string, error)
+	CreateFcm(request sendnotif.SendNotificationRequest) (string, *entities.FcmModels, error)
 	GetFcmByIdUser(id uint64) ([]*entities.FcmModels, error)
 	GetFcmById(id uint64) (*entities.FcmModels, error)
 	DeleteFcmById(id uint64) error

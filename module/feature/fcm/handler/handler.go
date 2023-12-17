@@ -44,7 +44,7 @@ func (h *FcmHandler) CreateFcm() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mengirim notifikasi: "+err.Error())
 		}
 
-		return response.SendStatusCreatedResponse(c, "Berhasil mengirim notifikasi", dto.FormatFcmCreate(res, statusFcm, fcmRequest.Token))
+		return response.SendStatusCreatedResponse(c, "Berhasil mengirim notifikasi", dto.FormatFcmCreate(statusFcm, res, fcmRequest.Token))
 	}
 }
 
@@ -56,7 +56,7 @@ func (h *FcmHandler) GetFcmByIdUser() echo.HandlerFunc {
 		}
 		var fcm []*entities.FcmModels
 		var err error
-		
+
 		fcm, err = h.service.GetFcmByIdUser(currentUser.ID)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar notifikasi by iduser: "+err.Error())
@@ -84,17 +84,15 @@ func (h *FcmHandler) GetFcmById() echo.HandlerFunc {
 }
 func (h *FcmHandler) DeleteFcmById() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
 		var err error
-
 		id := c.Param("id")
 		idConf, _ := strconv.Atoi(id)
 
 		err = h.service.DeleteFcmById(uint64(idConf))
 		if err != nil {
-			return response.SendStatusInternalServerResponse(c, "Gagal mendapatkan daftar notifikasi by id: "+err.Error())
+			return response.SendStatusInternalServerResponse(c, "Gagal menghapus notifikasi: "+err.Error())
 		}
 
-		return response.SendStatusOkWithDataResponse(c, "Berhasil menghapus notifikasi by id", nil)
+		return response.SendStatusOkWithDataResponse(c, "Berhasil menghapus notifikasi", nil)
 	}
 }
