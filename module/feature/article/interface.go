@@ -31,26 +31,27 @@ type RepositoryArticleInterface interface {
 }
 
 type ServiceArticleInterface interface {
-	CreateArticle(articleData *entities.ArticleModels) (*entities.ArticleModels, error)
-	UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error)
-	DeleteArticleById(id uint64) error
-	GetAll() ([]*entities.ArticleModels, error)
-	GetArticlesByTitle(title string) ([]*entities.ArticleModels, error)
-	GetArticleById(id uint64, incrementVIews bool) (*entities.ArticleModels, error)
-	GetArticlesByDateRange(filterType string) ([]*entities.ArticleModels, error)
-	BookmarkArticle(bookmark *entities.ArticleBookmarkModels) error
-	DeleteBookmarkArticle(userID, articleID uint64) error
-	GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
-	GetLatestArticles() ([]*entities.ArticleModels, error)
-	GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, int64, error)
-	GetNextPage(currentPage int, totalPages int) int
-	GetPrevPage(currentPage int) int
-	CalculatePaginationValues(page int, totalItems int, perPage int) (int, int)
-	GetArticlesAlphabet(page, perPage int) ([]*entities.ArticleModels, int64, error)
-	GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, int64, error)
-	GetOtherArticle() ([]*entities.ArticleModels, error)
-	GetArticleSearchByDateRange(filterType, searchText string) ([]*entities.ArticleModels, error)
-	GetAllArticleUser(page, perPage int) ([]*entities.ArticleModels, int64, error)
+	/*?*/CreateArticle(articleData *entities.ArticleModels) (*entities.ArticleModels, error)
+	/*?*/UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error)
+	/*?*/DeleteArticleById(id uint64) error
+	/*?*/GetAll() ([]*entities.ArticleModels, error)
+	/*?*/GetArticlesByTitle(title string) ([]*entities.ArticleModels, error)
+	/*?*/GetArticleById(id uint64, incrementVIews bool) (*entities.ArticleModels, error)
+	/*?*/GetArticlesByDateRange(filterType string) ([]*entities.ArticleModels, error)
+	/*?*/GetLatestArticles() ([]*entities.ArticleModels, error)
+	/*?*/GetOldestArticle(page, perPage int) ([]*entities.ArticleModels, int64, error)
+	/*?*/GetArticlesAlphabet(page, perPage int) ([]*entities.ArticleModels, int64, error)
+	/*?*/GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, int64, error)
+	/*?*/GetOtherArticle() ([]*entities.ArticleModels, error)
+	/*1 case lagi*/GetArticleSearchByDateRange(filterType, searchText string) ([]*entities.ArticleModels, error)
+	/*?*/GetAllArticleUser(page, perPage int) ([]*entities.ArticleModels, int64, error)
+	/*?*/BookmarkArticle(bookmark *entities.ArticleBookmarkModels) error
+	/*?*/DeleteBookmarkArticle(userID, articleID uint64) error
+	/*?*/GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error)
+	/*?*/GetNextPage(currentPage int, totalPages int) int
+	/*?*/GetPrevPage(currentPage int) int
+	/*?*/CalculatePaginationValues(page int, totalItems int, perPage int) (int, int)
+	GetFilterDateRange(filterType string) (time.Time, time.Time, error)
 }
 
 type HandlerArticleInterface interface {

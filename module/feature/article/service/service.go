@@ -29,7 +29,7 @@ func (s *ArticleService) CreateArticle(articleData *entities.ArticleModels) (*en
 	}
 	createdArticle, err := s.repo.CreateArticle(value)
 	if err != nil {
-		return nil, errors.New("gagal menambahkan artikel: " + err.Error())
+		return nil, errors.New("gagal menambahkan artikel")
 	}
 
 	return createdArticle, nil
@@ -38,21 +38,21 @@ func (s *ArticleService) CreateArticle(articleData *entities.ArticleModels) (*en
 func (s *ArticleService) UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error) {
 	existingArticle, err := s.repo.GetArticleById(id)
 	if err != nil {
-		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan")
 	}
 
 	if existingArticle == nil {
-		return nil, errors.New("artikel tidak ditemukan:" + err.Error())
+		return nil, errors.New("artikel tidak ditemukan")
 	}
 
 	_, err = s.repo.UpdateArticleById(id, updatedArticle)
 	if err != nil {
-		return nil, errors.New("gagal mengubah artikel: " + err.Error())
+		return nil, errors.New("gagal mengubah artikel")
 	}
 
 	getUpdatedArticle, err := s.repo.GetArticleById(id)
 	if err != nil {
-		return nil, errors.New("gagal mengambil artikel: " + err.Error())
+		return nil, errors.New("gagal mengambil artikel")
 	}
 
 	return getUpdatedArticle, nil
@@ -61,16 +61,12 @@ func (s *ArticleService) UpdateArticleById(id uint64, updatedArticle *entities.A
 func (s *ArticleService) DeleteArticleById(id uint64) error {
 	existingArticle, err := s.repo.GetArticleById(id)
 	if err != nil {
-		return errors.New("artikel tidak ditemukan: " + err.Error())
+		return errors.New("artikel tidak ditemukan")
 	}
 
-	if existingArticle == nil {
-		return errors.New("artikel tidak ditemukan: " + err.Error())
-	}
-
-	err = s.repo.DeleteArticleById(id)
+	err = s.repo.DeleteArticleById(existingArticle.ID)
 	if err != nil {
-		return errors.New("gagal menghapus artikel: " + err.Error())
+		return errors.New("gagal menghapus artikel")
 	}
 
 	return nil
@@ -79,7 +75,7 @@ func (s *ArticleService) DeleteArticleById(id uint64) error {
 func (s *ArticleService) GetAll() ([]*entities.ArticleModels, error) {
 	articles, err := s.repo.FindAll()
 	if err != nil {
-		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan")
 	}
 
 	return articles, nil
@@ -88,7 +84,7 @@ func (s *ArticleService) GetAll() ([]*entities.ArticleModels, error) {
 func (s *ArticleService) GetArticlesByTitle(title string) ([]*entities.ArticleModels, error) {
 	articles, err := s.repo.FindByTitle(title)
 	if err != nil {
-		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan")
 	}
 
 	return articles, nil
@@ -97,13 +93,13 @@ func (s *ArticleService) GetArticlesByTitle(title string) ([]*entities.ArticleMo
 func (s *ArticleService) GetArticleById(id uint64, incrementViews bool) (*entities.ArticleModels, error) {
 	result, err := s.repo.GetArticleById(id)
 	if err != nil {
-		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan")
 	}
 
 	if incrementViews {
 		result.Views++
 		if err := s.repo.UpdateArticleViews(result); err != nil {
-			return nil, errors.New("gagal meningkatkan jumlah tayangan artikel: " + err.Error())
+			return nil, errors.New("gagal meningkatkan jumlah tayangan artikel")
 		}
 	}
 
@@ -111,14 +107,14 @@ func (s *ArticleService) GetArticleById(id uint64, incrementViews bool) (*entiti
 }
 
 func (s *ArticleService) GetArticlesByDateRange(filterType string) ([]*entities.ArticleModels, error) {
-	startDate, endDate, err := s.getFilterDateRange(filterType)
+	startDate, endDate, err := s.GetFilterDateRange(filterType)
 	if err != nil {
 		return nil, err
 	}
 
 	result, err := s.repo.GetArticlesByDateRange(startDate, endDate)
 	if err != nil {
-		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan")
 	}
 
 	return result, nil
@@ -178,7 +174,7 @@ func (s *ArticleService) GetUserBookmarkArticle(userID uint64) ([]*entities.Arti
 func (s *ArticleService) GetLatestArticles() ([]*entities.ArticleModels, error) {
 	articles, err := s.repo.GetLatestArticle()
 	if err != nil {
-		return nil, errors.New("gagal mengambil artikel: " + err.Error())
+		return nil, errors.New("gagal mengambil artikel")
 	}
 
 	return articles, nil
@@ -240,7 +236,7 @@ func (s *ArticleService) GetPrevPage(currentPage int) int {
 func (s *ArticleService) GetArticlesAlphabet(page, perPage int) ([]*entities.ArticleModels, int64, error) {
 	articles, err := s.repo.GetArticleAlphabet(page, perPage)
 	if err != nil {
-		return nil, 0, errors.New("gagal mengambil artikel: " + err.Error())
+		return nil, 0, errors.New("gagal mengambil artikel")
 	}
 	totalItems, err := s.repo.GetTotalArticleCount()
 	if err != nil {
@@ -253,7 +249,7 @@ func (s *ArticleService) GetArticlesAlphabet(page, perPage int) ([]*entities.Art
 func (s *ArticleService) GetArticleMostViews(page, perPage int) ([]*entities.ArticleModels, int64, error) {
 	articles, err := s.repo.GetArticleMostViews(page, perPage)
 	if err != nil {
-		return nil, 0, errors.New("gagal mengambil artikel: " + err.Error())
+		return nil, 0, errors.New("gagal mengambil artikel")
 	}
 	totalItems, err := s.repo.GetTotalArticleCount()
 	if err != nil {
@@ -273,20 +269,20 @@ func (s *ArticleService) GetOtherArticle() ([]*entities.ArticleModels, error) {
 }
 
 func (s *ArticleService) GetArticleSearchByDateRange(filterType, searchText string) ([]*entities.ArticleModels, error) {
-	startDate, endDate, err := s.getFilterDateRange(filterType)
+	startDate, endDate, err := s.GetFilterDateRange(filterType)
 	if err != nil {
 		return nil, err
 	}
 
 	result, err := s.repo.SearchArticlesWithDateFilter(searchText, startDate, endDate)
 	if err != nil {
-		return nil, errors.New("artikel tidak ditemukan: " + err.Error())
+		return nil, errors.New("artikel tidak ditemukan")
 	}
 
 	return result, nil
 }
 
-func (s *ArticleService) getFilterDateRange(filterType string) (time.Time, time.Time, error) {
+func (s *ArticleService) GetFilterDateRange(filterType string) (time.Time, time.Time, error) {
 	filterType = strings.ToLower(filterType)
 	now := time.Now()
 
