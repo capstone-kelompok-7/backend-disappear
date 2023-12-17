@@ -403,16 +403,15 @@ func TestArticleService_DeleteArticleById(t *testing.T) {
 	})
 
 	t.Run("Failed Case - Article With Specific Id Found But Delete Failed", func(t *testing.T) {
-		articleID := uint64(3)
+		repo.On("GetArticleById", uint64(1)).Return(&entities.ArticleModels{ID: 1}, nil)
+		repo.On("DeleteArticleById", uint64(1)).Return(errors.New("gagal menghapus artikel")).Once()
+
+		err := service.DeleteArticleById(1)
+
 		expectedErr := errors.New("gagal menghapus artikel")
 
-		repo.On("GetArticleById", articleID).Return(existingArticle, nil).Once()
-		repo.On("DeleteArticleById", articleID).Return(expectedErr).Once()
-
-		err := service.DeleteArticleById(articleID)
-
 		assert.Error(t, err)
-		assert.Equal(t, expectedErr, err)
+		assert.EqualError(t, err, expectedErr.Error())
 		repo.AssertExpectations(t)
 	})
 }
@@ -797,24 +796,21 @@ func TestArticleService_GetArticleSearchByDateRange(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	// t.Run("Failed Case - Article Not Found", func(t *testing.T) {
-	// 	filterType := "bulan ini"
-	// 	expectedStartDate := time.Date(2023, time.December, 1, 0, 0, 0, 0, time.UTC)
-	// 	expectedEndDate := time.Date(2023, time.December, 31, 23, 59, 59, 0, time.UTC)
+	t.Run("Failed Case - No Articles Found in Date Range", func(t *testing.T) {
+		filterType := "bulan ini"
+		expectedStartDate := time.Date(2023, time.Now().Month(), 1, 0, 0, 0, 0, time.UTC)
+		expectedEndDate := time.Date(2023, time.Now().Month(), 31, 23, 59, 59, 0, time.UTC)
+		expectedErr := errors.New("artikel tidak ditemukan")
+		repo.On("SearchArticlesWithDateFilter", "", expectedStartDate, expectedEndDate).Return(nil, expectedErr).Once()
 
-	// 	repo.On("GetFilterDateRange", filterType).Return(expectedStartDate, expectedEndDate, nil).Once()
-	// 	repo.On("SearchArticlesWithDateFilter", "", expectedStartDate, expectedEndDate).Return(nil, errors.New("artikel tidak ditemukan")).Once()
+		result, err := service.GetArticleSearchByDateRange(filterType, "")
 
-	// Add expectations for SearchArticlesWithDateFilter and GetFilterDateRange to avoid missing call errors
-	// repo.On("SearchArticlesWithDateFilter", "", time.Time{}, time.Time{}).Return(nil, errors.New("artikel tidak ditemukan")).Once()
-	// repo.On("GetFilterDateRange", filterType).Return(time.Time{}, time.Time{}, nil).Once()
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.EqualError(t, err, expectedErr.Error())
+		repo.AssertExpectations(t)
+	})
 
-	// 	result, err := service.GetArticleSearchByDateRange(filterType, "")
-
-	// 	assert.Error(t, err)
-	// 	assert.Nil(t, result)
-	// 	repo.AssertExpectations(t)
-	// })
 }
 
 func TestArticleService_GetAllArticleUser(t *testing.T) {
@@ -957,60 +953,3 @@ func TestArticleService_GetUserBookmarkArticle(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 }
-
-// func TestArticleService_GetFilterDateRange(t *testing.T) {
-// 	service := NewArticleService(nil)
-
-// 	t.Run("Success Case - Minggu Ini", func(t *testing.T) {
-// 		filterType := "Minggu Ini"
-// 		now := time.Now()
-// 		expectedStartDate := now.AddDate(0, 0, -int(now.Weekday())).Truncate(24 * time.Hour)
-// 		expectedEndDate := expectedStartDate.AddDate(0, 0, 7).Add(-time.Second).In(time.Local)
-
-// 		startDate, endDate, err := service.GetFilterDateRange(filterType)
-
-// 		assert.NoError(t, err)
-// 		assert.Equal(t, expectedStartDate, startDate)
-// 		assert.Equal(t, expectedEndDate, endDate)
-// 	})
-
-// 	t.Run("Success Case - Bulan Ini", func(t *testing.T) {
-// 		filterType := "Bulan Ini"
-// 		now := time.Now().UTC()
-// 		expectedStartDate := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-// 		nextMonth := expectedStartDate.AddDate(0, 1, 0)
-// 		expectedEndDate := nextMonth.Add(-time.Second)
-
-// 		startDate, endDate, err := service.GetFilterDateRange(filterType)
-
-// 		assert.NoError(t, err)
-// 		assert.Equal(t, expectedStartDate, startDate)
-// 		assert.Equal(t, expectedEndDate, endDate)
-// 	})
-
-// 	t.Run("Success Case - Tahun Ini", func(t *testing.T) {
-// 		filterType := "Tahun Ini"
-// 		now := time.Now().UTC()
-// 		expectedStartDate := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-// 		nextYear := expectedStartDate.AddDate(1, 0, 0)
-// 		expectedEndDate := nextYear.Add(-time.Second)
-
-// 		startDate, endDate, err := service.GetFilterDateRange(filterType)
-
-// 		assert.NoError(t, err)
-// 		assert.Equal(t, expectedStartDate, startDate)
-// 		assert.Equal(t, expectedEndDate, endDate)
-// 	})
-
-// 	t.Run("Failed Case - Invalid Filter Type", func(t *testing.T) {
-// 		filterType := "Invalid Filter Type"
-// 		expectedErr := errors.New("tipe filter tidak valid")
-
-// 		startDate, endDate, err := service.GetFilterDateRange(filterType)
-
-// 		assert.Error(t, err)
-// 		assert.Equal(t, time.Time{}, startDate)
-// 		assert.Equal(t, time.Time{}, endDate)
-// 		assert.Equal(t, expectedErr, err)
-// 	})
-// }

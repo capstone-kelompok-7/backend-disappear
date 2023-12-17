@@ -18,10 +18,6 @@ type RepositoryArticleInterface struct {
 func (_m *RepositoryArticleInterface) BookmarkArticle(bookmarkArticle *entities.ArticleBookmarkModels) error {
 	ret := _m.Called(bookmarkArticle)
 
-	if len(ret) == 0 {
-		panic("no return value specified for BookmarkArticle")
-	}
-
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*entities.ArticleBookmarkModels) error); ok {
 		r0 = rf(bookmarkArticle)
@@ -35,10 +31,6 @@ func (_m *RepositoryArticleInterface) BookmarkArticle(bookmarkArticle *entities.
 // CreateArticle provides a mock function with given fields: _a0
 func (_m *RepositoryArticleInterface) CreateArticle(_a0 *entities.ArticleModels) (*entities.ArticleModels, error) {
 	ret := _m.Called(_a0)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreateArticle")
-	}
 
 	var r0 *entities.ArticleModels
 	var r1 error
@@ -66,10 +58,6 @@ func (_m *RepositoryArticleInterface) CreateArticle(_a0 *entities.ArticleModels)
 func (_m *RepositoryArticleInterface) DeleteArticleById(id uint64) error {
 	ret := _m.Called(id)
 
-	if len(ret) == 0 {
-		panic("no return value specified for DeleteArticleById")
-	}
-
 	var r0 error
 	if rf, ok := ret.Get(0).(func(uint64) error); ok {
 		r0 = rf(id)
@@ -84,10 +72,6 @@ func (_m *RepositoryArticleInterface) DeleteArticleById(id uint64) error {
 func (_m *RepositoryArticleInterface) DeleteBookmarkArticle(userID uint64, articleID uint64) error {
 	ret := _m.Called(userID, articleID)
 
-	if len(ret) == 0 {
-		panic("no return value specified for DeleteBookmarkArticle")
-	}
-
 	var r0 error
 	if rf, ok := ret.Get(0).(func(uint64, uint64) error); ok {
 		r0 = rf(userID, articleID)
@@ -101,10 +85,6 @@ func (_m *RepositoryArticleInterface) DeleteBookmarkArticle(userID uint64, artic
 // FindAll provides a mock function with given fields:
 func (_m *RepositoryArticleInterface) FindAll() ([]*entities.ArticleModels, error) {
 	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for FindAll")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 error
@@ -132,10 +112,6 @@ func (_m *RepositoryArticleInterface) FindAll() ([]*entities.ArticleModels, erro
 func (_m *RepositoryArticleInterface) FindAllArticle(page int, perPage int) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(page, perPage)
 
-	if len(ret) == 0 {
-		panic("no return value specified for FindAllArticle")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func(int, int) ([]*entities.ArticleModels, error)); ok {
@@ -161,10 +137,6 @@ func (_m *RepositoryArticleInterface) FindAllArticle(page int, perPage int) ([]*
 // FindByTitle provides a mock function with given fields: title
 func (_m *RepositoryArticleInterface) FindByTitle(title string) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(title)
-
-	if len(ret) == 0 {
-		panic("no return value specified for FindByTitle")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 error
@@ -192,10 +164,6 @@ func (_m *RepositoryArticleInterface) FindByTitle(title string) ([]*entities.Art
 func (_m *RepositoryArticleInterface) GetArticleAlphabet(page int, perPage int) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(page, perPage)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticleAlphabet")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func(int, int) ([]*entities.ArticleModels, error)); ok {
@@ -221,10 +189,6 @@ func (_m *RepositoryArticleInterface) GetArticleAlphabet(page int, perPage int) 
 // GetArticleById provides a mock function with given fields: id
 func (_m *RepositoryArticleInterface) GetArticleById(id uint64) (*entities.ArticleModels, error) {
 	ret := _m.Called(id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticleById")
-	}
 
 	var r0 *entities.ArticleModels
 	var r1 error
@@ -252,10 +216,6 @@ func (_m *RepositoryArticleInterface) GetArticleById(id uint64) (*entities.Artic
 func (_m *RepositoryArticleInterface) GetArticleMostViews(page int, perPage int) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(page, perPage)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticleMostViews")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func(int, int) ([]*entities.ArticleModels, error)); ok {
@@ -281,10 +241,6 @@ func (_m *RepositoryArticleInterface) GetArticleMostViews(page int, perPage int)
 // GetArticlesByDateRange provides a mock function with given fields: startDate, endDate
 func (_m *RepositoryArticleInterface) GetArticlesByDateRange(startDate time.Time, endDate time.Time) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(startDate, endDate)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticlesByDateRange")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 error
@@ -312,10 +268,6 @@ func (_m *RepositoryArticleInterface) GetArticlesByDateRange(startDate time.Time
 func (_m *RepositoryArticleInterface) GetLatestArticle() ([]*entities.ArticleModels, error) {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetLatestArticle")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func() ([]*entities.ArticleModels, error)); ok {
@@ -341,10 +293,6 @@ func (_m *RepositoryArticleInterface) GetLatestArticle() ([]*entities.ArticleMod
 // GetOldestArticle provides a mock function with given fields: page, perPage
 func (_m *RepositoryArticleInterface) GetOldestArticle(page int, perPage int) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(page, perPage)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetOldestArticle")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 error
@@ -372,10 +320,6 @@ func (_m *RepositoryArticleInterface) GetOldestArticle(page int, perPage int) ([
 func (_m *RepositoryArticleInterface) GetOtherArticle() ([]*entities.ArticleModels, error) {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetOtherArticle")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func() ([]*entities.ArticleModels, error)); ok {
@@ -402,10 +346,6 @@ func (_m *RepositoryArticleInterface) GetOtherArticle() ([]*entities.ArticleMode
 func (_m *RepositoryArticleInterface) GetTotalArticleCount() (int64, error) {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetTotalArticleCount")
-	}
-
 	var r0 int64
 	var r1 error
 	if rf, ok := ret.Get(0).(func() (int64, error)); ok {
@@ -429,10 +369,6 @@ func (_m *RepositoryArticleInterface) GetTotalArticleCount() (int64, error) {
 // GetUserBookmarkArticle provides a mock function with given fields: userID
 func (_m *RepositoryArticleInterface) GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error) {
 	ret := _m.Called(userID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetUserBookmarkArticle")
-	}
 
 	var r0 []*entities.ArticleBookmarkModels
 	var r1 error
@@ -460,10 +396,6 @@ func (_m *RepositoryArticleInterface) GetUserBookmarkArticle(userID uint64) ([]*
 func (_m *RepositoryArticleInterface) IsArticleAlreadyBookmarked(userID uint64, articleID uint64) (bool, error) {
 	ret := _m.Called(userID, articleID)
 
-	if len(ret) == 0 {
-		panic("no return value specified for IsArticleAlreadyBookmarked")
-	}
-
 	var r0 bool
 	var r1 error
 	if rf, ok := ret.Get(0).(func(uint64, uint64) (bool, error)); ok {
@@ -487,10 +419,6 @@ func (_m *RepositoryArticleInterface) IsArticleAlreadyBookmarked(userID uint64, 
 // SearchArticlesWithDateFilter provides a mock function with given fields: searchText, startDate, endDate
 func (_m *RepositoryArticleInterface) SearchArticlesWithDateFilter(searchText string, startDate time.Time, endDate time.Time) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(searchText, startDate, endDate)
-
-	if len(ret) == 0 {
-		panic("no return value specified for SearchArticlesWithDateFilter")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 error
@@ -518,10 +446,6 @@ func (_m *RepositoryArticleInterface) SearchArticlesWithDateFilter(searchText st
 func (_m *RepositoryArticleInterface) UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error) {
 	ret := _m.Called(id, updatedArticle)
 
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateArticleById")
-	}
-
 	var r0 *entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func(uint64, *entities.ArticleModels) (*entities.ArticleModels, error)); ok {
@@ -547,10 +471,6 @@ func (_m *RepositoryArticleInterface) UpdateArticleById(id uint64, updatedArticl
 // UpdateArticleViews provides a mock function with given fields: _a0
 func (_m *RepositoryArticleInterface) UpdateArticleViews(_a0 *entities.ArticleModels) error {
 	ret := _m.Called(_a0)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateArticleViews")
-	}
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*entities.ArticleModels) error); ok {

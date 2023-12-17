@@ -18,10 +18,6 @@ type ServiceArticleInterface struct {
 func (_m *ServiceArticleInterface) BookmarkArticle(bookmark *entities.ArticleBookmarkModels) error {
 	ret := _m.Called(bookmark)
 
-	if len(ret) == 0 {
-		panic("no return value specified for BookmarkArticle")
-	}
-
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*entities.ArticleBookmarkModels) error); ok {
 		r0 = rf(bookmark)
@@ -35,10 +31,6 @@ func (_m *ServiceArticleInterface) BookmarkArticle(bookmark *entities.ArticleBoo
 // CalculatePaginationValues provides a mock function with given fields: page, totalItems, perPage
 func (_m *ServiceArticleInterface) CalculatePaginationValues(page int, totalItems int, perPage int) (int, int) {
 	ret := _m.Called(page, totalItems, perPage)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CalculatePaginationValues")
-	}
 
 	var r0 int
 	var r1 int
@@ -63,10 +55,6 @@ func (_m *ServiceArticleInterface) CalculatePaginationValues(page int, totalItem
 // CreateArticle provides a mock function with given fields: articleData
 func (_m *ServiceArticleInterface) CreateArticle(articleData *entities.ArticleModels) (*entities.ArticleModels, error) {
 	ret := _m.Called(articleData)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreateArticle")
-	}
 
 	var r0 *entities.ArticleModels
 	var r1 error
@@ -94,10 +82,6 @@ func (_m *ServiceArticleInterface) CreateArticle(articleData *entities.ArticleMo
 func (_m *ServiceArticleInterface) DeleteArticleById(id uint64) error {
 	ret := _m.Called(id)
 
-	if len(ret) == 0 {
-		panic("no return value specified for DeleteArticleById")
-	}
-
 	var r0 error
 	if rf, ok := ret.Get(0).(func(uint64) error); ok {
 		r0 = rf(id)
@@ -112,10 +96,6 @@ func (_m *ServiceArticleInterface) DeleteArticleById(id uint64) error {
 func (_m *ServiceArticleInterface) DeleteBookmarkArticle(userID uint64, articleID uint64) error {
 	ret := _m.Called(userID, articleID)
 
-	if len(ret) == 0 {
-		panic("no return value specified for DeleteBookmarkArticle")
-	}
-
 	var r0 error
 	if rf, ok := ret.Get(0).(func(uint64, uint64) error); ok {
 		r0 = rf(userID, articleID)
@@ -129,10 +109,6 @@ func (_m *ServiceArticleInterface) DeleteBookmarkArticle(userID uint64, articleI
 // GetAll provides a mock function with given fields:
 func (_m *ServiceArticleInterface) GetAll() ([]*entities.ArticleModels, error) {
 	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAll")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 error
@@ -159,10 +135,6 @@ func (_m *ServiceArticleInterface) GetAll() ([]*entities.ArticleModels, error) {
 // GetAllArticleUser provides a mock function with given fields: page, perPage
 func (_m *ServiceArticleInterface) GetAllArticleUser(page int, perPage int) ([]*entities.ArticleModels, int64, error) {
 	ret := _m.Called(page, perPage)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAllArticleUser")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 int64
@@ -197,10 +169,6 @@ func (_m *ServiceArticleInterface) GetAllArticleUser(page int, perPage int) ([]*
 func (_m *ServiceArticleInterface) GetArticleById(id uint64, incrementVIews bool) (*entities.ArticleModels, error) {
 	ret := _m.Called(id, incrementVIews)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticleById")
-	}
-
 	var r0 *entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func(uint64, bool) (*entities.ArticleModels, error)); ok {
@@ -226,10 +194,6 @@ func (_m *ServiceArticleInterface) GetArticleById(id uint64, incrementVIews bool
 // GetArticleMostViews provides a mock function with given fields: page, perPage
 func (_m *ServiceArticleInterface) GetArticleMostViews(page int, perPage int) ([]*entities.ArticleModels, int64, error) {
 	ret := _m.Called(page, perPage)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticleMostViews")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 int64
@@ -264,10 +228,6 @@ func (_m *ServiceArticleInterface) GetArticleMostViews(page int, perPage int) ([
 func (_m *ServiceArticleInterface) GetArticleSearchByDateRange(filterType string, searchText string) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(filterType, searchText)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticleSearchByDateRange")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func(string, string) ([]*entities.ArticleModels, error)); ok {
@@ -293,10 +253,6 @@ func (_m *ServiceArticleInterface) GetArticleSearchByDateRange(filterType string
 // GetArticlesAlphabet provides a mock function with given fields: page, perPage
 func (_m *ServiceArticleInterface) GetArticlesAlphabet(page int, perPage int) ([]*entities.ArticleModels, int64, error) {
 	ret := _m.Called(page, perPage)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticlesAlphabet")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 int64
@@ -331,10 +287,6 @@ func (_m *ServiceArticleInterface) GetArticlesAlphabet(page int, perPage int) ([
 func (_m *ServiceArticleInterface) GetArticlesByDateRange(filterType string) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(filterType)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticlesByDateRange")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func(string) ([]*entities.ArticleModels, error)); ok {
@@ -361,10 +313,6 @@ func (_m *ServiceArticleInterface) GetArticlesByDateRange(filterType string) ([]
 func (_m *ServiceArticleInterface) GetArticlesByTitle(title string) ([]*entities.ArticleModels, error) {
 	ret := _m.Called(title)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticlesByTitle")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func(string) ([]*entities.ArticleModels, error)); ok {
@@ -390,10 +338,6 @@ func (_m *ServiceArticleInterface) GetArticlesByTitle(title string) ([]*entities
 // GetFilterDateRange provides a mock function with given fields: filterType
 func (_m *ServiceArticleInterface) GetFilterDateRange(filterType string) (time.Time, time.Time, error) {
 	ret := _m.Called(filterType)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetFilterDateRange")
-	}
 
 	var r0 time.Time
 	var r1 time.Time
@@ -426,10 +370,6 @@ func (_m *ServiceArticleInterface) GetFilterDateRange(filterType string) (time.T
 func (_m *ServiceArticleInterface) GetLatestArticles() ([]*entities.ArticleModels, error) {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetLatestArticles")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func() ([]*entities.ArticleModels, error)); ok {
@@ -456,10 +396,6 @@ func (_m *ServiceArticleInterface) GetLatestArticles() ([]*entities.ArticleModel
 func (_m *ServiceArticleInterface) GetNextPage(currentPage int, totalPages int) int {
 	ret := _m.Called(currentPage, totalPages)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetNextPage")
-	}
-
 	var r0 int
 	if rf, ok := ret.Get(0).(func(int, int) int); ok {
 		r0 = rf(currentPage, totalPages)
@@ -473,10 +409,6 @@ func (_m *ServiceArticleInterface) GetNextPage(currentPage int, totalPages int) 
 // GetOldestArticle provides a mock function with given fields: page, perPage
 func (_m *ServiceArticleInterface) GetOldestArticle(page int, perPage int) ([]*entities.ArticleModels, int64, error) {
 	ret := _m.Called(page, perPage)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetOldestArticle")
-	}
 
 	var r0 []*entities.ArticleModels
 	var r1 int64
@@ -511,10 +443,6 @@ func (_m *ServiceArticleInterface) GetOldestArticle(page int, perPage int) ([]*e
 func (_m *ServiceArticleInterface) GetOtherArticle() ([]*entities.ArticleModels, error) {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetOtherArticle")
-	}
-
 	var r0 []*entities.ArticleModels
 	var r1 error
 	if rf, ok := ret.Get(0).(func() ([]*entities.ArticleModels, error)); ok {
@@ -541,10 +469,6 @@ func (_m *ServiceArticleInterface) GetOtherArticle() ([]*entities.ArticleModels,
 func (_m *ServiceArticleInterface) GetPrevPage(currentPage int) int {
 	ret := _m.Called(currentPage)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetPrevPage")
-	}
-
 	var r0 int
 	if rf, ok := ret.Get(0).(func(int) int); ok {
 		r0 = rf(currentPage)
@@ -558,10 +482,6 @@ func (_m *ServiceArticleInterface) GetPrevPage(currentPage int) int {
 // GetUserBookmarkArticle provides a mock function with given fields: userID
 func (_m *ServiceArticleInterface) GetUserBookmarkArticle(userID uint64) ([]*entities.ArticleBookmarkModels, error) {
 	ret := _m.Called(userID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetUserBookmarkArticle")
-	}
 
 	var r0 []*entities.ArticleBookmarkModels
 	var r1 error
@@ -588,10 +508,6 @@ func (_m *ServiceArticleInterface) GetUserBookmarkArticle(userID uint64) ([]*ent
 // UpdateArticleById provides a mock function with given fields: id, updatedArticle
 func (_m *ServiceArticleInterface) UpdateArticleById(id uint64, updatedArticle *entities.ArticleModels) (*entities.ArticleModels, error) {
 	ret := _m.Called(id, updatedArticle)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateArticleById")
-	}
 
 	var r0 *entities.ArticleModels
 	var r1 error

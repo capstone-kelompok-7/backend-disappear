@@ -16,10 +16,6 @@ type HandlerArticleInterface struct {
 func (_m *HandlerArticleInterface) BookmarkArticle() echo.HandlerFunc {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for BookmarkArticle")
-	}
-
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
 		r0 = rf()
@@ -35,10 +31,6 @@ func (_m *HandlerArticleInterface) BookmarkArticle() echo.HandlerFunc {
 // CreateArticle provides a mock function with given fields:
 func (_m *HandlerArticleInterface) CreateArticle() echo.HandlerFunc {
 	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreateArticle")
-	}
 
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
@@ -56,10 +48,6 @@ func (_m *HandlerArticleInterface) CreateArticle() echo.HandlerFunc {
 func (_m *HandlerArticleInterface) DeleteArticleById() echo.HandlerFunc {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for DeleteArticleById")
-	}
-
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
 		r0 = rf()
@@ -75,10 +63,6 @@ func (_m *HandlerArticleInterface) DeleteArticleById() echo.HandlerFunc {
 // DeleteBookmarkedArticle provides a mock function with given fields:
 func (_m *HandlerArticleInterface) DeleteBookmarkedArticle() echo.HandlerFunc {
 	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for DeleteBookmarkedArticle")
-	}
 
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
@@ -96,10 +80,6 @@ func (_m *HandlerArticleInterface) DeleteBookmarkedArticle() echo.HandlerFunc {
 func (_m *HandlerArticleInterface) GetAllArticleUser() echo.HandlerFunc {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetAllArticleUser")
-	}
-
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
 		r0 = rf()
@@ -115,10 +95,6 @@ func (_m *HandlerArticleInterface) GetAllArticleUser() echo.HandlerFunc {
 // GetAllArticles provides a mock function with given fields:
 func (_m *HandlerArticleInterface) GetAllArticles() echo.HandlerFunc {
 	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAllArticles")
-	}
 
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
@@ -136,10 +112,6 @@ func (_m *HandlerArticleInterface) GetAllArticles() echo.HandlerFunc {
 func (_m *HandlerArticleInterface) GetArticleById() echo.HandlerFunc {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetArticleById")
-	}
-
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
 		r0 = rf()
@@ -155,10 +127,6 @@ func (_m *HandlerArticleInterface) GetArticleById() echo.HandlerFunc {
 // GetLatestArticle provides a mock function with given fields:
 func (_m *HandlerArticleInterface) GetLatestArticle() echo.HandlerFunc {
 	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetLatestArticle")
-	}
 
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
@@ -176,10 +144,6 @@ func (_m *HandlerArticleInterface) GetLatestArticle() echo.HandlerFunc {
 func (_m *HandlerArticleInterface) GetOtherArticle() echo.HandlerFunc {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetOtherArticle")
-	}
-
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
 		r0 = rf()
@@ -196,10 +160,6 @@ func (_m *HandlerArticleInterface) GetOtherArticle() echo.HandlerFunc {
 func (_m *HandlerArticleInterface) GetUsersBookmark() echo.HandlerFunc {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetUsersBookmark")
-	}
-
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
 		r0 = rf()
@@ -215,10 +175,6 @@ func (_m *HandlerArticleInterface) GetUsersBookmark() echo.HandlerFunc {
 // UpdateArticleById provides a mock function with given fields:
 func (_m *HandlerArticleInterface) UpdateArticleById() echo.HandlerFunc {
 	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateArticleById")
-	}
 
 	var r0 echo.HandlerFunc
 	if rf, ok := ret.Get(0).(func() echo.HandlerFunc); ok {
