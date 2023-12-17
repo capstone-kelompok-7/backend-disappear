@@ -23,7 +23,7 @@ type ChallengeFormModels struct {
 	ID          uint64     `gorm:"column:id;type:BIGINT UNSIGNED;primaryKey" json:"id"`
 	UserID      uint64     `gorm:"column:user_id;type:BIGINT UNSIGNED" json:"user_id"`
 	ChallengeID uint64     `gorm:"column:challenge_id;type:BIGINT UNSIGNED" json:"challenge_id"`
-	Username    string     `gorm:"column:username;type:username" json:"username"`
+	Username    string     `gorm:"column:username;type:varchar(255)" json:"username"`
 	Photo       string     `gorm:"column:photo;type:varchar(255)" json:"photo"`
 	Status      string     `gorm:"column:status;type:varchar(255)" json:"status"`
 	Exp         uint64     `gorm:"column:exp;type:int" json:"exp"`
