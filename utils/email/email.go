@@ -11,7 +11,17 @@ import (
 	"strings"
 )
 
-func EmailService(email, otp string) error {
+type EmailSenderInterface interface {
+	EmailService(email, otp string) error
+}
+
+type Sender struct{}
+
+func NewEmailService() EmailSenderInterface {
+	return &Sender{}
+}
+
+func (s *Sender) EmailService(email, otp string) error {
 	secretUser := os.Getenv("SMTP_USER")
 	secretPass := os.Getenv("SMTP_PASS")
 	secretPort := os.Getenv("SMTP_PORT")
