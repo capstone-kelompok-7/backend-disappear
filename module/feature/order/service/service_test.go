@@ -76,8 +76,8 @@ func TestGetFilterDateRange(t *testing.T) {
 	}{
 		{
 			filterType:    "minggu ini",
-			expectedStart: time.Now().AddDate(0, 0, -int(time.Now().Weekday())).Truncate(24 * time.Hour),
-			expectedEnd:   time.Now().AddDate(0, 0, 7-int(time.Now().Weekday())).Truncate(24 * time.Hour),
+			expectedStart: time.Now().In(time.UTC).AddDate(0, 0, -int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour),
+			expectedEnd:   time.Now().In(time.UTC).AddDate(0, 0, 7-int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour),
 			expectedError: nil,
 		},
 		{
@@ -531,8 +531,8 @@ func TestOrderService_GetOrderByDateRange(t *testing.T) {
 		page := 1
 		perPage := 8
 
-		startOfWeek := time.Date(2023, time.December, 10, 0, 0, 0, 0, time.UTC)
-		endOfWeek := time.Date(2023, time.December, 17, 0, 0, 0, 0, time.UTC)
+		startOfWeek := time.Now().In(time.UTC).AddDate(0, 0, -int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
+		endOfWeek := time.Now().In(time.UTC).AddDate(0, 0, 7-int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
 
 		expectedTotalItems := int64(len(expectedOrders))
 		orderRepo.On("GetOrderByDateRange", startOfWeek, endOfWeek, 0, perPage).Return(expectedOrders, nil).Once()
@@ -727,8 +727,8 @@ func TestOrderService_GetOrderByDateRangeAndStatus(t *testing.T) {
 	page := 1
 	perPage := 8
 
-	startOfWeek := time.Date(2023, time.December, 10, 0, 0, 0, 0, time.UTC)
-	endOfWeek := time.Date(2023, time.December, 17, 0, 0, 0, 0, time.UTC)
+	startOfWeek := time.Now().In(time.UTC).AddDate(0, 0, -int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
+	endOfWeek := time.Now().In(time.UTC).AddDate(0, 0, 7-int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
 
 	expectedOrders := []*entities.OrderModels{
 		{ID: "order123", OrderStatus: "Pending"},
@@ -803,8 +803,8 @@ func TestOrderService_GetOrderByDateRangeAndStatusAndSearch(t *testing.T) {
 	page := 1
 	perPage := 8
 
-	startOfWeek := time.Date(2023, time.December, 10, 0, 0, 0, 0, time.UTC)
-	endOfWeek := time.Date(2023, time.December, 17, 0, 0, 0, 0, time.UTC)
+	startOfWeek := time.Now().In(time.UTC).AddDate(0, 0, -int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
+	endOfWeek := time.Now().In(time.UTC).AddDate(0, 0, 7-int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
 
 	expectedOrders := []*entities.OrderModels{
 		{ID: "order123", OrderStatus: "Pending"},
@@ -878,8 +878,8 @@ func TestOrderService_GetOrderBySearchAndDateRange(t *testing.T) {
 	page := 1
 	perPage := 8
 
-	startOfWeek := time.Date(2023, time.December, 10, 0, 0, 0, 0, time.UTC)
-	endOfWeek := time.Date(2023, time.December, 17, 0, 0, 0, 0, time.UTC)
+	startOfWeek := time.Now().In(time.UTC).AddDate(0, 0, -int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
+	endOfWeek := time.Now().In(time.UTC).AddDate(0, 0, 7-int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
 
 	expectedOrders := []*entities.OrderModels{
 		{ID: "order123", OrderStatus: "Pending"},
@@ -1068,8 +1068,8 @@ func TestOrderService_GetOrderByDateRangeAndPaymentStatus(t *testing.T) {
 	page := 1
 	perPage := 8
 
-	startOfWeek := time.Date(2023, time.December, 10, 0, 0, 0, 0, time.UTC)
-	endOfWeek := time.Date(2023, time.December, 17, 0, 0, 0, 0, time.UTC)
+	startOfWeek := time.Now().In(time.UTC).AddDate(0, 0, -int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
+	endOfWeek := time.Now().In(time.UTC).AddDate(0, 0, 7-int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
 
 	expectedOrders := []*entities.OrderModels{
 		{ID: "order123", PaymentStatus: "Pending"},
@@ -1144,8 +1144,8 @@ func TestOrderService_GetOrderByDateRangeAndPaymentStatusAndSearch(t *testing.T)
 	page := 1
 	perPage := 8
 
-	startOfWeek := time.Date(2023, time.December, 10, 0, 0, 0, 0, time.UTC)
-	endOfWeek := time.Date(2023, time.December, 17, 0, 0, 0, 0, time.UTC)
+	startOfWeek := time.Now().In(time.UTC).AddDate(0, 0, -int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
+	endOfWeek := time.Now().In(time.UTC).AddDate(0, 0, 7-int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour)
 
 	expectedOrders := []*entities.OrderModels{
 		{ID: "order123", PaymentStatus: "Pending"},

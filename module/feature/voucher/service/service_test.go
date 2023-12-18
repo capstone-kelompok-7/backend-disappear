@@ -93,7 +93,7 @@ func TestVoucherlService_GetPrevPage(t *testing.T) {
 	})
 }
 
-func TestChallengeService_GetAll(t *testing.T) {
+func TestVoucherService_GetAll(t *testing.T) {
 	repo := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
@@ -171,6 +171,22 @@ func TestChallengeService_GetAll(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.Equal(t, int64(0), totalItems)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("Failure Case - Claimed Check Error", func(t *testing.T) {
+		limit := 10
+		userID := uint64(1)
+		expectedErr := errors.New("IsVoucherAlreadyClaimed Error")
+
+		repo.On("FindAllVoucherToClaims", limit, userID).Return(vouchers, nil).Once()
+		repo.On("IsVoucherAlreadyClaimed", userID, mock.Anything).Return(false, expectedErr).Once()
+
+		result, err := service.GetAllVoucherToClaims(limit, userID)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.EqualError(t, err, "IsVoucherAlreadyClaimed Error")
 		repo.AssertExpectations(t)
 	})
 }
@@ -419,40 +435,31 @@ func TestVoucherService_DeleteVoucher(t *testing.T) {
 	})
 
 	t.Run("Failure Case - Voucher Not Found", func(t *testing.T) {
-		// Specify a voucher ID that doesn't exist
 		nonExistentVoucherID := uint64(999)
 
-		// Mock the GetVoucherById function to return an error for the non-existent voucher
 		repo.On("GetVoucherById", nonExistentVoucherID).Return(nil, errors.New("kupon tidak ditemukan")).Once()
 
 		err := service.DeleteVoucher(nonExistentVoucherID)
 
-		// Assert that the error is not nil and it matches the expected error message
 		assert.NotNil(t, err)
 		assert.EqualError(t, err, "kupon tidak ditemukan")
 	})
 
 	t.Run("Failure Case - Error Deleting Voucher", func(t *testing.T) {
-		// Specify a voucher ID for which deletion will fail
 		failingVoucherID := uint64(888)
 
-		// Mock the GetVoucherById function to return a voucher
 		voucher := &entities.VoucherModels{ID: failingVoucherID}
 		repo.On("GetVoucherById", failingVoucherID).Return(voucher, nil).Once()
-
-		// Mock the DeleteVoucher function to return an error
 		repo.On("DeleteVoucher", failingVoucherID).Return(errors.New("error deleting voucher")).Once()
 
 		err := service.DeleteVoucher(failingVoucherID)
-
-		// Assert that the error is not nil and it matches the expected error message
 		assert.NotNil(t, err)
 		assert.EqualError(t, err, "error deleting voucher")
 	})
 
 }
 
-func TestService_GetVoucherById(t *testing.T) {
+func TestVoucher_GetVoucherById(t *testing.T) {
 	repo := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
@@ -460,7 +467,6 @@ func TestService_GetVoucherById(t *testing.T) {
 
 	t.Run("Success - Voucher Found", func(t *testing.T) {
 
-		// Mocked voucher data
 		mockVoucher := &entities.VoucherModels{
 			ID:        1,
 			Discount:  1500,
@@ -470,22 +476,15 @@ func TestService_GetVoucherById(t *testing.T) {
 			UpdatedAt: time.Now(),
 		}
 
-		// Set up the repository mock to return the mocked voucher
 		repo.On("GetVoucherById", mockVoucher.ID).Return(mockVoucher, nil).Once()
 
-		// Call the GetVoucherById function
 		result, err := service.GetVoucherById(mockVoucher.ID)
 
-		// Assert that there is no error
 		assert.Nil(t, err)
-
-		// Assert that the returned voucher matches the mocked voucher
 		assert.Equal(t, mockVoucher, result)
-
 	})
 
 	t.Run("Failure Case - Voucher Not Found", func(t *testing.T) {
-		// Specify a voucher ID that doesn't exist
 		nonExistentVoucherID := &entities.VoucherModels{
 			ID:        1,
 			Discount:  1500,
@@ -495,14 +494,11 @@ func TestService_GetVoucherById(t *testing.T) {
 			UpdatedAt: time.Now(),
 		}
 
-		// Mock the GetVoucherById function to return an error for the non-existent voucher
 		repo.On("GetVoucherById", uint64(nonExistentVoucherID.ID)).Return(nil, errors.New("kupon tidak ditemukan")).Once()
 
 		_, err := service.GetVoucherById(uint64(nonExistentVoucherID.ID))
 
-		// Assert that the error is not nil and it matches the expected error message
 		assert.NotNil(t, err)
-
 		assert.EqualError(t, err, "kupon tidak ditemukan")
 	})
 }
@@ -555,7 +551,7 @@ func TestVoucher_DeleteVoucherClaims(t *testing.T) {
 	})
 }
 
-func TestGetUserVouchers(t *testing.T) {
+func TestVoucher_TestGetUserVouchers(t *testing.T) {
 	repo := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
@@ -614,295 +610,542 @@ func TestGetUserVouchers(t *testing.T) {
 	})
 }
 
-func TestGetVoucherByStatus(t *testing.T) {
+func TestVoucher_TestGetVoucherByStatus(t *testing.T) {
 	repoMock := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
 	service := NewVoucherService(repoMock, userService)
+
 	t.Run("Success - Get Voucher By Status", func(t *testing.T) {
-		// Mocked parameters
 		page := 1
 		perPage := 10
 		status := "Active"
 
-		// Mocked vouchers and total items
 		mockVouchers := []*entities.VoucherModels{
 			{ID: 1, Status: "Active"},
 			{ID: 2, Status: "Active"},
 		}
 		mockTotalItems := int64(2)
 
-		// Create an instance of VoucherService with mocked dependencies
-
-		// Set up mocks
-
 		repoMock.On("FindByStatus", page, perPage, status).Return(mockVouchers, nil).Once()
 		repoMock.On("GetTotalVoucherCountByStatus", status).Return(mockTotalItems, nil).Once()
-
-		// Call the GetVoucherByStatus function
 		vouchers, totalItems, err := service.GetVoucherByStatus(page, perPage, status)
 
-		// Assert that there is no error
 		assert.Nil(t, err)
-
-		// Assert that the returned vouchers and total items match the mocked values
 		assert.Equal(t, mockVouchers, vouchers)
 		assert.Equal(t, mockTotalItems, totalItems)
 
-		// Assert that the mocked methods were called as expected
 		repoMock.AssertExpectations(t)
 	})
 
 	t.Run("Failure - Error Getting Vouchers by Status", func(t *testing.T) {
-		// Mocked parameters
 		page := 1
 		perPage := 10
 		status := "Expired"
 
-		// Create an instance of VoucherService with mocked dependencies
-
-		// Set up mocks to simulate an error when getting vouchers by status
-
 		repoMock.On("FindByStatus", page, perPage, status).Return(nil, errors.New("error getting vouchers by status")).Once()
-
-		// Call the GetVoucherByStatus function
 		vouchers, totalItems, err := service.GetVoucherByStatus(page, perPage, status)
 
-		// Assert that the error is not nil and it matches the expected error message
 		assert.NotNil(t, err)
 		assert.EqualError(t, err, "error getting vouchers by status")
-
-		// Assert that the result is nil when there is an error
 		assert.Nil(t, vouchers)
 		assert.Zero(t, totalItems)
 
-		// Assert that the other methods were not called
 		repoMock.AssertExpectations(t)
 	})
 
-	t.Run("Failure - Error Getting Total Voucher Count", func(t *testing.T) {
-		// Mocked parameters
+	t.Run("Failure - Error Getting Total Voucher Count by Status", func(t *testing.T) {
 		page := 1
 		perPage := 10
-		status := "active"
+		status := "Active"
 
-		// Set up mocks to simulate an error when getting the total voucher count
-		repoMock.On("FindByStatus", page, perPage, status).Return(nil, errors.New("error getting vouchers")).Once()
+		mockVouchers := []*entities.VoucherModels{
+			{ID: 1, Status: "Active"},
+			{ID: 2, Status: "Active"},
+		}
+
+		repoMock.On("FindByStatus", page, perPage, status).Return(mockVouchers, nil).Once()
 		repoMock.On("GetTotalVoucherCountByStatus", status).Return(int64(0), errors.New("error getting total voucher count")).Once()
 
-		// Call the GetVoucherByStatus function
 		vouchers, totalItems, err := service.GetVoucherByStatus(page, perPage, status)
 
-		// Assert that the error is not nil and it matches the expected error message
 		assert.NotNil(t, err)
-		assert.EqualError(t, err, "error getting vouchers")
-
-		// Assert that the result is nil when there is an error
+		assert.EqualError(t, err, "error getting total voucher count")
 		assert.Nil(t, vouchers)
 		assert.Zero(t, totalItems)
 
-		// Assert that the other methods were not called
 		repoMock.AssertExpectations(t)
 	})
 }
 
-func TestGetVoucherByCategory(t *testing.T) {
+func TestVoucher_TestGetVoucherByCategory(t *testing.T) {
 	repoMock := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
 	service := NewVoucherService(repoMock, userService)
-	t.Run("Success - Get Voucher By Category", func(t *testing.T) {
-		// Mocked parameters
-		page := 1
-		perPage := 10
-		category := "Discount"
 
-		// Mocked vouchers and total items
+	page := 1
+	perPage := 10
+	category := "Discount"
+
+	t.Run("Success - Get Voucher By Category", func(t *testing.T) {
 		mockVouchers := []*entities.VoucherModels{
 			{ID: 1, Category: "Discount"},
 			{ID: 2, Category: "Discount"},
 		}
 		mockTotalItems := int64(2)
 
-		// Create an instance of VoucherService with mocked dependencies
-
-		// Set up mocks
-
 		repoMock.On("FindByCategory", page, perPage, category).Return(mockVouchers, nil).Once()
 		repoMock.On("GetTotalVoucherCountByCategory", category).Return(mockTotalItems, nil).Once()
 
-		// Call the GetVoucherByCategory function
 		vouchers, totalItems, err := service.GetVoucherByCategory(page, perPage, category)
 
-		// Assert that there is no error
 		assert.Nil(t, err)
-
-		// Assert that the returned vouchers and total items match the mocked values
 		assert.Equal(t, mockVouchers, vouchers)
 		assert.Equal(t, mockTotalItems, totalItems)
 
-		// Assert that the mocked methods were called as expected
 		repoMock.AssertExpectations(t)
 	})
 
 	t.Run("Failure - Error Getting Vouchers by Category", func(t *testing.T) {
-		// Mocked parameters
 		page := 1
 		perPage := 10
 		category := "NonexistentCategory"
 
-		// Create an instance of VoucherService with mocked dependencies
-
-		// Set up mocks to simulate an error when getting vouchers by category
-
 		repoMock.On("FindByCategory", page, perPage, category).Return(nil, errors.New("error getting vouchers by category")).Once()
 
-		// Call the GetVoucherByCategory function
 		vouchers, totalItems, err := service.GetVoucherByCategory(page, perPage, category)
 
-		// Assert that the error is not nil and it matches the expected error message
 		assert.NotNil(t, err)
 		assert.EqualError(t, err, "error getting vouchers by category")
 
-		// Assert that the result is nil when there is an error
 		assert.Nil(t, vouchers)
 		assert.Zero(t, totalItems)
 
-		// Assert that the other methods were not called
 		repoMock.AssertExpectations(t)
 	})
 
+	t.Run("Failure - Error Getting Total Voucher Count by Category", func(t *testing.T) {
+		expectedError := errors.New("error getting total voucher count by category")
+		repoMock.On("FindByCategory", page, perPage, category).Return(nil, nil).Once()
+		repoMock.On("GetTotalVoucherCountByCategory", category).Return(int64(0), expectedError).Once()
+
+		vouchers, totalItems, err := service.GetVoucherByCategory(page, perPage, category)
+
+		assert.NotNil(t, err)
+		assert.EqualError(t, err, expectedError.Error())
+
+		assert.Nil(t, vouchers)
+		assert.Zero(t, totalItems)
+
+		repoMock.AssertExpectations(t)
+	})
 }
 
-func TestGetVoucherByStatusCategory(t *testing.T) {
+func TestVoucher_TestGetVoucherByStatusCategory(t *testing.T) {
 	repoMock := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
 	service := NewVoucherService(repoMock, userService)
-	t.Run("Success - Get Voucher By Status and Category", func(t *testing.T) {
-		// Mocked parameters
-		page := 1
-		perPage := 10
-		status := "Active"
-		category := "Discount"
 
-		// Mocked vouchers and total items
+	page := 1
+	perPage := 10
+	status := "Active"
+	category := "Discount"
+
+	t.Run("Success - Get Voucher By Status and Category", func(t *testing.T) {
 		mockVouchers := []*entities.VoucherModels{
 			{ID: 1, Status: "Active", Category: "Discount"},
 			{ID: 2, Status: "Active", Category: "Discount"},
 		}
 		mockTotalItems := int64(2)
 
-		// Create an instance of VoucherService with mocked dependencies
-
 		repoMock.On("FindByStatusCategory", page, perPage, status, category).Return(mockVouchers, nil).Once()
 		repoMock.On("GetTotalVoucherCountByStatusCategory", status, category).Return(mockTotalItems, nil).Once()
 
-		// Call the GetVoucherByStatusCategory function
 		vouchers, totalItems, err := service.GetVoucherByStatusCategory(page, perPage, status, category)
 
-		// Assert that there is no error
 		assert.Nil(t, err)
-
-		// Assert that the returned vouchers and total items match the mocked values
 		assert.Equal(t, mockVouchers, vouchers)
 		assert.Equal(t, mockTotalItems, totalItems)
-
-		// Assert that the mocked methods were called as expected
 		repoMock.AssertExpectations(t)
 	})
 
 	t.Run("Failure - Error Getting Vouchers by Status and Category", func(t *testing.T) {
-		// Mocked parameters
 		page := 1
 		perPage := 10
 		status := "Expired"
 		category := "NonexistentCategory"
 
-		// Set up mocks to simulate an error when getting vouchers by status and category
-
 		repoMock.On("FindByStatusCategory", page, perPage, status, category).Return(nil, errors.New("error getting vouchers by status and category")).Once()
 
-		// Call the GetVoucherByStatusCategory function
 		vouchers, totalItems, err := service.GetVoucherByStatusCategory(page, perPage, status, category)
 
-		// Assert that the error is not nil and it matches the expected error message
 		assert.NotNil(t, err)
 		assert.EqualError(t, err, "error getting vouchers by status and category")
+		assert.Nil(t, vouchers)
+		assert.Zero(t, totalItems)
+		repoMock.AssertExpectations(t)
+	})
 
-		// Assert that the result is nil when there is an error
+	t.Run("Failure - Error Getting Total Voucher Count by Status and Category", func(t *testing.T) {
+		expectedError := errors.New("error getting total voucher count by status and category")
+		repoMock.On("FindByStatusCategory", page, perPage, status, category).Return(nil, nil).Once()
+		repoMock.On("GetTotalVoucherCountByStatusCategory", status, category).Return(int64(0), expectedError).Once()
+
+		vouchers, totalItems, err := service.GetVoucherByStatusCategory(page, perPage, status, category)
+
+		assert.NotNil(t, err)
+		assert.EqualError(t, err, expectedError.Error())
+
 		assert.Nil(t, vouchers)
 		assert.Zero(t, totalItems)
 
-		// Assert that the other methods were not called
 		repoMock.AssertExpectations(t)
 	})
 }
 
-func TestGetAllVoucherToClaims(t *testing.T) {
+func TestVoucher_TestGetAllVoucherToClaims(t *testing.T) {
 	repoMock := voucherMocks.NewRepositoryVoucherInterface(t)
 	repoUser := user_mock.NewRepositoryUserInterface(t)
 	userService := user_service.NewUserService(repoUser, utils.NewHash())
 	service := NewVoucherService(repoMock, userService)
 	t.Run("Success - Get All Vouchers to Claims", func(t *testing.T) {
-		// Mocked parameters
 		limit := 5
 		userID := uint64(123)
 
-		// Mocked vouchers
 		mockVouchers := []*entities.VoucherModels{
 			{ID: 1},
 			{ID: 2},
 			{ID: 3},
 		}
 
-		// Create an instance of VoucherService with mocked dependencies
-
-		// Set up mocks
-
 		repoMock.On("FindAllVoucherToClaims", limit, userID).Return(mockVouchers, nil).Once()
 		repoMock.On("IsVoucherAlreadyClaimed", userID, mock.AnythingOfType("uint64")).Return(false, nil).Times(len(mockVouchers))
 
-		// Call the GetAllVoucherToClaims function
 		filteredVouchers, err := service.GetAllVoucherToClaims(limit, userID)
 
-		// Assert that there is no error
 		assert.Nil(t, err)
 
-		// Assert that the number of filtered vouchers matches the expected count
 		assert.Len(t, filteredVouchers, len(mockVouchers))
 
-		// Assert that each voucher is not claimed
 		for _, voucher := range filteredVouchers {
 			assert.False(t, voucher.Status == "active")
 		}
 
-		// Assert that the mocked methods were called as expected
 		repoMock.AssertExpectations(t)
 	})
 
 	t.Run("Failure - Error Getting Vouchers to Claims", func(t *testing.T) {
-		// Mocked parameters
 		limit := 5
 		userID := uint64(123)
 
-		// Create an instance of VoucherService with mocked dependencies
-
-		// Set up mocks to simulate an error when getting vouchers to claims
-
 		repoMock.On("FindAllVoucherToClaims", limit, userID).Return(nil, errors.New("error getting vouchers to claims")).Once()
 
-		// Call the GetAllVoucherToClaims function
 		filteredVouchers, err := service.GetAllVoucherToClaims(limit, userID)
 
-		// Assert that the error is not nil and it matches the expected error message
 		assert.NotNil(t, err)
 		assert.EqualError(t, err, "error getting vouchers to claims")
-
-		// Assert that the result is nil when there is an error
 		assert.Nil(t, filteredVouchers)
-
-		// Assert that the other methods were not called
 		repoMock.AssertExpectations(t)
+	})
+}
+
+func TestVoucher_TestCanClaimsVoucher(t *testing.T) {
+	repoMock := voucherMocks.NewRepositoryVoucherInterface(t)
+	userMock := user_mock.NewRepositoryUserInterface(t)
+	userService := user_service.NewUserService(userMock, utils.NewHash())
+	service := NewVoucherService(repoMock, userService)
+
+	t.Run("Success - User can claim voucher", func(t *testing.T) {
+		userID := uint64(1)
+		voucherID := uint64(100)
+		userLevel := "Gold"
+
+		mockUser := &entities.UserModels{ID: userID, Level: userLevel}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return(userLevel, nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Gold", nil).Once()
+
+		canClaim, err := service.CanClaimsVoucher(userID, voucherID)
+
+		assert.Nil(t, err)
+		assert.True(t, canClaim)
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - Error getting user level", func(t *testing.T) {
+		userID := uint64(1)
+		voucherID := uint64(100)
+		mockUser := &entities.UserModels{ID: userID}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return("", errors.New("error getting user level")).Once()
+
+		canClaim, err := service.CanClaimsVoucher(userID, voucherID)
+
+		assert.NotNil(t, err)
+		assert.False(t, canClaim)
+		assert.EqualError(t, err, "error getting user level")
+
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - Error getting voucher category", func(t *testing.T) {
+		userID := uint64(1)
+		voucherID := uint64(100)
+		userLevel := "Gold"
+
+		mockUser := &entities.UserModels{ID: userID, Level: userLevel}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return(userLevel, nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("", errors.New("error getting voucher category")).Once()
+
+		canClaim, err := service.CanClaimsVoucher(userID, voucherID)
+
+		assert.NotNil(t, err)
+		assert.False(t, canClaim)
+		assert.EqualError(t, err, "error getting voucher category")
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - User cannot claim voucher", func(t *testing.T) {
+		userID := uint64(1)
+		voucherID := uint64(100)
+		userLevel := "Silver"
+
+		mockUser := &entities.UserModels{ID: userID, Level: userLevel}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return(userLevel, nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Gold", nil).Once()
+
+		canClaim, err := service.CanClaimsVoucher(userID, voucherID)
+
+		assert.Nil(t, err)
+		assert.False(t, canClaim)
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - Voucher Category is All Customer", func(t *testing.T) {
+		userID := uint64(1)
+		voucherID := uint64(100)
+
+		mockUser := &entities.UserModels{ID: userID, Level: "Gold"}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return("Gold", nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("All Customer", nil).Once()
+
+		canClaim, err := service.CanClaimsVoucher(userID, voucherID)
+
+		assert.Nil(t, err)
+		assert.True(t, canClaim, "user should not be able to claim voucher with category All Customer")
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Success - User Level is Silver and Voucher Category is Bronze", func(t *testing.T) {
+		userID := uint64(1)
+		voucherID := uint64(100)
+
+		mockUser := &entities.UserModels{ID: userID, Level: "Silver"}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return("Silver", nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Bronze", nil).Once()
+
+		canClaim, err := service.CanClaimsVoucher(userID, voucherID)
+
+		assert.Nil(t, err)
+		assert.True(t, canClaim)
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Success - User Level is Bronze and Voucher Category is Bronze", func(t *testing.T) {
+		userID := uint64(1)
+		voucherID := uint64(100)
+
+		mockUser := &entities.UserModels{ID: userID, Level: "Bronze"}
+
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return("Bronze", nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Bronze", nil).Once()
+
+		canClaim, err := service.CanClaimsVoucher(userID, voucherID)
+
+		assert.Nil(t, err)
+		assert.True(t, canClaim)
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+}
+
+func TestVoucher_TestClaimVoucher(t *testing.T) {
+	repoMock := voucherMocks.NewRepositoryVoucherInterface(t)
+	userMock := user_mock.NewRepositoryUserInterface(t)
+	userService := user_service.NewUserService(userMock, utils.NewHash())
+	service := NewVoucherService(repoMock, userService)
+
+	userID := uint64(1)
+	voucherID := uint64(100)
+
+	mockVoucher := &entities.VoucherModels{
+		ID:    voucherID,
+		Stock: uint64(100),
+	}
+
+	t.Run("Success - Claim Voucher", func(t *testing.T) {
+
+		mockUser := &entities.UserModels{ID: userID, Level: "Gold"}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		repoMock.On("GetVoucherById", voucherID).Return(mockVoucher, nil).Once()
+		repoMock.On("IsVoucherAlreadyClaimed", userID, voucherID).Return(false, nil).Once()
+		repoMock.On("ClaimVoucher", &entities.VoucherClaimModels{UserID: userID, VoucherID: voucherID}).Return(nil).Once()
+		repoMock.On("ReduceStockWhenClaimed", voucherID, uint64(1)).Return(nil).Once()
+
+		userMock.On("GetUserLevel", userID).Return("Gold", nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Gold", nil).Once()
+
+		req := &entities.VoucherClaimModels{
+			UserID:    userID,
+			VoucherID: voucherID,
+		}
+
+		err := service.ClaimVoucher(req)
+
+		assert.Nil(t, err)
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - Out of Stock", func(t *testing.T) {
+		mockVoucher := &entities.VoucherModels{
+			ID:    voucherID,
+			Stock: uint64(0),
+		}
+		repoMock.On("GetVoucherById", voucherID).Return(mockVoucher, nil).Once()
+
+		req := &entities.VoucherClaimModels{
+			UserID:    userID,
+			VoucherID: voucherID,
+		}
+
+		err := service.ClaimVoucher(req)
+
+		assert.NotNil(t, err)
+		assert.EqualError(t, err, "stok kupon sudah habis")
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - Voucher Not Found", func(t *testing.T) {
+		repoMock.On("GetVoucherById", voucherID).Return(nil, errors.New("kupon tidak ditemukan")).Once()
+
+		req := &entities.VoucherClaimModels{
+			UserID:    userID,
+			VoucherID: voucherID,
+		}
+
+		err := service.ClaimVoucher(req)
+
+		assert.NotNil(t, err)
+		assert.EqualError(t, err, "kupon tidak ditemukan")
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - IsVoucherAlreadyClaimed Error", func(t *testing.T) {
+		mockUser := &entities.UserModels{ID: userID, Level: "Gold"}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return("Gold", nil).Once()
+		repoMock.On("GetVoucherById", voucherID).Return(mockVoucher, nil).Once()
+		repoMock.On("IsVoucherAlreadyClaimed", userID, voucherID).Return(false, errors.New("IsVoucherAlreadyClaimed error")).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Gold", nil).Once()
+		req := &entities.VoucherClaimModels{
+			UserID:    userID,
+			VoucherID: voucherID,
+		}
+
+		err := service.ClaimVoucher(req)
+
+		assert.NotNil(t, err)
+		assert.EqualError(t, err, "IsVoucherAlreadyClaimed error")
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - Voucher Already Claimed", func(t *testing.T) {
+		mockUser := &entities.UserModels{ID: userID, Level: "Gold"}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return("Gold", nil).Once()
+		repoMock.On("GetVoucherById", voucherID).Return(mockVoucher, nil).Once()
+		repoMock.On("IsVoucherAlreadyClaimed", userID, voucherID).Return(true, nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Gold", nil).Once()
+		req := &entities.VoucherClaimModels{
+			UserID:    userID,
+			VoucherID: voucherID,
+		}
+
+		err := service.ClaimVoucher(req)
+
+		assert.NotNil(t, err)
+		assert.EqualError(t, err, "kupon telah diklaim")
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - Insufficient Level", func(t *testing.T) {
+		mockUser := &entities.UserModels{ID: userID, Level: "Bronze"}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		userMock.On("GetUserLevel", userID).Return("Bronze", nil).Once()
+		repoMock.On("GetVoucherById", voucherID).Return(mockVoucher, nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Gold", nil).Once()
+
+		req := &entities.VoucherClaimModels{
+			UserID:    userID,
+			VoucherID: voucherID,
+		}
+
+		err := service.ClaimVoucher(req)
+
+		assert.NotNil(t, err)
+		assert.EqualError(t, err, "level anda masih belum mencukupi")
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+	})
+
+	t.Run("Failure - ClaimVoucher Error", func(t *testing.T) {
+		expectedError := errors.New("Expected ClaimVoucher error")
+		mockUser := &entities.UserModels{ID: userID, Level: "Gold"}
+		userMock.On("GetUsersById", mock.Anything).Return(mockUser, nil).Once()
+		repoMock.On("GetVoucherById", voucherID).Return(mockVoucher, nil).Once()
+		repoMock.On("IsVoucherAlreadyClaimed", userID, voucherID).Return(false, nil).Once()
+		repoMock.On("ClaimVoucher", mock.Anything).Return(expectedError).Once()
+		userMock.On("GetUserLevel", userID).Return("Gold", nil).Once()
+		repoMock.On("GetVoucherCategory", voucherID).Return("Gold", nil).Once()
+
+		req := &entities.VoucherClaimModels{
+			UserID:    userID,
+			VoucherID: voucherID,
+		}
+
+		err := service.ClaimVoucher(req)
+
+		assert.EqualError(t, err, expectedError.Error())
+
+		repoMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
 	})
 }

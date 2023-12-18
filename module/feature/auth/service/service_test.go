@@ -2,6 +2,9 @@ package service
 
 import (
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/dto"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/auth/mocks"
@@ -10,8 +13,6 @@ import (
 	utils "github.com/capstone-kelompok-7/backend-disappear/utils/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
-	"time"
 )
 
 func setupTestService(t *testing.T) (
@@ -88,7 +89,7 @@ func TestAuthService_RegisterSocial(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
-		assert.EqualError(t, err, "social ID sudah terdaftar")
+		assert.EqualError(t, err, "Social ID sudah terdaftar")
 
 		authRepo.AssertExpectations(t)
 	})
@@ -154,16 +155,29 @@ func TestAuthService_LoginSocial(t *testing.T) {
 		jwtService.AssertNotCalled(t, "GenerateJWT")
 	})
 
-	t.Run("Failed Case - Error Finding User by Social ID", func(t *testing.T) {
+	// t.Run("Failed Case - Error Finding User by Social ID", func(t *testing.T) {
+	// 	authService, authRepo, _, _, _, _ := setupTestService(t)
+	// 	expectedErr := errors.New("some error here")
+	// 	authRepo.On("FindUserBySocialID", socialID).Return(nil, expectedErr)
+
+	// 	foundUser, _, err := authService.LoginSocial(socialID)
+
+	// 	assert.Error(t, err)
+	// 	assert.Nil(t, foundUser)
+	// 	assert.Equal(t, err, expectedErr)
+
+	// 	authRepo.AssertExpectations(t)
+	// })
+
+	t.Run("Failed Case - User is Nil After Finding", func(t *testing.T) {
 		authService, authRepo, _, _, _, _ := setupTestService(t)
-		expectedErr := errors.New("some error here")
-		authRepo.On("FindUserBySocialID", socialID).Return(nil, expectedErr)
+		authRepo.On("FindUserBySocialID", socialID).Return(nil, nil)
 
 		foundUser, _, err := authService.LoginSocial(socialID)
 
 		assert.Error(t, err)
 		assert.Nil(t, foundUser)
-		assert.Equal(t, err, expectedErr)
+		assert.Equal(t, "pengguna tidak ditemukan", err.Error())
 
 		authRepo.AssertExpectations(t)
 	})
@@ -182,5 +196,30 @@ func TestAuthService_LoginSocial(t *testing.T) {
 
 		authRepo.AssertExpectations(t)
 		jwtService.AssertNotCalled(t, "GenerateJWT")
+	})
+
+	t.Run("Failed Case - Error Generating JWT", func(t *testing.T) {
+		authService, authRepo, jwtService, _, _, _ := setupTestService(t)
+		user := &entities.UserModels{
+			ID:        1,
+			SocialID:  socialID,
+			Email:     "test@example.com",
+			Role:      "customer",
+			LastLogin: time.Now(),
+		}
+
+		authRepo.On("FindUserBySocialID", socialID).Return(user, nil)
+		authRepo.On("UpdateLastLogin", user.ID, mock.AnythingOfType("time.Time")).Return(nil)
+		expectedErr := errors.New("JWT generation failed")
+		jwtService.On("GenerateJWT", user.ID, user.Email, user.Role).Return("", expectedErr)
+
+		foundUser, _, err := authService.LoginSocial(socialID)
+
+		assert.Error(t, err)
+		assert.Nil(t, foundUser)
+		assert.Equal(t, expectedErr, err)
+
+		authRepo.AssertExpectations(t)
+		jwtService.AssertExpectations(t)
 	})
 }
