@@ -2,6 +2,8 @@ package repository
 
 import (
 	"errors"
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order"
 	"github.com/capstone-kelompok-7/backend-disappear/module/feature/order/dto"
@@ -10,7 +12,6 @@ import (
 	"github.com/midtrans/midtrans-go/coreapi"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"time"
 )
 
 type OrderRepository struct {
@@ -188,6 +189,7 @@ func (r *OrderRepository) GetAllOrdersByUserID(userID uint64) ([]*entities.Order
 		Preload("OrderDetails.Product").
 		Preload("OrderDetails.Product.ProductPhotos").
 		Where("user_id = ? AND deleted_at IS NULL", userID).
+		Order("created_at DESC").
 		Find(&orders).Error; err != nil {
 		return nil, err
 	}

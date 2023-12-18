@@ -53,7 +53,7 @@ func (s *AuthService) Register(newData *entities.UserModels) (*entities.UserMode
 		Email:     newData.Email,
 		Password:  hashPassword,
 		Role:      "customer",
-		Level:     "bronze",
+		Level:     "Bronze",
 		LastLogin: time.Now(),
 	}
 
@@ -304,7 +304,7 @@ func (s *AuthService) RegisterSocial(req *dto.RegisterSocialRequest) (*entities.
 		Name:         req.Name,
 		PhotoProfile: req.PhotoProfile,
 		Role:         "customer",
-		Level:        "bronze",
+		Level:        "Bronze",
 		LastLogin:    time.Time{},
 	}
 

@@ -12,7 +12,7 @@ func UserFaker(db *gorm.DB) []*entities.UserModels {
 			Email:        "admin@gmail.com",
 			Password:     "Q9yxsgcFqch0DUYAxTq++2EDCgXP3Why1fwkRWe20HFEtbZYNp1/0AIvymKV8sVA",
 			Phone:        "081234567891",
-			Role:         "customer",
+			Role:         "admin",
 			Name:         "Admin Disappear",
 			IsVerified:   true,
 			PhotoProfile: "https://res.cloudinary.com/dufa4bel6/image/upload/v1702738826/disappear/NEW_LOGO_qamyiz.jpg",

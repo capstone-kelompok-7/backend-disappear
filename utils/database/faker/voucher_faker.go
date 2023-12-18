@@ -1,9 +1,10 @@
 package faker
 
 import (
+	"time"
+
 	"github.com/capstone-kelompok-7/backend-disappear/module/entities"
 	"gorm.io/gorm"
-	"time"
 )
 
 func VoucherFaker(db *gorm.DB) []*entities.VoucherModels {
@@ -12,7 +13,7 @@ func VoucherFaker(db *gorm.DB) []*entities.VoucherModels {
 			ID:          1,
 			Name:        "Diskon 20% - Belanja Pertama",
 			Code:        "FIRST20",
-			Category:    "First Purchase",
+			Category:    "Bronze",
 			Description: "Voucher diskon 20% untuk pembelian pertama di toko kami.",
 			Discount:    20,
 			StartDate:   time.Now(),
@@ -28,7 +29,7 @@ func VoucherFaker(db *gorm.DB) []*entities.VoucherModels {
 			ID:          2,
 			Name:        "Gratis Ongkir - Belanja di Atas 100Rb",
 			Code:        "SHIPFREE",
-			Category:    "Free Shipping",
+			Category:    "All Customer",
 			Description: "Voucher gratis ongkir untuk pembelian di atas 100.000 rupiah.",
 			Discount:    10000,
 			StartDate:   time.Now(),
