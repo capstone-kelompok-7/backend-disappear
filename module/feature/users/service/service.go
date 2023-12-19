@@ -39,6 +39,14 @@ func (s *UserService) GetUsersByEmail(email string) (*entities.UserModels, error
 }
 
 func (s *UserService) ValidatePassword(userID uint64, oldPassword, newPassword, confirmPassword string) error {
+	if oldPassword == newPassword {
+		return errors.New("Password baru tidak boleh sama dengan password lama")
+	}
+
+	if newPassword != confirmPassword {
+		return errors.New("Password baru dan konfirmasi password tidak cocok")
+	}
+
 	storedPassword, err := s.repo.GetUsersPassword(userID)
 	if err != nil {
 		return errors.New("Password lama tidak valid")
@@ -47,14 +55,6 @@ func (s *UserService) ValidatePassword(userID uint64, oldPassword, newPassword, 
 	isValidOldPassword, err := s.hash.ComparePassword(storedPassword, oldPassword)
 	if err != nil || !isValidOldPassword {
 		return errors.New("Password lama tidak valid")
-	}
-
-	if oldPassword == newPassword {
-		return errors.New("Password baru tidak boleh sama dengan password lama")
-	}
-
-	if newPassword != confirmPassword {
-		return errors.New("Password baru dan konfirmasi password tidak cocok")
 	}
 
 	return nil
@@ -176,7 +176,6 @@ func (s *UserService) UpdateUserExp(userID uint64, exp uint64) (*entities.UserMo
 			return nil, err
 		}
 	}
-
 	return updatedUser, nil
 }
 

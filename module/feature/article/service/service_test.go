@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
@@ -361,6 +362,21 @@ func TestArticleService_UpdateArticleById(t *testing.T) {
 		assert.Equal(t, expectedErr, err)
 		repo.AssertExpectations(t)
 	})
+
+	t.Run("Failed Case - Article Is Nil", func(t *testing.T) {
+		articleID := uint64(5)
+		expectedErr := errors.New("artikel tidak ditemukan")
+
+		repo.On("GetArticleById", articleID).Return(nil, nil).Once()
+
+		result, err := service.UpdateArticleById(articleID, updatedArticle)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, expectedErr, err)
+		repo.AssertExpectations(t)
+	})
+
 }
 
 func TestArticleService_DeleteArticleById(t *testing.T) {
@@ -535,6 +551,23 @@ func TestArticleService_BookmarkArticle(t *testing.T) {
 		assert.Equal(t, "gagal menyimpan artikel", err.Error())
 		repo.AssertExpectations(t)
 	})
+
+	t.Run("Failed Case - Article Already Bookmarked", func(t *testing.T) {
+		bookmark := &entities.ArticleBookmarkModels{
+			UserID:    userID,
+			ArticleID: articleID,
+		}
+
+		repo.On("GetArticleById", articleID).Return(&entities.ArticleModels{ID: articleID}, nil).Once()
+		repo.On("IsArticleAlreadyBookmarked", userID, articleID).Return(true, nil).Once()
+
+		err := service.BookmarkArticle(bookmark)
+
+		assert.Error(t, err)
+		assert.Equal(t, "artikel telah disimpan", err.Error())
+		repo.AssertExpectations(t)
+	})
+
 }
 
 func TestArticleService_GetLatestArticles(t *testing.T) {
@@ -952,4 +985,46 @@ func TestArticleService_GetUserBookmarkArticle(t *testing.T) {
 		assert.Equal(t, expectedErr, err)
 		repo.AssertExpectations(t)
 	})
+}
+
+func TestGetFilterDateRange(t *testing.T) {
+	service := &ArticleService{}
+
+	tests := []struct {
+		filterType    string
+		expectedStart time.Time
+		expectedEnd   time.Time
+		expectedError error
+	}{
+		{
+			filterType:    "minggu ini",
+			expectedStart: time.Now().In(time.UTC).AddDate(0, 0, -int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour),
+			expectedEnd:   time.Now().In(time.UTC).AddDate(0, 0, 7-int(time.Now().In(time.UTC).Weekday())).Truncate(24 * time.Hour),
+			expectedError: nil,
+		},
+		{
+			filterType:    "bulan ini",
+			expectedStart: time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.UTC),
+			expectedEnd:   time.Date(time.Now().Year(), time.Now().Month()+1, 1, 0, 0, 0, 0, time.UTC).Add(-time.Second),
+			expectedError: nil,
+		},
+		{
+			filterType:    "tahun ini",
+			expectedStart: time.Date(time.Now().Year(), 1, 1, 0, 0, 0, 0, time.UTC),
+			expectedEnd:   time.Date(time.Now().Year()+1, 1, 1, 0, 0, 0, 0, time.UTC).Add(-time.Second),
+			expectedError: nil,
+		},
+		{
+			filterType:    "invalid",
+			expectedError: errors.New("tipe filter tidak valid"),
+		},
+	}
+
+	for _, test := range tests {
+		startDate, endDate, err := service.GetFilterDateRange(test.filterType)
+
+		if !startDate.Equal(test.expectedStart) || !endDate.Equal(test.expectedEnd) || !reflect.DeepEqual(err, test.expectedError) {
+			t.Errorf("For filter type %s, expected (%v, %v, %v), but got (%v, %v, %v)", test.filterType, test.expectedStart, test.expectedEnd, test.expectedError, startDate, endDate, err)
+		}
+	}
 }
