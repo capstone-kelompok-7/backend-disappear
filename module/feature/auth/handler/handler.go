@@ -116,7 +116,8 @@ func (h *AuthHandler) ResendOTP() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mengirim ulang OTP: "+err.Error())
 		}
 
-		err = email.EmailService(emailRequest.Email, newOTP.OTP)
+		emailSender := email.NewEmailService()
+		err = emailSender.EmailService(emailRequest.Email, newOTP.OTP)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mengirim ulang OTP ke email: "+err.Error())
 		}
@@ -142,7 +143,8 @@ func (h *AuthHandler) ForgotPassword() echo.HandlerFunc {
 			return response.SendStatusInternalServerResponse(c, "Gagal mengirim ulang OTP: "+err.Error())
 		}
 
-		err = email.EmailService(forgotPasswordRequest.Email, newOTP.OTP)
+		emailSender := email.NewEmailService()
+		err = emailSender.EmailService(forgotPasswordRequest.Email, newOTP.OTP)
 		if err != nil {
 			return response.SendStatusInternalServerResponse(c, "Gagal mengirim ulang OTP ke email: "+err.Error())
 

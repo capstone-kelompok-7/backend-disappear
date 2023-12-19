@@ -23,15 +23,17 @@ type AuthService struct {
 	jwt         utils.JWTInterface
 	hash        utils.HashInterface
 	cache       caching.CacheRepository
+	email       email.EmailSenderInterface
 }
 
-func NewAuthService(repo auth.RepositoryAuthInterface, jwt utils.JWTInterface, userService users.ServiceUserInterface, hash utils.HashInterface, cache caching.CacheRepository) auth.ServiceAuthInterface {
+func NewAuthService(repo auth.RepositoryAuthInterface, jwt utils.JWTInterface, userService users.ServiceUserInterface, hash utils.HashInterface, cache caching.CacheRepository, email email.EmailSenderInterface) auth.ServiceAuthInterface {
 	return &AuthService{
 		repo:        repo,
 		jwt:         jwt,
 		userService: userService,
 		hash:        hash,
 		cache:       cache,
+		email:       email,
 	}
 }
 
@@ -73,7 +75,7 @@ func (s *AuthService) Register(newData *entities.UserModels) (*entities.UserMode
 	if errOtp != nil {
 		return nil, errOtp
 	}
-	err = email.EmailService(result.Email, generateOTP)
+	err = s.email.EmailService(result.Email, generateOTP)
 	if err != nil {
 		return nil, err
 	}

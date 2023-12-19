@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/capstone-kelompok-7/backend-disappear/utils/email"
 	"github.com/capstone-kelompok-7/backend-disappear/utils/sendnotif"
 
 	"github.com/capstone-kelompok-7/backend-disappear/config"
@@ -79,13 +80,14 @@ func main() {
 	generatorID := utils.NewGeneratorUUID(db)
 	fcm := sendnotif.NewFcmService()
 	coreApi := payment.InitSnapMidtrans(*initConfig)
+	emailSender := email.NewEmailService()
 
 	userRepo := rUser.NewUserRepository(db)
 	userService := sUser.NewUserService(userRepo, hash)
 	userHandler := hUser.NewUserHandler(userService)
 
 	authRepo := rAuth.NewAuthRepository(db)
-	authService := sAuth.NewAuthService(authRepo, jwtService, userService, hash, rdb)
+	authService := sAuth.NewAuthService(authRepo, jwtService, userService, hash, rdb, emailSender)
 	authHandler := hAuth.NewAuthHandler(authService, userService)
 
 	voucherRepo := rVoucher.NewVoucherRepository(db)
