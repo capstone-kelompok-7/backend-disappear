@@ -459,6 +459,10 @@ func (s *OrderService) CallBack(notifPayload map[string]interface{}) error {
 		return errors.New("transaction data not found")
 	}
 
+	if err := s.repo.ConfirmPayment(transaction.ID, status.OrderStatus, status.PaymentStatus); err != nil {
+		return err
+	}
+
 	user, err := s.userService.GetUsersById(transaction.UserID)
 	if err != nil {
 		return errors.New("pengguna tidak ditemukan")
