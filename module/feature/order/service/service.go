@@ -458,60 +458,17 @@ func (s *OrderService) CallBack(notifPayload map[string]interface{}) error {
 	if err != nil {
 		return errors.New("transaction data not found")
 	}
-
-	if err := s.repo.ConfirmPayment(transaction.ID, status.OrderStatus, status.PaymentStatus); err != nil {
-		return err
-	}
-
-	user, err := s.userService.GetUsersById(transaction.UserID)
-	if err != nil {
-		return errors.New("pengguna tidak ditemukan")
-	}
+	fmt.Println(status.OrderStatus)
+	fmt.Println(status.PaymentStatus)
 
 	if status.PaymentStatus == "Konfirmasi" {
-		user.Exp += transaction.GrandTotalExp
-		if _, err := s.userService.UpdateUserExp(user.ID, user.Exp); err != nil {
+		if err := s.ConfirmPayment(transaction.ID); err != nil {
 			return err
 		}
-
-		user.TotalGram += transaction.GrandTotalGramPlastic
-		if _, err := s.userService.UpdateUserContribution(user.ID, user.TotalGram); err != nil {
-			return err
-		}
-		notificationRequest := dto.SendNotificationPaymentRequest{
-			OrderID:       orderID,
-			UserID:        user.ID,
-			PaymentStatus: "Konfirmasi",
-			Token:         user.DeviceToken,
-		}
-
-		_, err = s.SendNotificationPayment(notificationRequest)
-		if err != nil {
-			logrus.Error("Gagal mengirim notifikasi: ", err)
-			return err
-		}
-
 	} else if status.PaymentStatus == "Gagal" {
-
-		for _, orderDetail := range transaction.OrderDetails {
-			if err := s.productService.IncreaseStock(orderDetail.ProductID, orderDetail.Quantity); err != nil {
-				return errors.New("failed to increase product stock")
-			}
-		}
-
-		notificationRequest := dto.SendNotificationPaymentRequest{
-			OrderID:       orderID,
-			UserID:        user.ID,
-			PaymentStatus: "Gagal",
-			Token:         user.DeviceToken,
-		}
-
-		_, err = s.SendNotificationPayment(notificationRequest)
-		if err != nil {
-			logrus.Error("Gagal mengirim notifikasi: ", err)
+		if err := s.CancelPayment(transaction.ID); err != nil {
 			return err
 		}
-
 	}
 
 	return nil
