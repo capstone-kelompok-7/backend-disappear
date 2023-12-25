@@ -262,7 +262,7 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 	case "whatsapp", "telegram":
 		return s.ProcessManualPayment(orderID)
 	case "qris", "bank_transfer", "gopay", "shopepay":
-		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
+		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod, user.Name, user.Email)
 	default:
 		return nil, errors.New("jenis pembayaran tidak valid")
 	}
@@ -421,7 +421,7 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 	case "whatsapp", "telegram":
 		return s.ProcessManualPayment(orderID)
 	case "qris", "bank_transfer", "gopay", "shopepay":
-		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
+		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod, user.Name, user.Email)
 	default:
 		return nil, errors.New("jenis pembayaran tidak valid")
 	}
@@ -435,8 +435,8 @@ func (s *OrderService) ProcessManualPayment(orderID string) (*entities.OrderMode
 	return result, nil
 }
 
-func (s *OrderService) ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error) {
-	result, err := s.repo.ProcessGatewayPayment(totalAmountPaid, orderID, paymentMethod)
+func (s *OrderService) ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod, name, email string) (interface{}, error) {
+	result, err := s.repo.ProcessGatewayPayment(totalAmountPaid, orderID, paymentMethod, name, email)
 	if err != nil {
 		return nil, err
 	}

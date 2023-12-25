@@ -125,7 +125,7 @@ func (r *OrderRepository) ConfirmPayment(orderID, orderStatus, paymentStatus str
 	return nil
 }
 
-func (r *OrderRepository) ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error) {
+func (r *OrderRepository) ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod, name, email string) (interface{}, error) {
 	var paymentType coreapi.CoreapiPaymentType
 
 	switch paymentMethod {
@@ -138,7 +138,7 @@ func (r *OrderRepository) ProcessGatewayPayment(totalAmountPaid uint64, orderID 
 	}
 
 	coreClient := r.coreClient
-	resp, err := payment.CreateCoreAPIPaymentRequest(coreClient, orderID, int64(totalAmountPaid), paymentType)
+	resp, err := payment.CreateCoreAPIPaymentRequest(coreClient, orderID, int64(totalAmountPaid), paymentType, name, email)
 	if err != nil {
 		logrus.Error(err)
 		return nil, errors.New("gagal membuat permintaan pembayaran")

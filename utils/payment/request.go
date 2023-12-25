@@ -7,11 +7,11 @@ import (
 	"github.com/midtrans/midtrans-go/coreapi"
 )
 
-func CreateCoreAPIPaymentRequest(coreClient coreapi.Client, orderID string, totalAmountPaid int64, paymentType coreapi.CoreapiPaymentType) (*coreapi.ChargeResponse, error) {
+func CreateCoreAPIPaymentRequest(coreClient coreapi.Client, orderID string, totalAmountPaid int64, paymentType coreapi.CoreapiPaymentType, name string, email string) (*coreapi.ChargeResponse, error) {
 	var paymentRequest *coreapi.ChargeReq
 
 	switch paymentType {
-	case coreapi.PaymentTypeQris:
+	case coreapi.PaymentTypeQris, coreapi.PaymentTypeBankTransfer, coreapi.PaymentTypeGopay, coreapi.PaymentTypeShopeepay:
 		paymentRequest = &coreapi.ChargeReq{
 			PaymentType: paymentType,
 			TransactionDetails: midtrans.TransactionDetails{
@@ -19,33 +19,13 @@ func CreateCoreAPIPaymentRequest(coreClient coreapi.Client, orderID string, tota
 				GrossAmt: totalAmountPaid,
 			},
 		}
-	case coreapi.PaymentTypeBankTransfer:
-		paymentRequest = &coreapi.ChargeReq{
-			PaymentType: paymentType,
-			TransactionDetails: midtrans.TransactionDetails{
-				OrderID:  orderID,
-				GrossAmt: totalAmountPaid,
-			},
-		}
-	case coreapi.PaymentTypeGopay:
-		paymentRequest = &coreapi.ChargeReq{
-			PaymentType: paymentType,
-			TransactionDetails: midtrans.TransactionDetails{
-				OrderID:  orderID,
-				GrossAmt: totalAmountPaid,
-			},
-		}
-	case coreapi.PaymentTypeShopeepay:
-		paymentRequest = &coreapi.ChargeReq{
-			PaymentType: paymentType,
-			TransactionDetails: midtrans.TransactionDetails{
-				OrderID:  orderID,
-				GrossAmt: totalAmountPaid,
-			},
-		}
-
 	default:
 		return nil, errors.New("Jenis pembayaran tidak valid")
+	}
+
+	paymentRequest.CustomerDetails = &midtrans.CustomerDetails{
+		FName: name,
+		Email: email,
 	}
 
 	resp, err := coreClient.ChargeTransaction(paymentRequest)
@@ -54,6 +34,8 @@ func CreateCoreAPIPaymentRequest(coreClient coreapi.Client, orderID string, tota
 		return nil, err
 	}
 
+	fmt.Println("Menyimpan data pembayaran: OrderID=", orderID, " Name=", name, " Email=", email)
 	fmt.Println("Payment request created successfully:", resp)
+
 	return resp, nil
 }
