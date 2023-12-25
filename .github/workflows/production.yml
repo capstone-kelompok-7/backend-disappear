@@ -38,6 +38,7 @@ jobs:
           script: |
             sudo docker stop production_container || true
             sudo docker rm production_container || true
+            sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/production_disappear
             sudo docker run --name production_container -p 80:8000 -d \
               -e DBHOST=${{ secrets.PD_DBHOST }} \
               -e DBPORT=${{ secrets.PD_DBPORT }} \
