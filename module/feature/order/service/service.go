@@ -262,7 +262,7 @@ func (s *OrderService) CreateOrder(userID uint64, request *dto.CreateOrderReques
 	case "whatsapp", "telegram":
 		return s.ProcessManualPayment(orderID)
 	case "qris", "bank_transfer", "gopay", "shopepay":
-		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
+		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod, user.Name, user.Email)
 	default:
 		return nil, errors.New("jenis pembayaran tidak valid")
 	}
@@ -421,7 +421,7 @@ func (s *OrderService) CreateOrderFromCart(userID uint64, request *dto.CreateOrd
 	case "whatsapp", "telegram":
 		return s.ProcessManualPayment(orderID)
 	case "qris", "bank_transfer", "gopay", "shopepay":
-		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod)
+		return s.ProcessGatewayPayment(totalAmountPaid, createdOrder.ID, request.PaymentMethod, user.Name, user.Email)
 	default:
 		return nil, errors.New("jenis pembayaran tidak valid")
 	}
@@ -435,8 +435,8 @@ func (s *OrderService) ProcessManualPayment(orderID string) (*entities.OrderMode
 	return result, nil
 }
 
-func (s *OrderService) ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error) {
-	result, err := s.repo.ProcessGatewayPayment(totalAmountPaid, orderID, paymentMethod)
+func (s *OrderService) ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod, name, email string) (interface{}, error) {
+	result, err := s.repo.ProcessGatewayPayment(totalAmountPaid, orderID, paymentMethod, name, email)
 	if err != nil {
 		return nil, err
 	}
@@ -459,55 +459,14 @@ func (s *OrderService) CallBack(notifPayload map[string]interface{}) error {
 		return errors.New("transaction data not found")
 	}
 
-	user, err := s.userService.GetUsersById(transaction.UserID)
-	if err != nil {
-		return errors.New("pengguna tidak ditemukan")
-	}
-
 	if status.PaymentStatus == "Konfirmasi" {
-		user.Exp += transaction.GrandTotalExp
-		if _, err := s.userService.UpdateUserExp(user.ID, user.Exp); err != nil {
+		if err := s.ConfirmPayment(transaction.ID); err != nil {
 			return err
 		}
-
-		user.TotalGram += transaction.GrandTotalGramPlastic
-		if _, err := s.userService.UpdateUserContribution(user.ID, user.TotalGram); err != nil {
-			return err
-		}
-		notificationRequest := dto.SendNotificationPaymentRequest{
-			OrderID:       orderID,
-			UserID:        user.ID,
-			PaymentStatus: "Konfirmasi",
-			Token:         user.DeviceToken,
-		}
-
-		_, err = s.SendNotificationPayment(notificationRequest)
-		if err != nil {
-			logrus.Error("Gagal mengirim notifikasi: ", err)
-			return err
-		}
-
 	} else if status.PaymentStatus == "Gagal" {
-
-		for _, orderDetail := range transaction.OrderDetails {
-			if err := s.productService.IncreaseStock(orderDetail.ProductID, orderDetail.Quantity); err != nil {
-				return errors.New("failed to increase product stock")
-			}
-		}
-
-		notificationRequest := dto.SendNotificationPaymentRequest{
-			OrderID:       orderID,
-			UserID:        user.ID,
-			PaymentStatus: "Gagal",
-			Token:         user.DeviceToken,
-		}
-
-		_, err = s.SendNotificationPayment(notificationRequest)
-		if err != nil {
-			logrus.Error("Gagal mengirim notifikasi: ", err)
+		if err := s.CancelPayment(transaction.ID); err != nil {
 			return err
 		}
-
 	}
 
 	return nil
