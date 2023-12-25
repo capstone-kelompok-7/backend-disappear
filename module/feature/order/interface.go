@@ -15,7 +15,7 @@ type RepositoryOrderInterface interface {
 	GetOrderById(orderID string) (*entities.OrderModels, error)
 	CreateOrder(newOrder *entities.OrderModels) (*entities.OrderModels, error)
 	ConfirmPayment(orderID string, orderStatus, paymentStatus string) error
-	ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error)
+	ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod, name, email string) (interface{}, error)
 	CheckTransaction(orderID string) (dto.Status, error)
 	UpdateOrderStatus(req *dto.UpdateOrderStatus) error
 	GetAllOrdersByUserID(userID uint64) ([]*entities.OrderModels, error)
@@ -72,7 +72,7 @@ type ServiceOrderInterface interface {
 	GetOrderByDateRangeAndPaymentStatus(filterType, status string, page, perPage int) ([]*entities.OrderModels, int64, error)
 	GetOrderByPaymentStatus(orderStatus string, page, perPage int) ([]*entities.OrderModels, int64, error)
 	ProcessManualPayment(orderID string) (*entities.OrderModels, error)
-	ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod string) (interface{}, error)
+	ProcessGatewayPayment(totalAmountPaid uint64, orderID string, paymentMethod, name, email string) (interface{}, error)
 	SendNotificationOrder(request dto.SendNotificationOrderRequest) (string, error)
 	SendNotificationPayment(request dto.SendNotificationPaymentRequest) (string, error)
 }
